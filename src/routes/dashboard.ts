@@ -20,8 +20,8 @@ dashboard.get('/', async (c) => {
     
     let installations: Installation[] = [];
     let maintenances: Maintenance[] = [];
-    let technicalScore = 50;
-    let scoreLabel = getScoreLabel(50);
+    let technicalScore = 0;
+    let scoreLabel = getScoreLabel(0);
     
     if (property) {
       // Obtener instalaciones

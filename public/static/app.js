@@ -1143,21 +1143,71 @@ const App = {
   },
   
   // =============================================
-  // MANTENIMIENTO
+  // MANTENIMIENTO - Sistema de potenciómetros
   // =============================================
+  
+  // Plazos de revisión recomendados en años
+  getMaintenanceCycles() {
+    return {
+      roof: { years: 2.5, label: 'Cubierta/Tejado', icon: 'home', frequency: 'Cada 2-3 años' },
+      electricity: { years: 10, label: 'Electricidad', icon: 'bolt', frequency: 'Cada 10 años' },
+      plumbing: { years: 5, label: 'Fontanería', icon: 'faucet', frequency: 'Cada 5 años' },
+      boiler: { years: 1, label: 'Caldera', icon: 'fire', frequency: 'Anual (obligatorio)' },
+      facade: { years: 7.5, label: 'Fachada', icon: 'building', frequency: 'Cada 5-10 años' },
+      insulation: { years: 15, label: 'Aislamiento', icon: 'thermometer-half', frequency: 'Según necesidad' },
+      pool: { years: 1, label: 'Piscina', icon: 'swimming-pool', frequency: 'Anual (pre-temporada)' },
+      garden: { years: 0.25, label: 'Jardín', icon: 'leaf', frequency: 'Trimestral' }
+    };
+  },
+  
+  // Calcula el porcentaje del potenciómetro (0-100)
+  // 0% = vencido hace mucho (rojo), 100% = recién hecho (verde)
+  calculateMaintenanceLevel(lastChecked, cycleYears, status) {
+    // Si no hay datos, devolver null (sin rellenar)
+    if (!lastChecked) return null;
+    
+    // Si necesita reparación, siempre rojo
+    if (status === 'needs_repair') return 5;
+    
+    const lastDate = new Date(lastChecked);
+    const now = new Date();
+    const daysSince = (now - lastDate) / (1000 * 60 * 60 * 24);
+    const cycleDays = cycleYears * 365;
+    
+    // Porcentaje de tiempo restante hasta próxima revisión
+    const percentUsed = (daysSince / cycleDays) * 100;
+    const percentRemaining = Math.max(0, 100 - percentUsed);
+    
+    // Si está vencido, dar un mínimo del 5%
+    if (percentRemaining <= 0) return 5;
+    
+    return Math.min(100, percentRemaining);
+  },
+  
+  // Obtiene el color según el nivel del potenciómetro
+  getPotentiometerColor(level) {
+    if (level === null) return { main: 'rgba(156,163,175,0.3)', text: 'gray-400' };
+    if (level <= 20) return { main: '#ef4444', text: 'red-600' }; // Rojo
+    if (level <= 40) return { main: '#f97316', text: 'orange-500' }; // Naranja
+    if (level <= 60) return { main: '#eab308', text: 'yellow-500' }; // Amarillo
+    if (level <= 80) return { main: '#84cc16', text: 'lime-500' }; // Lima
+    return { main: '#22c55e', text: 'green-500' }; // Verde
+  },
+  
+  // Mensaje según el estado
+  getMaintenanceMessage(level, cycleName) {
+    if (level === null) return { icon: 'question-circle', text: 'Sin datos - pulsa para añadir información', urgent: false };
+    if (level <= 20) return { icon: 'exclamation-triangle', text: '¡Revisión urgente! Plazo muy sobrepasado', urgent: true };
+    if (level <= 40) return { icon: 'clock', text: 'Conviene programar revisión pronto', urgent: true };
+    if (level <= 60) return { icon: 'calendar-alt', text: 'Revisión recomendada en los próximos meses', urgent: false };
+    if (level <= 80) return { icon: 'check-circle', text: 'Todo correcto, próxima revisión dentro del plazo', urgent: false };
+    return { icon: 'thumbs-up', text: '¡Perfecto! Revisión reciente', urgent: false };
+  },
+  
   renderMaintenance() {
     const maintenances = this.state.maintenances || [];
-    
-    const categories = [
-      { category: 'roof', label: 'Cubierta/Tejado', icon: 'home', frequency: 'Cada 2-3 años' },
-      { category: 'electricity', label: 'Electricidad', icon: 'bolt', frequency: 'Cada 10 años' },
-      { category: 'plumbing', label: 'Fontanería', icon: 'faucet', frequency: 'Cada 5 años' },
-      { category: 'boiler', label: 'Caldera', icon: 'fire', frequency: 'Anual (obligatorio)' },
-      { category: 'facade', label: 'Fachada', icon: 'building', frequency: 'Cada 5-10 años' },
-      { category: 'insulation', label: 'Aislamiento', icon: 'thermometer-half', frequency: 'Según necesidad' },
-      { category: 'pool', label: 'Piscina', icon: 'swimming-pool', frequency: 'Anual (pre-temporada)' },
-      { category: 'garden', label: 'Jardín', icon: 'leaf', frequency: 'Trimestral' }
-    ];
+    const cycles = this.getMaintenanceCycles();
+    const categories = Object.keys(cycles);
     
     return `
       <div class="space-y-6">
@@ -1167,29 +1217,46 @@ const App = {
               <i class="fas fa-clipboard-check mr-2 text-urba-500"></i>
               Control de mantenimiento
             </h2>
-            <p class="text-sm text-urba-500 mt-1">Gestiona las revisiones de tu vivienda</p>
+            <p class="text-sm text-urba-500 mt-1">Pulsa en cada área para añadir o actualizar información</p>
+          </div>
+          
+          <!-- Leyenda de colores -->
+          <div class="px-6 py-3 bg-gray-50 border-b border-urba-100 flex flex-wrap gap-4 text-xs">
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-500"></span> Urgente</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-orange-500"></span> Revisar pronto</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-500"></span> Planificar</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-lime-500"></span> Bien</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-500"></span> Perfecto</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-gray-300"></span> Sin datos</span>
           </div>
           
           <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              ${categories.map(cat => {
-                const m = maintenances.find(x => x.category === cat.category) || {};
-                const statusColors = {
-                  checked: 'bg-green-100 text-green-700 border-green-200',
-                  pending: 'bg-amber-100 text-amber-700 border-amber-200',
-                  needs_repair: 'bg-red-100 text-red-700 border-red-200',
-                  repaired: 'bg-blue-100 text-blue-700 border-blue-200'
-                };
-                const statusLabels = {
-                  checked: 'Revisado',
-                  pending: 'Pendiente',
-                  needs_repair: 'Necesita reparación',
-                  repaired: 'Reparado'
-                };
+              ${categories.map(catKey => {
+                const cat = cycles[catKey];
+                const m = maintenances.find(x => x.category === catKey) || {};
+                const level = this.calculateMaintenanceLevel(m.last_checked, cat.years, m.status);
+                const color = this.getPotentiometerColor(level);
+                const message = this.getMaintenanceMessage(level, cat.label);
+                const hasData = level !== null;
                 
                 return `
-                  <div class="border border-urba-200 rounded-xl p-4 hover:shadow-md transition">
-                    <div class="flex items-start justify-between">
+                  <div class="maintenance-card border border-urba-200 rounded-xl p-4 hover:shadow-lg transition cursor-pointer relative overflow-hidden"
+                       onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})"
+                       style="min-height: 160px;">
+                    
+                    <!-- Capa blanquecina para sin datos -->
+                    ${!hasData ? `
+                      <div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                        <div class="text-center p-4">
+                          <i class="fas fa-plus-circle text-3xl text-urba-400 mb-2"></i>
+                          <p class="text-sm text-urba-500">Pulsa para añadir datos</p>
+                        </div>
+                      </div>
+                    ` : ''}
+                    
+                    <!-- Contenido de la tarjeta -->
+                    <div class="flex items-start justify-between mb-3">
                       <div class="flex items-center space-x-3">
                         <div class="w-12 h-12 bg-urba-100 rounded-xl flex items-center justify-center">
                           <i class="fas fa-${cat.icon} text-xl text-urba-600"></i>
@@ -1199,46 +1266,242 @@ const App = {
                           <p class="text-xs text-urba-500">${cat.frequency}</p>
                         </div>
                       </div>
-                      <span class="px-2 py-1 text-xs rounded-full border ${statusColors[m.status] || statusColors.pending}">
-                        ${statusLabels[m.status] || 'Pendiente'}
-                      </span>
                     </div>
                     
-                    <div class="mt-4 space-y-2 text-sm">
-                      ${m.last_checked ? `
-                        <p class="text-urba-600">
-                          <i class="fas fa-check mr-1"></i>
-                          Última revisión: ${this.formatDate(m.last_checked)}
-                        </p>
-                      ` : ''}
-                      ${m.next_recommended ? `
-                        <p class="text-urba-500">
-                          <i class="fas fa-calendar mr-1"></i>
-                          Próxima: ${this.formatDate(m.next_recommended)}
-                        </p>
+                    <!-- Potenciómetro visual -->
+                    <div class="relative h-8 bg-gray-200 rounded-full overflow-hidden mb-3">
+                      <!-- Degradado de fondo (siempre visible) -->
+                      <div class="absolute inset-0 opacity-30"
+                           style="background: linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #84cc16 75%, #22c55e 100%);">
+                      </div>
+                      <!-- Barra de llenado -->
+                      <div class="absolute inset-y-0 left-0 transition-all duration-500 rounded-full"
+                           style="width: ${hasData ? level : 0}%; background: linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #84cc16 75%, #22c55e 100%); background-size: ${100 / (level || 1) * 100}% 100%;">
+                      </div>
+                      <!-- Indicador de nivel -->
+                      ${hasData ? `
+                        <div class="absolute inset-y-0 flex items-center justify-end pr-2 text-white text-xs font-bold drop-shadow"
+                             style="width: ${Math.max(level, 15)}%;">
+                          ${Math.round(level)}%
+                        </div>
                       ` : ''}
                     </div>
                     
-                    <div class="mt-4 flex space-x-2">
-                      ${m.status !== 'checked' ? `
-                        <button onclick="App.checkMaintenance(${m.id})" 
-                                class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition">
-                          <i class="fas fa-check mr-1"></i> Marcar revisado
-                        </button>
-                      ` : ''}
-                      <button onclick="App.showMaintenanceNotes(${m.id})" 
-                              class="px-3 py-2 border border-urba-200 rounded-lg text-sm text-urba-600 hover:bg-urba-50 transition">
-                        <i class="fas fa-sticky-note"></i>
-                      </button>
+                    <!-- Mensaje de estado -->
+                    <div class="flex items-center gap-2 text-sm ${message.urgent ? 'text-red-600 font-medium' : 'text-urba-600'}">
+                      <i class="fas fa-${message.icon}"></i>
+                      <span>${message.text}</span>
                     </div>
+                    
+                    <!-- Info de última revisión si existe -->
+                    ${m.last_checked ? `
+                      <p class="text-xs text-urba-400 mt-2">
+                        Última revisión: ${this.formatDate(m.last_checked)}
+                      </p>
+                    ` : ''}
                   </div>
                 `;
               }).join('')}
             </div>
           </div>
         </div>
+        
+        <!-- Resumen del estado -->
+        <div class="bg-white rounded-xl shadow-sm border border-urba-100 p-6">
+          <h3 class="font-semibold text-urba-900 mb-4">
+            <i class="fas fa-chart-pie mr-2 text-urba-500"></i>
+            Resumen del estado de mantenimiento
+          </h3>
+          ${this.renderMaintenanceSummary(maintenances, cycles)}
+        </div>
       </div>
     `;
+  },
+  
+  renderMaintenanceSummary(maintenances, cycles) {
+    const categories = Object.keys(cycles);
+    let completed = 0, urgent = 0, pending = 0, noData = 0;
+    
+    categories.forEach(catKey => {
+      const cat = cycles[catKey];
+      const m = maintenances.find(x => x.category === catKey);
+      const level = this.calculateMaintenanceLevel(m?.last_checked, cat.years, m?.status);
+      
+      if (level === null) noData++;
+      else if (level <= 40) urgent++;
+      else if (level <= 70) pending++;
+      else completed++;
+    });
+    
+    const total = categories.length;
+    
+    return `
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center p-4 bg-green-50 rounded-xl">
+          <p class="text-2xl font-bold text-green-600">${completed}</p>
+          <p class="text-sm text-green-700">Al día</p>
+        </div>
+        <div class="text-center p-4 bg-yellow-50 rounded-xl">
+          <p class="text-2xl font-bold text-yellow-600">${pending}</p>
+          <p class="text-sm text-yellow-700">A planificar</p>
+        </div>
+        <div class="text-center p-4 bg-red-50 rounded-xl">
+          <p class="text-2xl font-bold text-red-600">${urgent}</p>
+          <p class="text-sm text-red-700">Urgentes</p>
+        </div>
+        <div class="text-center p-4 bg-gray-50 rounded-xl">
+          <p class="text-2xl font-bold text-gray-500">${noData}</p>
+          <p class="text-sm text-gray-600">Sin datos</p>
+        </div>
+      </div>
+      <p class="text-sm text-urba-500 mt-4 text-center">
+        Completa la información de las ${noData} áreas sin datos para obtener una valoración técnica más precisa
+      </p>
+    `;
+  },
+  
+  // Modal para añadir/editar mantenimiento
+  async openMaintenanceModal(category, existingId) {
+    const cycles = this.getMaintenanceCycles();
+    const cat = cycles[category];
+    const maintenances = this.state.maintenances || [];
+    const existing = maintenances.find(m => m.category === category) || {};
+    
+    const modal = document.createElement('div');
+    modal.id = 'maintenance-modal';
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="bg-urba-50 px-6 py-4 border-b border-urba-100">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-urba-100 rounded-xl flex items-center justify-center">
+              <i class="fas fa-${cat.icon} text-xl text-urba-600"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-urba-900">${cat.label}</h3>
+              <p class="text-sm text-urba-500">${cat.frequency}</p>
+            </div>
+          </div>
+        </div>
+        
+        <form id="maintenance-form" class="p-6 space-y-4">
+          <input type="hidden" name="category" value="${category}">
+          <input type="hidden" name="id" value="${existing.id || ''}">
+          
+          <div>
+            <label class="block text-sm font-medium text-urba-700 mb-2">
+              <i class="fas fa-calendar-check mr-1"></i>
+              Fecha de última revisión/mantenimiento
+            </label>
+            <input type="date" name="last_checked" 
+                   value="${existing.last_checked ? existing.last_checked.split('T')[0] : ''}"
+                   class="w-full px-4 py-3 border border-urba-200 rounded-xl focus:ring-2 focus:ring-urba-500 focus:border-transparent">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-urba-700 mb-2">
+              <i class="fas fa-clipboard-list mr-1"></i>
+              Estado actual
+            </label>
+            <select name="status" 
+                    class="w-full px-4 py-3 border border-urba-200 rounded-xl focus:ring-2 focus:ring-urba-500 focus:border-transparent">
+              <option value="checked" ${existing.status === 'checked' ? 'selected' : ''}>✅ Revisado / Al día</option>
+              <option value="repaired" ${existing.status === 'repaired' ? 'selected' : ''}>🔧 Reparado recientemente</option>
+              <option value="pending" ${existing.status === 'pending' ? 'selected' : ''}>⏳ Pendiente de revisión</option>
+              <option value="needs_repair" ${existing.status === 'needs_repair' ? 'selected' : ''}>🔴 Necesita reparación</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-urba-700 mb-2">
+              <i class="fas fa-sticky-note mr-1"></i>
+              Observaciones (opcional)
+            </label>
+            <textarea name="notes" rows="3" 
+                      placeholder="Añade cualquier detalle relevante..."
+                      class="w-full px-4 py-3 border border-urba-200 rounded-xl focus:ring-2 focus:ring-urba-500 focus:border-transparent resize-none">${existing.notes || ''}</textarea>
+          </div>
+          
+          <div class="bg-blue-50 rounded-xl p-4 text-sm text-blue-700">
+            <i class="fas fa-info-circle mr-1"></i>
+            <strong>Recomendación:</strong> Para ${cat.label.toLowerCase()}, se recomienda una revisión ${cat.frequency.toLowerCase()}.
+          </div>
+          
+          <div class="flex gap-3 pt-2">
+            <button type="button" onclick="App.closeMaintenanceModal()"
+                    class="flex-1 px-4 py-3 border border-urba-200 rounded-xl text-urba-600 hover:bg-urba-50 transition">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="flex-1 px-4 py-3 gradient-bg text-white rounded-xl font-medium hover:opacity-90 transition">
+              <i class="fas fa-save mr-1"></i>
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Event listener para el formulario
+    document.getElementById('maintenance-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await this.saveMaintenanceData(new FormData(e.target));
+    });
+  },
+  
+  closeMaintenanceModal() {
+    const modal = document.getElementById('maintenance-modal');
+    if (modal) modal.remove();
+  },
+  
+  async saveMaintenanceData(formData) {
+    const data = Object.fromEntries(formData);
+    const existingId = data.id;
+    
+    try {
+      let response;
+      
+      if (existingId) {
+        // Actualizar existente
+        response = await axios.put(`/api/maintenances/${existingId}`, {
+          status: data.status,
+          last_checked: data.last_checked || null,
+          notes: data.notes || null
+        }, {
+          headers: { Authorization: `Bearer ${this.state.token}` }
+        });
+      } else {
+        // Crear nuevo
+        const propertyId = this.state.dashboard?.property?.id;
+        if (!propertyId) {
+          this.showToast('Primero debes configurar tu vivienda', 'error');
+          return;
+        }
+        
+        response = await axios.post('/api/maintenances', {
+          property_id: propertyId,
+          category: data.category,
+          status: data.status,
+          last_checked: data.last_checked || null,
+          notes: data.notes || null
+        }, {
+          headers: { Authorization: `Bearer ${this.state.token}` }
+        });
+      }
+      
+      if (response.data.success) {
+        // Recargar datos
+        await this.loadDashboard();
+        this.closeMaintenanceModal();
+        this.showToast('Información guardada correctamente', 'success');
+        this.render();
+      }
+    } catch (error) {
+      console.error('Error saving maintenance:', error);
+      this.showToast('Error al guardar', 'error');
+    }
   },
   
   // =============================================

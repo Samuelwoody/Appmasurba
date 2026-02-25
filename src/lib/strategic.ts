@@ -274,46 +274,64 @@ oficiales ni intermediación inmobiliaria.`;
 }
 
 // Calcular score técnico basado en instalaciones y mantenimientos
+// El score se construye progresivamente según los datos añadidos
 export function calculateTechnicalScore(
   installations: Array<{ is_updated: number; perceived_state: string; type: string }>,
-  maintenances: Array<{ status: string; category: string }>,
+  maintenances: Array<{ status: string; category: string; last_checked?: string }>,
   propertyAge: number,
   lastIntegralReform?: number
 ): number {
-  let score = 50; // Base
+  // Categorías de mantenimiento totales
+  const totalMaintenanceCategories = 8; // roof, electricity, plumbing, boiler, facade, insulation, pool, garden
   
-  // Ajuste por edad (máx -20 puntos)
-  if (propertyAge > 40) score -= 20;
-  else if (propertyAge > 30) score -= 15;
-  else if (propertyAge > 20) score -= 10;
-  else if (propertyAge > 10) score -= 5;
+  // Si no hay datos de instalaciones ni mantenimientos, el score queda en 0
+  if (installations.length === 0 && maintenances.length === 0) {
+    return 0;
+  }
   
-  // Ajuste por reforma integral reciente (máx +25 puntos)
+  // Calcular cobertura de datos (qué porcentaje de áreas tiene información)
+  const maintenancesWithData = maintenances.filter(m => m.last_checked).length;
+  const dataCoverage = maintenancesWithData / totalMaintenanceCategories;
+  
+  // Base del score según cobertura de datos (0-40 puntos)
+  // Cuantas más áreas completadas, mayor base
+  let score = Math.round(dataCoverage * 40);
+  
+  // Ajuste por edad de la vivienda (máx -15 puntos)
+  if (propertyAge > 40) score -= 15;
+  else if (propertyAge > 30) score -= 10;
+  else if (propertyAge > 20) score -= 5;
+  else if (propertyAge > 10) score -= 2;
+  
+  // Ajuste por reforma integral reciente (máx +20 puntos)
   if (lastIntegralReform) {
     const yearsAgo = new Date().getFullYear() - lastIntegralReform;
-    if (yearsAgo <= 5) score += 25;
-    else if (yearsAgo <= 10) score += 15;
+    if (yearsAgo <= 5) score += 20;
+    else if (yearsAgo <= 10) score += 12;
     else if (yearsAgo <= 15) score += 5;
   }
   
-  // Ajuste por instalaciones (máx +/-25 puntos)
+  // Ajuste por instalaciones (máx +20 puntos)
   for (const inst of installations) {
-    if (inst.is_updated) score += 3;
+    if (inst.is_updated) score += 2;
     switch (inst.perceived_state) {
       case 'excellent': score += 3; break;
       case 'good': score += 1; break;
       case 'regular': break;
-      case 'needs_attention': score -= 3; break;
+      case 'needs_attention': score -= 2; break;
     }
   }
   
-  // Ajuste por mantenimientos (máx +/-15 puntos)
+  // Ajuste por estado de mantenimientos (máx +20 puntos)
+  // Solo cuenta los que tienen datos
   for (const maint of maintenances) {
+    if (!maint.last_checked) continue; // Ignorar los sin datos
+    
     switch (maint.status) {
-      case 'checked': score += 1; break;
-      case 'repaired': score += 2; break;
-      case 'needs_repair': score -= 3; break;
-      case 'pending': score -= 1; break;
+      case 'checked': score += 3; break;
+      case 'repaired': score += 4; break;
+      case 'needs_repair': score -= 5; break;
+      case 'pending': score -= 2; break;
     }
   }
   
