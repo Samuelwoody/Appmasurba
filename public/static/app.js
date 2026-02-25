@@ -281,6 +281,8 @@ const App = {
     // Ocultar pantalla de carga
     setTimeout(() => {
       document.getElementById('loading-screen')?.remove();
+      // Mostrar banner de cookies si no se ha aceptado
+      this.showCookieBanner();
     }, 500);
   },
   
@@ -683,10 +685,27 @@ const App = {
                 </button>
                 
                 <p class="text-xs text-gray-500 text-center">
-                  Al registrarte aceptas que tus datos sean tratados por Más Urba Multiservicios 
-                  para gestionar tu cuenta y enviarte información útil sobre tu vivienda.
+                  Al registrarte aceptas nuestra <a href="#" onclick="App.showLegalModal('privacy'); return false;" class="text-green-600 hover:underline">Política de Privacidad</a> 
+                  y <a href="#" onclick="App.showLegalModal('terms'); return false;" class="text-green-600 hover:underline">Términos de Uso</a>.
                 </p>
               </form>
+            </div>
+            
+            <!-- Mensaje de confianza y privacidad -->
+            <div class="mt-6 p-4 bg-green-50 rounded-xl border border-green-100">
+              <div class="flex items-start space-x-3">
+                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <i class="fas fa-user-shield text-white text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-green-800">Tu privacidad es lo primero</p>
+                  <p class="text-xs text-green-700 mt-1">
+                    <strong>Solo tú</strong> tienes acceso a tus datos personales. Nosotros únicamente vemos información 
+                    técnica de las viviendas (año, m², estado) para poder asesorarte mejor. 
+                    <strong>Nunca compartimos ni vendemos tus datos.</strong>
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -694,12 +713,19 @@ const App = {
           <div class="mt-6 text-center">
             <div class="flex items-center justify-center space-x-6 text-gray-400 text-sm">
               <span><i class="fas fa-shield-alt mr-1"></i> 100% Seguro</span>
-              <span><i class="fas fa-lock mr-1"></i> Datos protegidos</span>
+              <span><i class="fas fa-lock mr-1"></i> RGPD Compliant</span>
               <span><i class="fas fa-heart mr-1"></i> Hecho en Valdemorillo</span>
             </div>
             <p class="text-gray-400 text-xs mt-3">
               Por <span class="font-medium">Más Urba Multiservicios</span> · Solo para vecinos de las urbanizaciones de Valdemorillo
             </p>
+            <div class="mt-2 text-xs text-gray-400 space-x-3">
+              <a href="#" onclick="App.showLegalModal('privacy'); return false;" class="hover:text-gray-600">Privacidad</a>
+              <span>·</span>
+              <a href="#" onclick="App.showLegalModal('terms'); return false;" class="hover:text-gray-600">Términos</a>
+              <span>·</span>
+              <a href="#" onclick="App.showLegalModal('cookies'); return false;" class="hover:text-gray-600">Cookies</a>
+            </div>
           </div>
         </div>
       </div>
@@ -1560,6 +1586,15 @@ const App = {
           </div>
         </div>
         
+        <!-- Aviso de privacidad para admin -->
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start space-x-3">
+          <i class="fas fa-user-shield text-blue-500 mt-0.5"></i>
+          <div class="text-sm text-blue-800">
+            <strong>Recuerda:</strong> Solo accedes a datos técnicos de viviendas y datos de contacto que los vecinos 
+            han proporcionado voluntariamente. Las conversaciones privadas con Chari <strong>no son accesibles</strong>.
+          </div>
+        </div>
+        
         <div id="admin-content">
           ${this.renderLoading()}
         </div>
@@ -2055,6 +2090,162 @@ const App = {
     document.getElementById('notes-modal')?.remove();
   },
   
+  // =============================================
+  // TEXTOS LEGALES Y COOKIES
+  // =============================================
+  legalTexts: {
+    privacy: {
+      title: 'Política de Privacidad',
+      content: `
+        <h3 class="font-semibold text-lg mb-3">1. Responsable del tratamiento</h3>
+        <p class="mb-4">Más Urba Multiservicios, con domicilio en Valdemorillo (Madrid).</p>
+        
+        <h3 class="font-semibold text-lg mb-3">2. Datos que recopilamos</h3>
+        <p class="mb-2">Recopilamos únicamente:</p>
+        <ul class="list-disc pl-5 mb-4 space-y-1">
+          <li><strong>Datos de contacto:</strong> email y teléfono (opcional)</li>
+          <li><strong>Datos técnicos de la vivienda:</strong> año construcción, m², estado de instalaciones</li>
+          <li><strong>Conversaciones con Chari:</strong> para mejorar el asesoramiento</li>
+        </ul>
+        <p class="mb-4 bg-green-50 p-3 rounded-lg text-green-800"><strong>IMPORTANTE:</strong> No almacenamos datos bancarios, DNI, ni información personal sensible.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">3. Finalidad</h3>
+        <ul class="list-disc pl-5 mb-4 space-y-1">
+          <li>Proporcionarte asesoramiento gratuito sobre tu vivienda</li>
+          <li>Recordarte mantenimientos preventivos</li>
+          <li>Darte orientación sobre precios de reformas</li>
+        </ul>
+        
+        <h3 class="font-semibold text-lg mb-3">4. Quién tiene acceso</h3>
+        <p class="mb-4"><strong>Solo tú</strong> tienes acceso completo a tus datos. El equipo de Más Urba solo puede ver información técnica de viviendas (nunca datos personales) para poder asesorarte mejor si lo solicitas.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">5. Tus derechos</h3>
+        <p class="mb-4">Puedes ejercer tus derechos de acceso, rectificación, supresión, portabilidad y oposición escribiendo a <a href="mailto:info@masurba.es" class="text-green-600">info@masurba.es</a>.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">6. Conservación</h3>
+        <p class="mb-4">Mantendremos tus datos mientras tengas cuenta activa. Puedes solicitar su eliminación en cualquier momento.</p>
+      `
+    },
+    terms: {
+      title: 'Términos de Uso',
+      content: `
+        <h3 class="font-semibold text-lg mb-3">1. Servicio gratuito</h3>
+        <p class="mb-4">Esta aplicación es un servicio <strong>100% gratuito</strong> ofrecido por Más Urba Multiservicios a los propietarios de chalets en las urbanizaciones de Valdemorillo.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">2. Objetivo de la app</h3>
+        <p class="mb-4">Ayudarte a mantener tu vivienda en buen estado, orientarte sobre precios de reformas y darte asesoramiento técnico. <strong>No hay ninguna obligación de contratar servicios.</strong></p>
+        
+        <h3 class="font-semibold text-lg mb-3">3. Precios orientativos</h3>
+        <p class="mb-4">Los precios mostrados son <strong>estimaciones orientativas</strong> basadas en el mercado local. El precio final depende de una valoración presencial y puede variar.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">4. Asesoramiento de Chari</h3>
+        <p class="mb-4">Chari es una asistente que proporciona orientación general. Para decisiones importantes, recomendamos siempre consultar con profesionales cualificados.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">5. Uso responsable</h3>
+        <p class="mb-4">Te comprometes a usar la app de forma responsable, proporcionar información veraz sobre tu vivienda y no usar el servicio para fines comerciales o fraudulentos.</p>
+        
+        <h3 class="font-semibold text-lg mb-3">6. Modificaciones</h3>
+        <p class="mb-4">Podemos actualizar estos términos. Te notificaremos cualquier cambio significativo.</p>
+      `
+    },
+    cookies: {
+      title: 'Política de Cookies',
+      content: `
+        <h3 class="font-semibold text-lg mb-3">¿Qué cookies usamos?</h3>
+        <p class="mb-4">Esta aplicación utiliza <strong>cookies técnicas mínimas</strong> necesarias para su funcionamiento:</p>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+          <p class="font-medium mb-2">🔐 Cookie de sesión (masurba_token)</p>
+          <p class="text-sm text-gray-600">Mantiene tu sesión iniciada. Se elimina al cerrar sesión.</p>
+        </div>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+          <p class="font-medium mb-2">✅ Cookie de onboarding (masurba_onboarding_completed)</p>
+          <p class="text-sm text-gray-600">Recuerda que ya viste el tour inicial. Evita mostrártelo cada vez.</p>
+        </div>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+          <p class="font-medium mb-2">🍪 Cookie de consentimiento (masurba_cookies_accepted)</p>
+          <p class="text-sm text-gray-600">Recuerda que aceptaste esta política.</p>
+        </div>
+        
+        <h3 class="font-semibold text-lg mb-3 mt-6">¿Qué NO usamos?</h3>
+        <ul class="list-disc pl-5 mb-4 space-y-1">
+          <li>❌ Cookies de publicidad</li>
+          <li>❌ Cookies de seguimiento de terceros</li>
+          <li>❌ Google Analytics ni similares</li>
+          <li>❌ Píxeles de Facebook/Meta</li>
+        </ul>
+        
+        <p class="text-sm text-gray-600">Puedes eliminar las cookies en cualquier momento desde la configuración de tu navegador.</p>
+      `
+    }
+  },
+  
+  showLegalModal(type) {
+    const legal = this.legalTexts[type];
+    if (!legal) return;
+    
+    const modal = document.createElement('div');
+    modal.id = 'legal-modal';
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="App.closeLegalModal()"></div>
+      <div class="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden fade-in">
+        <div class="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+          <h2 class="text-xl font-bold text-gray-900">${legal.title}</h2>
+          <button onclick="App.closeLegalModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[60vh] text-gray-700 text-sm leading-relaxed">
+          ${legal.content}
+        </div>
+        <div class="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-100">
+          <button onclick="App.closeLegalModal()" class="w-full gradient-bg text-white py-2 rounded-lg font-medium">
+            Entendido
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+  
+  closeLegalModal() {
+    document.getElementById('legal-modal')?.remove();
+  },
+  
+  // Banner de cookies
+  showCookieBanner() {
+    if (localStorage.getItem('masurba_cookies_accepted')) return;
+    
+    const banner = document.createElement('div');
+    banner.id = 'cookie-banner';
+    banner.className = 'fixed bottom-0 left-0 right-0 z-50 p-4 bg-white border-t border-gray-200 shadow-lg';
+    banner.innerHTML = `
+      <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-3">
+          <span class="text-2xl">🍪</span>
+          <p class="text-sm text-gray-600">
+            Usamos solo <strong>cookies técnicas</strong> necesarias para el funcionamiento de la app. 
+            <a href="#" onclick="App.showLegalModal('cookies'); return false;" class="text-green-600 hover:underline">Más info</a>
+          </p>
+        </div>
+        <div class="flex space-x-3">
+          <button onclick="App.acceptCookies()" class="gradient-bg text-white px-6 py-2 rounded-lg font-medium text-sm">
+            Aceptar
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(banner);
+  },
+  
+  acceptCookies() {
+    localStorage.setItem('masurba_cookies_accepted', 'true');
+    document.getElementById('cookie-banner')?.remove();
+  },
+
   // =============================================
   // REGISTRO Y AUTENTICACIÓN
   // =============================================
