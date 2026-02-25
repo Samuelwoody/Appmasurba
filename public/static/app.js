@@ -888,6 +888,324 @@ const App = {
   },
 
   // =============================================
+  // GESTIÓN DE MEDIOS (FOTOS/VÍDEOS)
+  // =============================================
+  
+  // Estado de medios
+  mediaState: {
+    propertyMedia: [],
+    maintenanceMedia: {},
+    uploading: false
+  },
+  
+  // Cargar medios del usuario
+  async loadUserMedia() {
+    try {
+      const [propRes, maintRes] = await Promise.all([
+        axios.get('/api/media/property'),
+        axios.get('/api/media/maintenance')
+      ]);
+      
+      this.state.propertyMedia = propRes.data.data || [];
+      
+      // Agrupar medios de mantenimiento por categoría
+      const maintMedia = maintRes.data.data || [];
+      this.mediaState.maintenanceMedia = {};
+      maintMedia.forEach(m => {
+        if (!this.mediaState.maintenanceMedia[m.category]) {
+          this.mediaState.maintenanceMedia[m.category] = [];
+        }
+        this.mediaState.maintenanceMedia[m.category].push(m);
+      });
+      
+    } catch (error) {
+      console.error('Error loading media:', error);
+    }
+  },
+  
+  // Obtener conteo de medios por categoría de mantenimiento
+  getMaintenanceMediaCount(category) {
+    return (this.mediaState.maintenanceMedia[category] || []).length;
+  },
+  
+  // Mostrar modal de subida de medios
+  showMediaUploadModal(type, category = 'general') {
+    const categoryLabels = {
+      general: 'General', exterior: 'Exterior', interior: 'Interior',
+      garden: 'Jardín', pool: 'Piscina', garage: 'Garaje',
+      roof: 'Cubierta/Tejado', electricity: 'Electricidad', plumbing: 'Fontanería',
+      boiler: 'Caldera', facade: 'Fachada', insulation: 'Aislamiento', other: 'Otro'
+    };
+    
+    const title = type === 'property' 
+      ? 'Subir foto/vídeo de la vivienda' 
+      : `Subir foto/vídeo de ${categoryLabels[category] || category}`;
+    
+    const modal = document.createElement('div');
+    modal.id = 'media-upload-modal';
+    modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-xl">
+        <div class="gradient-bg px-6 py-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-white">${title}</h3>
+            <button onclick="App.closeMediaUploadModal()" class="text-white/80 hover:text-white">
+              <i class="fas fa-times text-lg"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <!-- Preview de imagen/vídeo -->
+          <div id="media-upload-preview" class="hidden mb-4">
+            <img id="media-preview-img" src="" class="max-h-48 mx-auto rounded-lg" alt="Preview">
+            <video id="media-preview-video" src="" class="max-h-48 mx-auto rounded-lg hidden" controls></video>
+          </div>
+          
+          <!-- Área de upload -->
+          <div id="media-upload-area" class="border-2 border-dashed border-urba-300 rounded-xl p-8 text-center hover:border-urba-500 transition cursor-pointer"
+               onclick="document.getElementById('media-file-input').click()">
+            <input type="file" id="media-file-input" accept="image/*,video/*" class="hidden" 
+                   onchange="App.handleMediaFileSelect(event, '${type}', '${category}')">
+            <i class="fas fa-cloud-upload-alt text-4xl text-urba-400 mb-3"></i>
+            <p class="text-urba-600 font-medium">Pulsa para seleccionar archivo</p>
+            <p class="text-urba-400 text-sm mt-1">Imágenes o vídeos (máx. 10MB)</p>
+          </div>
+          
+          ${type === 'property' ? `
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-urba-700 mb-2">Categoría</label>
+              <select id="media-category-select" class="w-full px-4 py-2 border border-urba-200 rounded-lg">
+                <option value="general">General</option>
+                <option value="exterior">Exterior</option>
+                <option value="interior">Interior</option>
+                <option value="garden">Jardín</option>
+                <option value="pool">Piscina</option>
+                <option value="garage">Garaje</option>
+                <option value="other">Otro</option>
+              </select>
+            </div>
+          ` : ''}
+          
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-urba-700 mb-2">Descripción (opcional)</label>
+            <input type="text" id="media-description-input" 
+                   class="w-full px-4 py-2 border border-urba-200 rounded-lg"
+                   placeholder="Ej: Vista desde el jardín">
+          </div>
+          
+          <div class="mt-6 flex gap-3">
+            <button onclick="App.closeMediaUploadModal()" 
+                    class="flex-1 px-4 py-3 border border-urba-300 rounded-lg text-urba-700 font-medium hover:bg-urba-50 transition">
+              Cancelar
+            </button>
+            <button id="media-upload-btn" onclick="App.uploadMediaFile('${type}', '${category}')" 
+                    class="flex-1 gradient-bg text-white px-4 py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50"
+                    disabled>
+              <i class="fas fa-upload mr-2"></i>
+              Subir
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+  
+  closeMediaUploadModal() {
+    document.getElementById('media-upload-modal')?.remove();
+    this.mediaState.pendingUpload = null;
+  },
+  
+  handleMediaFileSelect(event, type, category) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validar tamaño (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      this.showToast('El archivo es demasiado grande (máx. 10MB)', 'error');
+      return;
+    }
+    
+    const isVideo = file.type.startsWith('video/');
+    const isImage = file.type.startsWith('image/');
+    
+    if (!isVideo && !isImage) {
+      this.showToast('Solo se permiten imágenes y vídeos', 'error');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64Full = e.target.result;
+      const base64 = base64Full.split(',')[1];
+      
+      // Guardar para subir
+      this.mediaState.pendingUpload = {
+        base64,
+        type: isImage ? 'image' : 'video',
+        fileName: file.name
+      };
+      
+      // Mostrar preview
+      const previewContainer = document.getElementById('media-upload-preview');
+      const imgPreview = document.getElementById('media-preview-img');
+      const videoPreview = document.getElementById('media-preview-video');
+      const uploadArea = document.getElementById('media-upload-area');
+      const uploadBtn = document.getElementById('media-upload-btn');
+      
+      if (previewContainer) previewContainer.classList.remove('hidden');
+      if (uploadArea) uploadArea.classList.add('hidden');
+      
+      if (isImage) {
+        imgPreview.src = base64Full;
+        imgPreview.classList.remove('hidden');
+        videoPreview.classList.add('hidden');
+      } else {
+        videoPreview.src = base64Full;
+        videoPreview.classList.remove('hidden');
+        imgPreview.classList.add('hidden');
+      }
+      
+      if (uploadBtn) uploadBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  },
+  
+  async uploadMediaFile(type, category) {
+    if (!this.mediaState.pendingUpload) return;
+    
+    const uploadBtn = document.getElementById('media-upload-btn');
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Subiendo...';
+    }
+    
+    try {
+      const description = document.getElementById('media-description-input')?.value || '';
+      const selectedCategory = type === 'property' 
+        ? document.getElementById('media-category-select')?.value || 'general'
+        : category;
+      
+      const endpoint = type === 'property' ? '/api/media/property' : '/api/media/maintenance';
+      const payload = {
+        media_base64: this.mediaState.pendingUpload.base64,
+        media_type: this.mediaState.pendingUpload.type,
+        title: this.mediaState.pendingUpload.fileName,
+        description,
+        category: selectedCategory
+      };
+      
+      const response = await axios.post(endpoint, payload);
+      
+      if (response.data.success) {
+        this.showToast('Archivo subido correctamente', 'success');
+        this.closeMediaUploadModal();
+        await this.loadUserMedia();
+        this.render();
+      } else {
+        throw new Error(response.data.error);
+      }
+      
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      this.showToast(error.response?.data?.error || 'Error al subir el archivo', 'error');
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Subir';
+      }
+    }
+  },
+  
+  async viewMedia(type, id) {
+    try {
+      const response = await axios.get(`/api/media/${type}/${id}`);
+      if (response.data.success && response.data.data) {
+        const media = response.data.data;
+        const isImage = media.media_type === 'image';
+        
+        const modal = document.createElement('div');
+        modal.id = 'media-view-modal';
+        modal.className = 'fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4';
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        modal.innerHTML = `
+          <div class="relative max-w-4xl max-h-[90vh]">
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    class="absolute -top-10 right-0 text-white text-xl hover:text-gray-300">
+              <i class="fas fa-times"></i> Cerrar
+            </button>
+            ${isImage 
+              ? `<img src="data:image/jpeg;base64,${media.media_base64}" class="max-h-[85vh] rounded-lg" alt="${media.title || 'Imagen'}">`
+              : `<video src="data:video/mp4;base64,${media.media_base64}" class="max-h-[85vh] rounded-lg" controls autoplay></video>`
+            }
+            ${media.description ? `<p class="text-white text-center mt-3">${media.description}</p>` : ''}
+          </div>
+        `;
+        document.body.appendChild(modal);
+      }
+    } catch (error) {
+      this.showToast('Error al cargar el archivo', 'error');
+    }
+  },
+  
+  async deleteMedia(type, id) {
+    if (!confirm('¿Eliminar este archivo?')) return;
+    
+    try {
+      const response = await axios.delete(`/api/media/${type}/${id}`);
+      if (response.data.success) {
+        this.showToast('Archivo eliminado', 'success');
+        await this.loadUserMedia();
+        this.render();
+      }
+    } catch (error) {
+      this.showToast('Error al eliminar', 'error');
+    }
+  },
+  
+  async analyzeMediaWithChari(type, id) {
+    try {
+      // Obtener el media
+      const mediaResponse = await axios.get(`/api/media/for-analysis/${type}/${id}`);
+      if (!mediaResponse.data.success) {
+        throw new Error('No se pudo obtener el archivo');
+      }
+      
+      const media = mediaResponse.data.data;
+      
+      if (media.media_type !== 'image') {
+        this.showToast('Solo se pueden analizar imágenes con Chari', 'info');
+        return;
+      }
+      
+      // Navegar a Chari y enviar la imagen para análisis
+      this.navigate('chari');
+      
+      // Esperar a que se renderice el chat
+      setTimeout(async () => {
+        // Añadir la imagen al estado para enviar
+        this.selectedImageBase64 = media.media_base64;
+        
+        // Simular envío con contexto
+        const contextMsg = media.category 
+          ? `Analiza esta imagen de ${media.category} de mi vivienda` 
+          : 'Analiza esta imagen de mi vivienda';
+        
+        const input = document.getElementById('chat-input');
+        if (input) {
+          input.value = contextMsg;
+          // Disparar submit
+          document.getElementById('chat-form')?.dispatchEvent(new Event('submit'));
+        }
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error analyzing media:', error);
+      this.showToast('Error al analizar el archivo', 'error');
+    }
+  },
+
+  // =============================================
   // MI VIVIENDA
   // =============================================
   renderProperty() {
@@ -979,6 +1297,9 @@ const App = {
           </form>
         </div>
         
+        <!-- Galería de fotos/vídeos de la vivienda -->
+        ${this.renderPropertyGallery()}
+        
         <!-- Instalaciones -->
         ${this.renderInstallations()}
       </div>
@@ -1043,6 +1364,82 @@ const App = {
               </div>
             `;
           }).join('')}
+        </div>
+      </div>
+    `;
+  },
+  
+  // =============================================
+  // GALERÍA DE MEDIOS DE LA VIVIENDA
+  // =============================================
+  
+  renderPropertyGallery() {
+    const mediaItems = this.state.propertyMedia || [];
+    
+    return `
+      <div class="bg-white rounded-xl shadow-sm border border-urba-100 overflow-hidden">
+        <div class="bg-urba-50 px-6 py-4 border-b border-urba-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-semibold text-urba-900">
+                <i class="fas fa-images mr-2 text-urba-500"></i>
+                Fotos y vídeos de tu vivienda
+              </h3>
+              <p class="text-sm text-urba-500 mt-1">Sube imágenes para que Chari pueda asesorarte mejor</p>
+            </div>
+            <button onclick="App.showMediaUploadModal('property')" 
+                    class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition flex items-center">
+              <i class="fas fa-plus mr-2"></i>
+              Añadir
+            </button>
+          </div>
+        </div>
+        
+        <div class="p-4">
+          ${mediaItems.length === 0 ? `
+            <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+              <i class="fas fa-camera text-4xl text-gray-300 mb-3"></i>
+              <p class="text-gray-500 mb-2">No hay fotos ni vídeos aún</p>
+              <p class="text-gray-400 text-sm mb-4">Sube fotos de tu vivienda para que Chari pueda darte consejos más precisos</p>
+              <button onclick="App.showMediaUploadModal('property')" 
+                      class="text-green-600 font-medium hover:text-green-700">
+                <i class="fas fa-upload mr-1"></i>
+                Subir primera foto
+              </button>
+            </div>
+          ` : `
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              ${mediaItems.map(item => `
+                <div class="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  ${item.media_type === 'image' 
+                    ? `<div class="w-full h-full bg-gradient-to-br from-urba-100 to-urba-200 flex items-center justify-center">
+                         <i class="fas fa-image text-2xl text-urba-400"></i>
+                       </div>`
+                    : `<div class="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                         <i class="fas fa-video text-2xl text-blue-400"></i>
+                       </div>`
+                  }
+                  <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                    <button onclick="App.viewMedia('property', ${item.id})" 
+                            class="p-2 bg-white rounded-full text-gray-700 hover:bg-gray-100" title="Ver">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button onclick="App.analyzeMediaWithChari('property', ${item.id})" 
+                            class="p-2 bg-green-500 rounded-full text-white hover:bg-green-600" title="Analizar con Chari">
+                      <i class="fas fa-comment-dots"></i>
+                    </button>
+                    <button onclick="App.deleteMedia('property', ${item.id})" 
+                            class="p-2 bg-red-500 rounded-full text-white hover:bg-red-600" title="Eliminar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                  <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                    <p class="text-white text-xs truncate">${item.title || item.category || 'Sin título'}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `}
         </div>
       </div>
     `;
@@ -1147,13 +1544,13 @@ const App = {
                 const hasData = level !== null;
                 
                 return `
-                  <div class="maintenance-card border border-urba-200 rounded-xl p-4 hover:shadow-lg transition cursor-pointer relative overflow-hidden"
-                       onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})"
+                  <div class="maintenance-card border border-urba-200 rounded-xl p-4 hover:shadow-lg transition relative overflow-hidden"
                        style="min-height: 160px;">
                     
                     <!-- Capa blanquecina para sin datos -->
                     ${!hasData ? `
-                      <div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                      <div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center cursor-pointer"
+                           onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})">
                         <div class="text-center p-4">
                           <i class="fas fa-plus-circle text-3xl text-urba-400 mb-2"></i>
                           <p class="text-sm text-urba-500">Pulsa para añadir datos</p>
@@ -1163,7 +1560,7 @@ const App = {
                     
                     <!-- Contenido de la tarjeta -->
                     <div class="flex items-start justify-between mb-3">
-                      <div class="flex items-center space-x-3">
+                      <div class="flex items-center space-x-3 cursor-pointer" onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})">
                         <div class="w-12 h-12 bg-urba-100 rounded-xl flex items-center justify-center">
                           <i class="fas fa-${cat.icon} text-xl text-urba-600"></i>
                         </div>
@@ -1172,10 +1569,17 @@ const App = {
                           <p class="text-xs text-urba-500">${cat.frequency}</p>
                         </div>
                       </div>
+                      <!-- Botón de cámara para subir fotos -->
+                      <button onclick="event.stopPropagation(); App.showMediaUploadModal('maintenance', '${catKey}')" 
+                              class="p-2 bg-urba-100 hover:bg-urba-200 rounded-lg text-urba-600 transition z-20 relative"
+                              title="Subir foto/vídeo de ${cat.label}">
+                        <i class="fas fa-camera"></i>
+                      </button>
                     </div>
                     
                     <!-- Potenciómetro visual -->
-                    <div class="relative h-8 bg-gray-200 rounded-full overflow-hidden mb-3">
+                    <div class="relative h-8 bg-gray-200 rounded-full overflow-hidden mb-3 cursor-pointer" 
+                         onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})">
                       <!-- Degradado de fondo (siempre visible) -->
                       <div class="absolute inset-0 opacity-30"
                            style="background: linear-gradient(to right, #ef4444 0%, #f97316 25%, #eab308 50%, #84cc16 75%, #22c55e 100%);">
@@ -1194,17 +1598,26 @@ const App = {
                     </div>
                     
                     <!-- Mensaje de estado -->
-                    <div class="flex items-center gap-2 text-sm ${message.urgent ? 'text-red-600 font-medium' : 'text-urba-600'}">
+                    <div class="flex items-center gap-2 text-sm ${message.urgent ? 'text-red-600 font-medium' : 'text-urba-600'} cursor-pointer"
+                         onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})">
                       <i class="fas fa-${message.icon}"></i>
                       <span>${message.text}</span>
                     </div>
                     
-                    <!-- Info de última revisión si existe -->
-                    ${m.last_checked ? `
-                      <p class="text-xs text-urba-400 mt-2">
-                        Última revisión: ${this.formatDate(m.last_checked)}
-                      </p>
-                    ` : ''}
+                    <!-- Info de última revisión y fotos -->
+                    <div class="flex items-center justify-between mt-2">
+                      ${m.last_checked ? `
+                        <p class="text-xs text-urba-400">
+                          Última revisión: ${this.formatDate(m.last_checked)}
+                        </p>
+                      ` : '<span></span>'}
+                      <!-- Contador de fotos si hay -->
+                      ${this.getMaintenanceMediaCount(catKey) > 0 ? `
+                        <span class="text-xs bg-urba-100 text-urba-600 px-2 py-1 rounded-full">
+                          <i class="fas fa-image mr-1"></i>${this.getMaintenanceMediaCount(catKey)}
+                        </span>
+                      ` : ''}
+                    </div>
                   </div>
                 `;
               }).join('')}
@@ -1972,6 +2385,8 @@ const App = {
         this.state.property = response.data.data.property;
         this.state.maintenances = response.data.data.maintenances || [];
       }
+      // Cargar también los medios del usuario
+      await this.loadUserMedia();
     } catch (error) {
       console.error('Error loading dashboard:', error);
     }

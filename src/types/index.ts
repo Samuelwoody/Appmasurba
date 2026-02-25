@@ -86,6 +86,39 @@ export interface MaintenancePhoto {
   created_at: string;
 }
 
+// Medios de la vivienda
+export interface PropertyMedia {
+  id: number;
+  property_id: number;
+  user_id: number;
+  media_type: 'image' | 'video';
+  media_url: string;
+  media_base64?: string;
+  thumbnail_url?: string;
+  title?: string;
+  description?: string;
+  category: string;
+  file_size?: number;
+  created_at: string;
+}
+
+// Medios de mantenimiento
+export interface MaintenanceMedia {
+  id: number;
+  maintenance_id?: number;
+  property_id: number;
+  user_id: number;
+  category: string;
+  media_type: 'image' | 'video';
+  media_url: string;
+  media_base64?: string;
+  thumbnail_url?: string;
+  title?: string;
+  description?: string;
+  file_size?: number;
+  created_at: string;
+}
+
 // Conversación
 export interface Message {
   role: 'user' | 'assistant';
