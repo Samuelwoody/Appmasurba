@@ -64,13 +64,15 @@ function getMainHTML(): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Urbanizaciones de Valdemorillo - Control y estrategia en mantenimiento, reforma y compraventa de chalets. Por Más Urba Multiservicios.">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#7dd3a8">
     <title>Urbanizaciones de Valdemorillo | Más Urba Multiservicios</title>
     
     <!-- PWA -->
     <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" type="image/png" href="/static/logo.png">
-    <link rel="apple-touch-icon" href="/static/logo.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
     
     <!-- Estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
