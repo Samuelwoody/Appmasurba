@@ -265,74 +265,150 @@ const App = {
   // =============================================
   renderLogin() {
     return `
-      <div class="min-h-screen bg-white flex items-center justify-center p-4">
-        <div class="w-full max-w-md">
-          <!-- Logo -->
-          <div class="text-center mb-8">
-            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-28 h-28 mx-auto mb-4">
-            <h1 class="text-2xl font-bold text-gray-800">Urbanizaciones de Valdemorillo</h1>
-            <p class="text-gray-500 mt-2 text-sm">Control y estrategia en mantenimiento,<br>reforma y compraventa de chalets</p>
+      <div class="min-h-screen bg-white">
+        <!-- Hero Section -->
+        <div class="gradient-bg py-12 px-4">
+          <div class="max-w-2xl mx-auto text-center text-white">
+            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-24 h-24 mx-auto mb-6 rounded-2xl shadow-lg">
+            <h1 class="text-3xl md:text-4xl font-bold leading-tight">
+              Tu chalet en Valdemorillo<br>bajo control total
+            </h1>
+            <p class="mt-4 text-lg text-white/90">
+              La app <span class="font-semibold">100% GRATUITA</span> exclusiva para propietarios de chalets en las urbanizaciones de Valdemorillo
+            </p>
           </div>
-          
-          <!-- Formulario -->
-          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            <form id="login-form" class="space-y-5">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <i class="fas fa-envelope"></i>
-                  </span>
-                  <input type="email" id="login-email" required
-                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                         placeholder="tu@email.com">
-                </div>
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-                <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <i class="fas fa-lock"></i>
-                  </span>
-                  <input type="password" id="login-password" required
-                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                         placeholder="••••••••">
-                </div>
-              </div>
-              
-              <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                <i class="fas fa-exclamation-circle mr-2"></i>
-                <span></span>
-              </div>
-              
-              <button type="submit" 
-                      class="w-full gradient-bg text-white py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center">
-                <span id="login-btn-text">Acceder</span>
-                <div id="login-btn-loading" class="hidden spinner ml-2"></div>
-              </button>
-            </form>
+        </div>
+        
+        <!-- Value Proposition -->
+        <div class="max-w-4xl mx-auto px-4 -mt-6">
+          <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
             
-            <div class="mt-6 pt-6 border-t border-gray-100 text-center">
-              <p class="text-sm text-gray-500">
-                ¿Problemas para acceder? 
-                <a href="mailto:info@masurba.es" class="text-green-600 font-medium hover:underline">Contacta con nosotros</a>
+            <!-- Beneficios principales -->
+            <div class="grid md:grid-cols-2 gap-4 mb-8">
+              <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-xl">
+                <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-comments text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">Chari, tu asesora 24/7</h3>
+                  <p class="text-sm text-gray-600">Pregunta lo que quieras sobre tu casa: reformas, mantenimiento, valoraciones, trámites...</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-xl">
+                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-euro-sign text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">Presupuestos orientativos al instante</h3>
+                  <p class="text-sm text-gray-600">Sabe cuánto cuesta antes de llamar a nadie. Sin sorpresas ni compromisos.</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start space-x-3 p-3 bg-purple-50 rounded-xl">
+                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-clipboard-check text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">Control de mantenimientos</h3>
+                  <p class="text-sm text-gray-600">Nunca más olvides revisar la caldera, el tejado o la piscina. Te avisamos.</p>
+                </div>
+              </div>
+              
+              <div class="flex items-start space-x-3 p-3 bg-amber-50 rounded-xl">
+                <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-chart-line text-white"></i>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">Estrategia de valor</h3>
+                  <p class="text-sm text-gray-600">¿Reformar o vender? ¿Qué mejoras aportan más valor? Decide con datos.</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Frase gancho -->
+            <div class="text-center mb-8 py-4 border-y border-gray-100">
+              <p class="text-xl md:text-2xl font-medium text-gray-800">
+                "Como tener un arquitecto, un aparejador y un asesor inmobiliario<br class="hidden md:block"> 
+                <span class="gradient-text font-bold">en tu bolsillo, gratis</span>"
               </p>
+            </div>
+            
+            <!-- Formulario de Login -->
+            <div class="max-w-sm mx-auto">
+              <h2 class="text-lg font-semibold text-gray-800 text-center mb-4">Accede a tu cuenta</h2>
+              
+              <form id="login-form" class="space-y-4">
+                <div>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" id="login-email" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                           placeholder="tu@email.com">
+                  </div>
+                </div>
+                
+                <div>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="login-password" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                           placeholder="••••••••">
+                  </div>
+                </div>
+                
+                <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                  <i class="fas fa-exclamation-circle mr-2"></i>
+                  <span></span>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
+                  <span id="login-btn-text">Entrar gratis</span>
+                  <div id="login-btn-loading" class="hidden spinner ml-2"></div>
+                </button>
+              </form>
+              
+              <!-- Registro -->
+              <div class="mt-6 text-center">
+                <p class="text-gray-600 text-sm">
+                  ¿Aún no tienes cuenta?
+                </p>
+                <p class="text-gray-500 text-xs mt-1">
+                  Contacta con nosotros en <a href="mailto:info@masurba.es" class="text-green-600 font-medium hover:underline">info@masurba.es</a><br>
+                  o por WhatsApp y te damos de alta al momento
+                </p>
+                <a href="https://wa.me/34742094169?text=Hola,%20soy%20propietario%20en%20Valdemorillo%20y%20quiero%20darme%20de%20alta%20en%20la%20app" 
+                   target="_blank"
+                   class="inline-flex items-center mt-3 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
+                  <i class="fab fa-whatsapp mr-2 text-lg"></i>
+                  Darme de alta por WhatsApp
+                </a>
+              </div>
             </div>
           </div>
           
-          <!-- Footer -->
+          <!-- Trust badges -->
           <div class="mt-6 text-center">
-            <p class="text-gray-500 text-xs">
-              Por <span class="text-gray-400">Más Urba Multiservicios</span>
+            <div class="flex items-center justify-center space-x-6 text-gray-400 text-sm">
+              <span><i class="fas fa-shield-alt mr-1"></i> 100% Seguro</span>
+              <span><i class="fas fa-lock mr-1"></i> Datos protegidos</span>
+              <span><i class="fas fa-heart mr-1"></i> Hecho en Valdemorillo</span>
+            </div>
+            <p class="text-gray-400 text-xs mt-3">
+              Por <span class="font-medium">Más Urba Multiservicios</span> · Solo para vecinos de las urbanizaciones de Valdemorillo
             </p>
           </div>
           
           <!-- Demo hint -->
-          <div class="mt-4 text-center">
-            <p class="text-gray-500 text-xs">
+          <div class="mt-4 text-center pb-8">
+            <p class="text-gray-400 text-xs">
               <i class="fas fa-info-circle mr-1"></i>
-              Demo: cliente@demo.es / demo123
+              ¿Quieres probar? Usa: cliente@demo.es / demo123
             </p>
           </div>
         </div>
