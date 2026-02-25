@@ -1688,7 +1688,27 @@ const App = {
           
           <!-- Input -->
           <form id="chat-form" class="p-4 bg-white border-t border-gray-100">
-            <div class="flex space-x-3">
+            <!-- Preview de imagen seleccionada -->
+            <div id="image-preview-container" class="hidden mb-3">
+              <div class="relative inline-block">
+                <img id="image-preview" src="" alt="Preview" class="max-h-32 rounded-lg border border-gray-200">
+                <button type="button" onclick="App.removeSelectedImage()" 
+                        class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600">
+                  <i class="fas fa-times text-xs"></i>
+                </button>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Imagen adjunta - Chari la analizará</p>
+            </div>
+            
+            <div class="flex space-x-2">
+              <!-- Botón subir imagen -->
+              <input type="file" id="image-input" accept="image/*" class="hidden" onchange="App.handleImageSelect(event)">
+              <button type="button" onclick="document.getElementById('image-input').click()" 
+                      class="px-3 py-3 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-green-600 transition"
+                      title="Adjuntar imagen">
+                <i class="fas fa-camera"></i>
+              </button>
+              
               <input type="text" id="chat-input" 
                      class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent"
                      placeholder="Escribe tu mensaje..."
@@ -1699,7 +1719,7 @@ const App = {
               </button>
             </div>
             <p class="text-xs text-gray-400 mt-2 text-center">
-              Chari recuerda tus conversaciones anteriores para darte mejor orientación
+              <i class="fas fa-image mr-1"></i> Puedes enviar fotos de tu vivienda para que Chari las analice
             </p>
           </form>
         </div>
@@ -2175,6 +2195,125 @@ const App = {
     }
   },
   
+  // =============================================
+  // MANEJO DE IMÁGENES EN CHAT
+  // =============================================
+  
+  selectedImageBase64: null,
+  
+  handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Por favor, selecciona una imagen', 'error');
+      return;
+    }
+    
+    // Validar tamaño (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      this.showToast('La imagen es demasiado grande (máx. 10MB)', 'error');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1]; // Quitar el prefijo data:image/...
+      this.selectedImageBase64 = base64;
+      
+      // Mostrar preview
+      const preview = document.getElementById('image-preview');
+      const container = document.getElementById('image-preview-container');
+      if (preview && container) {
+        preview.src = e.target.result;
+        container.classList.remove('hidden');
+      }
+    };
+    reader.readAsDataURL(file);
+  },
+  
+  removeSelectedImage() {
+    this.selectedImageBase64 = null;
+    const container = document.getElementById('image-preview-container');
+    const input = document.getElementById('image-input');
+    if (container) container.classList.add('hidden');
+    if (input) input.value = '';
+  },
+  
+  async sendMessageWithImage(message, imageBase64) {
+    if (!this.state.currentConversation) return null;
+    
+    try {
+      // Primero analizar la imagen con OpenAI Vision
+      const analysisResponse = await axios.post('/api/images/chari-analyze', {
+        imageBase64,
+        userMessage: message || '¿Qué puedes decirme sobre esta imagen?',
+        conversationContext: {
+          userName: this.state.user?.name,
+          propertyType: this.state.property?.property_type,
+          urbanization: this.state.property?.urbanization,
+          yearBuilt: this.state.property?.year_built
+        }
+      });
+      
+      if (!analysisResponse.data.success) {
+        throw new Error(analysisResponse.data.error || 'Error al analizar imagen');
+      }
+      
+      // Guardar el mensaje del usuario con referencia a la imagen
+      const userMessageText = message ? `${message} [Imagen adjunta]` : '[Imagen enviada]';
+      
+      // Guardar en la conversación
+      const response = await axios.post('/api/chari/message', {
+        message: userMessageText,
+        conversation_id: this.state.currentConversation.id,
+        assistant_response: analysisResponse.data.response
+      });
+      
+      if (response.data.success) {
+        this.state.currentConversation.messages.push(response.data.data.userMessage);
+        this.state.currentConversation.messages.push(response.data.data.assistantMessage);
+        return {
+          userMessage: response.data.data.userMessage,
+          assistantMessage: response.data.data.assistantMessage,
+          imageAnalysis: analysisResponse.data.response
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error sending message with image:', error);
+      this.showToast('Error al procesar la imagen', 'error');
+      return null;
+    }
+  },
+  
+  // Generar imagen con DALL-E
+  async generateImage(prompt, type = null) {
+    try {
+      const response = await axios.post('/api/images/generate', {
+        prompt,
+        type,
+        size: '1024x1024',
+        quality: 'standard'
+      });
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          imageUrl: response.data.imageUrl,
+          revisedPrompt: response.data.revisedPrompt
+        };
+      }
+      
+      return { success: false, error: response.data.error };
+    } catch (error) {
+      console.error('Error generating image:', error);
+      return { success: false, error: 'Error al generar la imagen' };
+    }
+  },
+
   showMaintenanceNotes(id) {
     const maintenance = this.state.maintenances.find(m => m.id === id);
     if (!maintenance) return;
@@ -2705,36 +2844,54 @@ const App = {
           e.preventDefault();
           const input = document.getElementById('chat-input');
           const message = input.value.trim();
+          const hasImage = this.selectedImageBase64 !== null;
           
-          if (!message) return;
+          if (!message && !hasImage) return;
           
           input.value = '';
           
           // Añadir mensaje del usuario inmediatamente
           const messagesDiv = document.getElementById('chat-messages');
+          const imagePreviewSrc = hasImage ? document.getElementById('image-preview')?.src : null;
+          
           messagesDiv.innerHTML += `
             <div class="flex justify-end fade-in">
-              <div class="message-bubble bg-urba-900 text-white rounded-2xl rounded-br-md px-4 py-3">
-                <p class="text-sm">${message}</p>
+              <div class="message-bubble gradient-bg text-white rounded-2xl rounded-br-md px-4 py-3">
+                ${imagePreviewSrc ? `<img src="${imagePreviewSrc}" class="max-h-32 rounded-lg mb-2" alt="Imagen">` : ''}
+                <p class="text-sm">${message || '📷 Imagen enviada'}</p>
               </div>
             </div>
           `;
+          
+          // Limpiar imagen seleccionada
+          const imageBase64 = this.selectedImageBase64;
+          this.removeSelectedImage();
           
           // Mostrar indicador de escritura
           document.getElementById('typing-indicator').classList.remove('hidden');
           messagesDiv.scrollTop = messagesDiv.scrollHeight;
           
-          // Enviar mensaje
-          const result = await this.sendMessage(message);
+          // Enviar mensaje (con o sin imagen)
+          let result;
+          if (imageBase64) {
+            result = await this.sendMessageWithImage(message, imageBase64);
+          } else {
+            result = await this.sendMessage(message);
+          }
           
           // Ocultar indicador
           document.getElementById('typing-indicator').classList.add('hidden');
           
           if (result) {
+            // Verificar si la respuesta contiene una imagen generada
+            const responseContent = result.assistantMessage?.content || result.imageAnalysis || '';
+            const hasGeneratedImage = result.generatedImageUrl;
+            
             messagesDiv.innerHTML += `
               <div class="flex justify-start fade-in">
-                <div class="message-bubble bg-white text-urba-800 rounded-2xl rounded-bl-md shadow-sm border border-urba-100 px-4 py-3">
-                  <p class="text-sm whitespace-pre-line">${this.formatMessage(result.assistantMessage.content)}</p>
+                <div class="message-bubble bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100 px-4 py-3">
+                  ${hasGeneratedImage ? `<img src="${result.generatedImageUrl}" class="max-w-full rounded-lg mb-2" alt="Imagen generada">` : ''}
+                  <p class="text-sm whitespace-pre-line">${this.formatMessage(responseContent)}</p>
                 </div>
               </div>
             `;

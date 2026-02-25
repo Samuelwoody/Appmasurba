@@ -16,6 +16,7 @@
   "vars": {
     "JWT_SECRET": "mas_urba_secret_key_2024_production"
   }
-  // Para producción, añadir DEEPSEEK_API_KEY como secret:
+  // Para producción, añadir las API keys como secrets:
   // npx wrangler secret put DEEPSEEK_API_KEY --project-name urbanizaciones-valdemorillo
+  // npx wrangler secret put OPENAI_API_KEY --project-name urbanizaciones-valdemorillo
 }

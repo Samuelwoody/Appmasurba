@@ -92,7 +92,7 @@ chari.post('/message', async (c) => {
   
   try {
     const body = await c.req.json();
-    const { message, conversation_id } = body;
+    const { message, conversation_id, assistant_response } = body;
     
     if (!message || !message.trim()) {
       return c.json({ success: false, error: 'Mensaje requerido' }, 400);
@@ -151,57 +151,64 @@ chari.post('/message', async (c) => {
     let intent: string;
     let shouldOfferSamuel: boolean;
     
-    // Verificar si tenemos API key de Deepseek
-    const deepseekApiKey = c.env.DEEPSEEK_API_KEY;
-    
-    if (deepseekApiKey) {
-      // Usar IA Deepseek
-      console.log('Usando Deepseek AI para respuesta de Chari');
-      
-      // Preparar historial de conversación
-      const conversationHistory = messages.map(m => ({
-        role: m.role,
-        content: m.content
-      }));
-      
-      const aiResult = await generateChariResponseWithAI(
-        deepseekApiKey,
-        message,
-        {
-          memory: memory || null,
-          property: property || null,
-          maintenances: maintenancesResult.results || [],
-          estimates: estimatesResult.results || [],
-          userName: user.name,
-          messageCount: messages.length,
-          samuelOffered: conversation.samuel_contact_offered === 1,
-          conversationHistory
-        }
-      );
-      
-      response = aiResult.response;
-      shouldOfferSamuel = aiResult.shouldOfferSamuel;
-      intent = classifyIntentFromMessage(message);
+    // Si ya tenemos una respuesta del asistente (ej: análisis de imagen con OpenAI)
+    if (assistant_response) {
+      response = assistant_response;
+      intent = 'image_analysis';
+      shouldOfferSamuel = false;
     } else {
-      // Fallback a respuestas basadas en reglas
-      console.log('Usando sistema de reglas para respuesta de Chari');
+      // Verificar si tenemos API key de Deepseek
+      const deepseekApiKey = c.env.DEEPSEEK_API_KEY;
       
-      const ruleResult = generateChariResponse(
-        message,
-        {
-          memory: memory || null,
-          property: property || null,
-          maintenances: maintenancesResult.results || [],
-          estimates: estimatesResult.results || [],
-          userName: user.name,
-          messageCount: messages.length,
-          samuelOffered: conversation.samuel_contact_offered === 1
-        }
-      );
-      
-      response = ruleResult.response;
-      intent = ruleResult.intent;
-      shouldOfferSamuel = ruleResult.shouldOfferSamuel;
+      if (deepseekApiKey) {
+        // Usar IA Deepseek
+        console.log('Usando Deepseek AI para respuesta de Chari');
+        
+        // Preparar historial de conversación
+        const conversationHistory = messages.map(m => ({
+          role: m.role,
+          content: m.content
+        }));
+        
+        const aiResult = await generateChariResponseWithAI(
+          deepseekApiKey,
+          message,
+          {
+            memory: memory || null,
+            property: property || null,
+            maintenances: maintenancesResult.results || [],
+            estimates: estimatesResult.results || [],
+            userName: user.name,
+            messageCount: messages.length,
+            samuelOffered: conversation.samuel_contact_offered === 1,
+            conversationHistory
+          }
+        );
+        
+        response = aiResult.response;
+        shouldOfferSamuel = aiResult.shouldOfferSamuel;
+        intent = classifyIntentFromMessage(message);
+      } else {
+        // Fallback a respuestas basadas en reglas
+        console.log('Usando sistema de reglas para respuesta de Chari');
+        
+        const ruleResult = generateChariResponse(
+          message,
+          {
+            memory: memory || null,
+            property: property || null,
+            maintenances: maintenancesResult.results || [],
+            estimates: estimatesResult.results || [],
+            userName: user.name,
+            messageCount: messages.length,
+            samuelOffered: conversation.samuel_contact_offered === 1
+          }
+        );
+        
+        response = ruleResult.response;
+        intent = ruleResult.intent;
+        shouldOfferSamuel = ruleResult.shouldOfferSamuel;
+      }
     }
     
     // Añadir mensaje del usuario

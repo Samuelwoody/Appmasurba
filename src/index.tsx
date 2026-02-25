@@ -14,6 +14,7 @@ import strategic from './routes/strategic';
 import chari from './routes/chari';
 import contacts from './routes/contacts';
 import admin from './routes/admin';
+import images from './routes/images';
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -41,6 +42,7 @@ app.route('/api/strategic', strategic);
 app.route('/api/chari', chari);
 app.route('/api/contacts', contacts);
 app.route('/api/admin', admin);
+app.route('/api/images', images);
 
 // Health check
 app.get('/api/health', (c) => {
