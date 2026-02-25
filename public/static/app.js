@@ -20,71 +20,11 @@ const App = {
   },
   
   // =============================================
-  // SISTEMA DE ONBOARDING
+  // SISTEMA DE ONBOARDING - SIMPLE
   // =============================================
-  onboardingSteps: [
-    {
-      id: 'welcome',
-      title: '¡Bienvenido a tu panel de control! 🏠',
-      description: 'Esta app te ayuda a tener tu chalet de Valdemorillo siempre bajo control. Te voy a enseñar cómo funciona en unos segundos.',
-      target: null,
-      position: 'center',
-      special: null
-    },
-    {
-      id: 'score',
-      title: 'Tu puntuación técnica',
-      description: 'Este número indica el estado general de tu vivienda. Cuanto más alto, mejor. Se calcula según los datos que registres.',
-      target: '[data-tour="score"]',
-      position: 'bottom',
-      special: null
-    },
-    {
-      id: 'maintenance',
-      title: 'Control de mantenimientos',
-      description: 'Aquí ves cuántos mantenimientos tienes pendientes de revisar: caldera, tejado, piscina... ¡Nunca más se te olvidará nada!',
-      target: '[data-tour="maintenance"]',
-      position: 'bottom',
-      special: null
-    },
-    {
-      id: 'chari',
-      title: '✨ Conoce a Chari, tu asesora personal ✨',
-      description: null, // Se renderiza de forma especial
-      target: null,
-      position: 'center',
-      special: 'chari'
-    },
-    {
-      id: 'property',
-      title: 'Configura tu vivienda',
-      description: 'En "Mi Vivienda" puedes registrar los datos de tu chalet. Cuanta más información pongas, mejores consejos podrá darte Chari.',
-      target: '[data-tour="property"]',
-      position: 'top',
-      special: null
-    },
-    {
-      id: 'nav',
-      title: 'Navega por las secciones',
-      description: 'Desde el menú puedes acceder a: tu vivienda, mantenimientos, calculadora de presupuestos, estrategia de valor y hablar con Chari.',
-      target: '[data-tour="nav"]',
-      position: 'right',
-      special: null
-    },
-    {
-      id: 'finish',
-      title: '¡Ya estás listo! 🎉',
-      description: 'Ahora Chari te guiará para configurar tu vivienda y sacarle el máximo partido a la app. ¡Empecemos!',
-      target: null,
-      position: 'center',
-      special: null,
-      action: 'go-to-chari'
-    }
-  ],
   
   startOnboarding() {
-    const completed = localStorage.getItem('masurba_onboarding_completed');
-    if (completed) {
+    if (localStorage.getItem('masurba_onboarding_completed')) {
       this.state.onboardingCompleted = true;
       return;
     }
@@ -92,266 +32,128 @@ const App = {
     this.showOnboardingStep();
   },
   
+  getOnboardingSteps() {
+    return [
+      { title: '¡Bienvenido a tu panel! 🏠', text: 'Esta app te ayuda a tener tu chalet de Valdemorillo siempre bajo control.', target: null },
+      { title: 'Tu puntuación técnica', text: 'Este número indica el estado general de tu vivienda. Se calcula según los datos que registres.', target: '[data-tour="score"]' },
+      { title: 'Control de mantenimientos', text: 'Aquí ves los mantenimientos pendientes: caldera, tejado, piscina...', target: '[data-tour="maintenance"]' },
+      { title: 'Datos de tu vivienda', text: 'Configura los datos de tu chalet. Cuanta más información, mejores consejos.', target: '[data-tour="property"]' }
+    ];
+  },
+  
   showOnboardingStep() {
-    const step = this.onboardingSteps[this.state.onboardingStep];
+    const steps = this.getOnboardingSteps();
+    const step = steps[this.state.onboardingStep];
+    
     if (!step) {
-      this.finishOnboarding();
+      this.showChariPopup();
       return;
     }
     
-    // Eliminar overlay anterior y quitar TODOS los highlights
-    document.getElementById('onboarding-overlay')?.remove();
-    document.querySelectorAll('.onboarding-highlight').forEach(el => {
-      el.classList.remove('onboarding-highlight');
-    });
+    document.getElementById('tour-overlay')?.remove();
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
     
-    // Crear overlay
     const overlay = document.createElement('div');
-    overlay.id = 'onboarding-overlay';
-    overlay.className = 'fixed inset-0 z-50 transition-opacity duration-300';
+    overlay.id = 'tour-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9998;';
     
-    // Encontrar elemento objetivo
-    let targetRect = null;
-    let targetElement = null;
+    let boxStyle = 'top:50%;left:50%;transform:translate(-50%,-50%);';
     if (step.target) {
-      targetElement = document.querySelector(step.target);
-      if (targetElement) {
-        targetRect = targetElement.getBoundingClientRect();
-        targetElement.classList.add('onboarding-highlight');
+      const el = document.querySelector(step.target);
+      if (el) {
+        el.classList.add('tour-highlight');
+        const rect = el.getBoundingClientRect();
+        boxStyle = `top:${rect.bottom + 15}px;left:${rect.left + rect.width/2}px;transform:translateX(-50%);`;
       }
     }
     
-    // Calcular posición del tooltip
-    let tooltipStyle = '';
-    let arrowClass = '';
-    
-    if (step.position === 'center' || !targetRect) {
-      tooltipStyle = 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
-    } else if (step.position === 'bottom') {
-      tooltipStyle = `top: ${targetRect.bottom + 15}px; left: ${targetRect.left + targetRect.width/2}px; transform: translateX(-50%);`;
-      arrowClass = 'arrow-top';
-    } else if (step.position === 'top') {
-      tooltipStyle = `top: ${targetRect.top - 15}px; left: ${targetRect.left + targetRect.width/2}px; transform: translate(-50%, -100%);`;
-      arrowClass = 'arrow-bottom';
-    } else if (step.position === 'right') {
-      tooltipStyle = `top: ${targetRect.top + targetRect.height/2}px; left: ${targetRect.right + 15}px; transform: translateY(-50%);`;
-      arrowClass = 'arrow-left';
+    if (!document.getElementById('tour-styles')) {
+      const style = document.createElement('style');
+      style.id = 'tour-styles';
+      style.textContent = '.tour-highlight{position:relative;z-index:9999;box-shadow:0 0 0 4px #5bb88a,0 0 20px rgba(91,184,138,0.5);border-radius:12px;background:white;}';
+      document.head.appendChild(style);
     }
     
-    const isLastStep = this.state.onboardingStep === this.onboardingSteps.length - 1;
-    const isFirstStep = this.state.onboardingStep === 0;
-    
-    // Popup especial para Chari
-    if (step.special === 'chari') {
-      overlay.innerHTML = `
-        <div class="absolute inset-0 bg-gradient-to-br from-green-900/90 via-emerald-800/90 to-teal-900/90 backdrop-blur-sm"></div>
-        <div class="absolute inset-0 flex items-center justify-center p-4">
-          <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform animate-pulse-subtle">
-            <!-- Header con gradiente -->
-            <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 p-6 text-center relative overflow-hidden">
-              <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] opacity-30"></div>
-              <div class="relative">
-                <div class="w-24 h-24 mx-auto bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30">
-                  <span class="text-5xl">👩‍💼</span>
-                </div>
-                <h2 class="text-2xl font-bold text-white mb-1">¡Hola! Soy Chari</h2>
-                <p class="text-green-100 text-sm">Tu asesora personal de confianza</p>
-              </div>
-            </div>
-            
-            <!-- Contenido -->
-            <div class="p-6 space-y-4">
-              <div class="text-center">
-                <p class="text-gray-700 text-lg leading-relaxed">
-                  Estoy aquí para ayudarte con <strong>todo lo relacionado con tu vivienda</strong>. 
-                  Llevo <span class="text-green-600 font-semibold">8 años</span> asesorando a propietarios de Valdemorillo.
-                </p>
-              </div>
-              
-              <!-- Capacidades -->
-              <div class="grid grid-cols-2 gap-3 my-5">
-                <div class="bg-green-50 rounded-xl p-3 text-center">
-                  <i class="fas fa-calculator text-green-500 text-xl mb-1"></i>
-                  <p class="text-xs text-gray-600">Presupuestos y precios</p>
-                </div>
-                <div class="bg-blue-50 rounded-xl p-3 text-center">
-                  <i class="fas fa-tools text-blue-500 text-xl mb-1"></i>
-                  <p class="text-xs text-gray-600">Reformas y obras</p>
-                </div>
-                <div class="bg-amber-50 rounded-xl p-3 text-center">
-                  <i class="fas fa-file-alt text-amber-500 text-xl mb-1"></i>
-                  <p class="text-xs text-gray-600">Licencias y trámites</p>
-                </div>
-                <div class="bg-purple-50 rounded-xl p-3 text-center">
-                  <i class="fas fa-lightbulb text-purple-500 text-xl mb-1"></i>
-                  <p class="text-xs text-gray-600">Consejos personalizados</p>
-                </div>
-              </div>
-              
-              <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                <p class="text-sm text-gray-600 text-center">
-                  <i class="fas fa-quote-left text-green-300 mr-1"></i>
-                  Pregúntame lo que quieras, sin compromiso. Estoy aquí para orientarte y que tomes las mejores decisiones.
-                  <i class="fas fa-quote-right text-green-300 ml-1"></i>
-                </p>
-              </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
-              <span class="text-xs font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full">
-                ${this.state.onboardingStep + 1} / ${this.onboardingSteps.length}
-              </span>
-              <div class="flex gap-2">
-                <button onclick="App.prevOnboardingStep()" class="text-gray-500 hover:text-gray-700 text-sm font-medium px-3 py-2">
-                  <i class="fas fa-arrow-left mr-1"></i> Anterior
-                </button>
-                <button onclick="App.nextOnboardingStep()" 
-                        class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-2 rounded-xl font-medium hover:from-green-600 hover:to-emerald-600 transition shadow-lg shadow-green-500/30">
-                  Continuar <i class="fas fa-arrow-right ml-1"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+    overlay.innerHTML = `
+      <div style="position:absolute;${boxStyle}background:white;padding:24px;border-radius:16px;max-width:320px;width:90%;z-index:9999;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${this.state.onboardingStep + 1} / ${steps.length + 1}</span>
+          <button onclick="App.endTour()" style="color:#999;border:none;background:none;cursor:pointer;font-size:13px;">Saltar</button>
         </div>
-      `;
-    } else {
-      // Popup normal
-      overlay.innerHTML = `
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        ${targetRect ? `
-          <div class="absolute bg-transparent rounded-xl shadow-[0_0_0_4000px_rgba(0,0,0,0.6)]" 
-               style="top: ${targetRect.top - 8}px; left: ${targetRect.left - 8}px; width: ${targetRect.width + 16}px; height: ${targetRect.height + 16}px;">
-          </div>
-        ` : ''}
-        <div class="absolute bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 ${arrowClass}" style="${tooltipStyle}">
-          <div class="flex items-start justify-between mb-3">
-            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-              ${this.state.onboardingStep + 1} / ${this.onboardingSteps.length}
-            </span>
-            <button onclick="App.skipOnboarding()" class="text-gray-400 hover:text-gray-600 text-sm">
-              Saltar tour
-            </button>
-          </div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2">${step.title}</h3>
-          <p class="text-gray-600 text-sm mb-5">${step.description}</p>
-          <div class="flex items-center justify-between">
-            ${!isFirstStep ? `
-              <button onclick="App.prevOnboardingStep()" class="text-gray-500 hover:text-gray-700 text-sm font-medium">
-                <i class="fas fa-arrow-left mr-1"></i> Anterior
-              </button>
-            ` : '<div></div>'}
-            <button onclick="App.nextOnboardingStep()" 
-                    class="gradient-bg text-white px-5 py-2 rounded-lg font-medium hover:opacity-90 transition">
-              ${isLastStep ? '<i class="fas fa-comments mr-2"></i>Hablar con Chari' : 'Siguiente <i class="fas fa-arrow-right ml-1"></i>'}
-            </button>
-          </div>
+        <h3 style="margin:0 0 8px;font-size:18px;color:#1a1a1a;">${step.title}</h3>
+        <p style="margin:0 0 20px;color:#666;font-size:14px;line-height:1.5;">${step.text}</p>
+        <div style="display:flex;justify-content:space-between;">
+          ${this.state.onboardingStep > 0 ? '<button onclick="App.prevStep()" style="color:#666;border:none;background:none;cursor:pointer;font-size:14px;">← Anterior</button>' : '<div></div>'}
+          <button onclick="App.nextStep()" style="background:linear-gradient(135deg,#5bb88a,#3d9970);color:white;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;">Siguiente →</button>
         </div>
-      `;
-    }
-    
-    // Añadir estilos del onboarding
-    if (!document.getElementById('onboarding-styles')) {
-      const styles = document.createElement('style');
-      styles.id = 'onboarding-styles';
-      styles.textContent = `
-        .onboarding-highlight {
-          position: relative;
-          z-index: 51;
-          box-shadow: 0 0 0 4px rgba(91, 184, 138, 0.5);
-          border-radius: 12px;
-        }
-        .arrow-top::before {
-          content: '';
-          position: absolute;
-          top: -8px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-bottom: 8px solid white;
-        }
-        .arrow-bottom::after {
-          content: '';
-          position: absolute;
-          bottom: -8px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-left: 8px solid transparent;
-          border-right: 8px solid transparent;
-          border-top: 8px solid white;
-        }
-        .arrow-left::before {
-          content: '';
-          position: absolute;
-          left: -8px;
-          top: 50%;
-          transform: translateY(-50%);
-          border-top: 8px solid transparent;
-          border-bottom: 8px solid transparent;
-          border-right: 8px solid white;
-        }
-        @keyframes pulse-subtle {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.01); }
-        }
-        .animate-pulse-subtle {
-          animation: pulse-subtle 2s ease-in-out infinite;
-        }
-      `;
-      document.head.appendChild(styles);
-    }
-    
+      </div>
+    `;
     document.body.appendChild(overlay);
   },
   
-  nextOnboardingStep() {
-    // Quitar highlight del elemento anterior
-    document.querySelectorAll('.onboarding-highlight').forEach(el => {
-      el.classList.remove('onboarding-highlight');
-    });
-    
-    // Si es el último paso, ir a Chari
-    if (this.state.onboardingStep === this.onboardingSteps.length - 1) {
-      this.finishOnboarding();
-      // Pequeño delay para asegurar que todo se limpie
-      setTimeout(() => this.navigate('chari'), 100);
-      return;
-    }
-    
+  nextStep() {
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
     this.state.onboardingStep++;
     this.showOnboardingStep();
   },
   
-  prevOnboardingStep() {
-    document.querySelectorAll('.onboarding-highlight').forEach(el => {
-      el.classList.remove('onboarding-highlight');
-    });
-    
+  prevStep() {
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
     if (this.state.onboardingStep > 0) {
       this.state.onboardingStep--;
       this.showOnboardingStep();
     }
   },
   
-  skipOnboarding() {
-    this.finishOnboarding();
-    // Al saltar, también ir a Chari
-    setTimeout(() => this.navigate('chari'), 100);
+  showChariPopup() {
+    document.getElementById('tour-overlay')?.remove();
+    document.getElementById('tour-styles')?.remove();
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    
+    const popup = document.createElement('div');
+    popup.id = 'chari-popup';
+    popup.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;';
+    popup.innerHTML = `
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(20,83,45,0.95),rgba(6,78,59,0.95),rgba(15,118,110,0.95));"></div>
+      <div style="position:relative;background:white;border-radius:24px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.4);">
+        <div style="background:linear-gradient(135deg,#22c55e,#10b981,#14b8a6);padding:32px;text-align:center;">
+          <div style="width:96px;height:96px;background:white;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.15);"><span style="font-size:48px;">👩‍💼</span></div>
+          <h2 style="color:white;margin:0 0 4px;font-size:24px;">¡Hola! Soy Chari</h2>
+          <p style="color:rgba(255,255,255,0.85);margin:0;font-size:14px;">Tu asesora personal de confianza</p>
+        </div>
+        <div style="padding:24px;">
+          <p style="text-align:center;color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">Estoy aquí para ayudarte con <strong>todo lo relacionado con tu vivienda</strong>. Llevo <span style="color:#22c55e;font-weight:600;">8 años</span> asesorando a propietarios de Valdemorillo.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+            <div style="background:#f0fdf4;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">📊</div><div style="font-size:11px;color:#666;">Presupuestos</div></div>
+            <div style="background:#eff6ff;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">🔧</div><div style="font-size:11px;color:#666;">Reformas</div></div>
+            <div style="background:#fefce8;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">📋</div><div style="font-size:11px;color:#666;">Licencias</div></div>
+            <div style="background:#faf5ff;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">💡</div><div style="font-size:11px;color:#666;">Consejos</div></div>
+          </div>
+          <button onclick="App.startChatWithChari()" style="width:100%;background:linear-gradient(135deg,#22c55e,#10b981);color:white;border:none;padding:16px;border-radius:16px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 24px rgba(34,197,94,0.4);"><span style="font-size:24px;">💬</span> Iniciar Chat con Chari</button>
+        </div>
+        <div style="background:#f9fafb;padding:12px;text-align:center;border-top:1px solid #e5e7eb;"><button onclick="App.endTour()" style="color:#9ca3af;border:none;background:none;cursor:pointer;font-size:13px;">Saltar e ir al panel</button></div>
+      </div>
+    `;
+    document.body.appendChild(popup);
   },
   
-  finishOnboarding() {
-    // Limpiar TODOS los highlights y overlays
-    document.querySelectorAll('.onboarding-highlight').forEach(el => {
-      el.classList.remove('onboarding-highlight');
-    });
-    document.getElementById('onboarding-overlay')?.remove();
-    document.getElementById('onboarding-styles')?.remove();
+  startChatWithChari() {
     localStorage.setItem('masurba_onboarding_completed', 'true');
     this.state.onboardingCompleted = true;
-    this.state.onboardingStep = -1;
+    document.getElementById('chari-popup')?.remove();
+    this.navigate('chari');
   },
   
+  endTour() {
+    localStorage.setItem('masurba_onboarding_completed', 'true');
+    this.state.onboardingCompleted = true;
+    document.getElementById('tour-overlay')?.remove();
+    document.getElementById('tour-styles')?.remove();
+    document.getElementById('chari-popup')?.remove();
+    document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+    this.navigate('dashboard');
+  },
+
   // Inicialización
   async init() {
     // Verificar token guardado
