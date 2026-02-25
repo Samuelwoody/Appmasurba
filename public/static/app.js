@@ -334,10 +334,20 @@ const App = {
               </p>
             </div>
             
-            <!-- Formulario de Login -->
+            <!-- Tabs Login/Registro -->
             <div class="max-w-sm mx-auto">
-              <h2 class="text-lg font-semibold text-gray-800 text-center mb-4">Accede a tu cuenta</h2>
+              <div class="flex mb-6 bg-gray-100 rounded-xl p-1">
+                <button id="tab-login" onclick="App.switchAuthTab('login')" 
+                        class="flex-1 py-2 px-4 rounded-lg font-semibold transition bg-white text-gray-800 shadow-sm">
+                  Entrar
+                </button>
+                <button id="tab-register" onclick="App.switchAuthTab('register')" 
+                        class="flex-1 py-2 px-4 rounded-lg font-semibold transition text-gray-500">
+                  Crear cuenta
+                </button>
+              </div>
               
+              <!-- Formulario de Login -->
               <form id="login-form" class="space-y-4">
                 <div>
                   <div class="relative">
@@ -368,27 +378,78 @@ const App = {
                 
                 <button type="submit" 
                         class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
-                  <span id="login-btn-text">Entrar gratis</span>
+                  <span id="login-btn-text">Entrar</span>
                   <div id="login-btn-loading" class="hidden spinner ml-2"></div>
                 </button>
               </form>
               
-              <!-- Registro -->
-              <div class="mt-6 text-center">
-                <p class="text-gray-600 text-sm">
-                  ¿Aún no tienes cuenta?
+              <!-- Formulario de Registro -->
+              <form id="register-form" class="space-y-4 hidden">
+                <div>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <i class="fas fa-user"></i>
+                    </span>
+                    <input type="text" id="register-name" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                           placeholder="Tu nombre">
+                  </div>
+                </div>
+                
+                <div>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <i class="fas fa-envelope"></i>
+                    </span>
+                    <input type="email" id="register-email" required
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                           placeholder="tu@email.com">
+                  </div>
+                </div>
+                
+                <div>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <i class="fas fa-phone"></i>
+                    </span>
+                    <input type="tel" id="register-phone"
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                           placeholder="Teléfono (opcional)">
+                  </div>
+                </div>
+                
+                <div>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                      <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password" id="register-password" required minlength="6"
+                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                           placeholder="Contraseña (mín. 6 caracteres)">
+                  </div>
+                </div>
+                
+                <div id="register-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                  <i class="fas fa-exclamation-circle mr-2"></i>
+                  <span></span>
+                </div>
+                
+                <div id="register-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                  <i class="fas fa-check-circle mr-2"></i>
+                  <span></span>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
+                  <span id="register-btn-text">Crear mi cuenta gratis</span>
+                  <div id="register-btn-loading" class="hidden spinner ml-2"></div>
+                </button>
+                
+                <p class="text-xs text-gray-500 text-center">
+                  Al registrarte aceptas que tus datos sean tratados por Más Urba Multiservicios 
+                  para gestionar tu cuenta y enviarte información útil sobre tu vivienda.
                 </p>
-                <p class="text-gray-500 text-xs mt-1">
-                  Contacta con nosotros en <a href="mailto:info@masurba.es" class="text-green-600 font-medium hover:underline">info@masurba.es</a><br>
-                  o por WhatsApp y te damos de alta al momento
-                </p>
-                <a href="https://wa.me/34742094169?text=Hola,%20soy%20propietario%20en%20Valdemorillo%20y%20quiero%20darme%20de%20alta%20en%20la%20app" 
-                   target="_blank"
-                   class="inline-flex items-center mt-3 px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
-                  <i class="fab fa-whatsapp mr-2 text-lg"></i>
-                  Darme de alta por WhatsApp
-                </a>
-              </div>
+              </form>
             </div>
           </div>
           
@@ -1583,6 +1644,51 @@ const App = {
   },
   
   // =============================================
+  // REGISTRO Y AUTENTICACIÓN
+  // =============================================
+  switchAuthTab(tab) {
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    
+    if (tab === 'login') {
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+      tabLogin.classList.add('bg-white', 'text-gray-800', 'shadow-sm');
+      tabLogin.classList.remove('text-gray-500');
+      tabRegister.classList.remove('bg-white', 'text-gray-800', 'shadow-sm');
+      tabRegister.classList.add('text-gray-500');
+    } else {
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      tabRegister.classList.add('bg-white', 'text-gray-800', 'shadow-sm');
+      tabRegister.classList.remove('text-gray-500');
+      tabLogin.classList.remove('bg-white', 'text-gray-800', 'shadow-sm');
+      tabLogin.classList.add('text-gray-500');
+    }
+  },
+  
+  async register(name, email, phone, password) {
+    try {
+      const response = await axios.post('/api/auth/register', {
+        name,
+        email,
+        phone: phone || null,
+        password,
+        role: 'client'
+      });
+      
+      if (response.data.success) {
+        return response.data;
+      }
+      throw new Error(response.data.error || 'Error al crear cuenta');
+    } catch (error) {
+      throw new Error(error.response?.data?.error || 'Error al crear cuenta');
+    }
+  },
+  
+  // =============================================
   // EVENT LISTENERS
   // =============================================
   attachEventListeners() {
@@ -1606,7 +1712,45 @@ const App = {
         } catch (error) {
           errorDiv.querySelector('span').textContent = error.message;
           errorDiv.classList.remove('hidden');
-          btnText.textContent = 'Acceder';
+          btnText.textContent = 'Entrar';
+          btnLoading.classList.add('hidden');
+        }
+      });
+    }
+    
+    // Register form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('register-name').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const phone = document.getElementById('register-phone').value.trim();
+        const password = document.getElementById('register-password').value;
+        const btnText = document.getElementById('register-btn-text');
+        const btnLoading = document.getElementById('register-btn-loading');
+        const errorDiv = document.getElementById('register-error');
+        const successDiv = document.getElementById('register-success');
+        
+        btnText.textContent = 'Creando cuenta...';
+        btnLoading.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        successDiv.classList.add('hidden');
+        
+        try {
+          await this.register(name, email, phone, password);
+          
+          // Mostrar éxito
+          successDiv.querySelector('span').textContent = '¡Cuenta creada! Iniciando sesión...';
+          successDiv.classList.remove('hidden');
+          
+          // Auto-login
+          await this.login(email, password);
+          
+        } catch (error) {
+          errorDiv.querySelector('span').textContent = error.message;
+          errorDiv.classList.remove('hidden');
+          btnText.textContent = 'Crear mi cuenta gratis';
           btnLoading.classList.add('hidden');
         }
       });
