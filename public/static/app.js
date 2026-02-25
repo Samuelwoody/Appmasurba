@@ -1,6 +1,6 @@
 // =============================================
-// MÁS URBA - Aplicación Principal
-// Control y Estrategia de Vivienda
+// URBANIZACIONES DE VALDEMORILLO
+// Control y Estrategia - Por Más Urba Multiservicios
 // =============================================
 
 // Estado global de la aplicación
@@ -104,25 +104,23 @@ const App = {
     const isAdmin = this.state.user?.role === 'admin';
     
     return `
-      <div class="min-h-screen bg-urba-50">
+      <div class="min-h-screen bg-gray-50">
         <!-- Header -->
-        <header class="bg-urba-900 text-white shadow-lg">
-          <div class="max-w-7xl mx-auto px-4 py-4">
+        <header class="header-gradient text-white shadow-lg">
+          <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-                  <i class="fas fa-home text-white"></i>
-                </div>
+                <img src="/static/logo.png" alt="Más Urba" class="w-12 h-12">
                 <div>
-                  <h1 class="text-xl font-semibold">Más Urba</h1>
-                  <p class="text-urba-300 text-xs">Control y Estrategia</p>
+                  <h1 class="text-lg font-semibold leading-tight">Urbanizaciones de Valdemorillo</h1>
+                  <p class="text-gray-400 text-xs">Control y Estrategia de Chalets</p>
                 </div>
               </div>
               <div class="flex items-center space-x-4">
-                <span class="text-sm text-urba-200 hidden sm:block">
+                <span class="text-sm text-gray-300 hidden sm:block">
                   <i class="fas fa-user mr-1"></i> ${this.state.user?.name || ''}
                 </span>
-                <button onclick="App.logout()" class="text-urba-300 hover:text-white transition">
+                <button onclick="App.logout()" class="text-gray-400 hover:text-white transition">
                   <i class="fas fa-sign-out-alt"></i>
                 </button>
               </div>
@@ -131,7 +129,7 @@ const App = {
         </header>
         
         <!-- Navegación -->
-        <nav class="bg-white shadow-sm border-b border-urba-100 sticky top-0 z-40">
+        <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
           <div class="max-w-7xl mx-auto px-4">
             <div class="flex space-x-1 overflow-x-auto py-2">
               ${isAdmin ? this.renderAdminNav() : this.renderClientNav()}
@@ -145,10 +143,11 @@ const App = {
         </main>
         
         <!-- Footer -->
-        <footer class="bg-urba-800 text-urba-300 py-6 mt-12">
+        <footer class="bg-gray-800 text-gray-400 py-6 mt-12">
           <div class="max-w-7xl mx-auto px-4 text-center text-sm">
-            <p>© ${new Date().getFullYear()} Más Urba · Control y Estrategia de Vivienda</p>
-            <p class="text-urba-400 mt-1">Valdemorillo, Madrid</p>
+            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-10 h-10 mx-auto mb-2 opacity-70">
+            <p class="text-gray-300">© ${new Date().getFullYear()} Más Urba Multiservicios</p>
+            <p class="text-gray-500 mt-1">Urbanizaciones de Valdemorillo, Madrid</p>
           </div>
         </footer>
       </div>
@@ -169,8 +168,8 @@ const App = {
       <button onclick="App.navigate('${item.id}')" 
               class="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap
                      ${this.state.currentView === item.id 
-                       ? 'bg-urba-900 text-white' 
-                       : 'text-urba-600 hover:bg-urba-100'}">
+                       ? 'gradient-bg text-white' 
+                       : 'text-gray-600 hover:bg-gray-100'}">
         <i class="fas fa-${item.icon} mr-2"></i>
         <span class="hidden sm:inline">${item.label}</span>
       </button>
@@ -187,8 +186,8 @@ const App = {
       <button onclick="App.navigate('${item.id}')" 
               class="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap
                      ${this.state.currentView === item.id 
-                       ? 'bg-urba-900 text-white' 
-                       : 'text-urba-600 hover:bg-urba-100'}">
+                       ? 'gradient-bg text-white' 
+                       : 'text-gray-600 hover:bg-gray-100'}">
         <i class="fas fa-${item.icon} mr-2"></i>
         ${item.label}
       </button>
@@ -200,40 +199,38 @@ const App = {
   // =============================================
   renderLogin() {
     return `
-      <div class="min-h-screen bg-gradient-to-br from-urba-900 via-urba-800 to-urba-700 flex items-center justify-center p-4">
+      <div class="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center p-4">
         <div class="w-full max-w-md">
           <!-- Logo -->
           <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <i class="fas fa-home text-4xl text-white"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-white">Más Urba</h1>
-            <p class="text-urba-300 mt-2">Control y Estrategia de Vivienda</p>
+            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-24 h-24 mx-auto mb-4">
+            <h1 class="text-2xl font-bold text-white">Urbanizaciones de Valdemorillo</h1>
+            <p class="text-gray-400 mt-2 text-sm">Control y estrategia en mantenimiento,<br>reforma y compraventa de chalets</p>
           </div>
           
           <!-- Formulario -->
           <div class="bg-white rounded-2xl shadow-2xl p-8">
             <form id="login-form" class="space-y-5">
               <div>
-                <label class="block text-sm font-medium text-urba-700 mb-2">Email</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-urba-400">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <i class="fas fa-envelope"></i>
                   </span>
                   <input type="email" id="login-email" required
-                         class="w-full pl-10 pr-4 py-3 border border-urba-200 rounded-lg focus:ring-2 focus:ring-urba-500 focus:border-transparent transition"
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
                          placeholder="tu@email.com">
                 </div>
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-urba-700 mb-2">Contraseña</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
                 <div class="relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-urba-400">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <i class="fas fa-lock"></i>
                   </span>
                   <input type="password" id="login-password" required
-                         class="w-full pl-10 pr-4 py-3 border border-urba-200 rounded-lg focus:ring-2 focus:ring-urba-500 focus:border-transparent transition"
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
                          placeholder="••••••••">
                 </div>
               </div>
@@ -244,23 +241,30 @@ const App = {
               </div>
               
               <button type="submit" 
-                      class="w-full bg-urba-900 text-white py-3 rounded-lg font-medium hover:bg-urba-800 transition flex items-center justify-center">
+                      class="w-full gradient-bg text-white py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center justify-center">
                 <span id="login-btn-text">Acceder</span>
                 <div id="login-btn-loading" class="hidden spinner ml-2"></div>
               </button>
             </form>
             
-            <div class="mt-6 pt-6 border-t border-urba-100 text-center">
-              <p class="text-sm text-urba-500">
+            <div class="mt-6 pt-6 border-t border-gray-100 text-center">
+              <p class="text-sm text-gray-500">
                 ¿Problemas para acceder? 
-                <a href="mailto:info@masurba.es" class="text-urba-700 font-medium hover:underline">Contacta con nosotros</a>
+                <a href="mailto:info@masurba.es" class="text-green-600 font-medium hover:underline">Contacta con nosotros</a>
               </p>
             </div>
           </div>
           
-          <!-- Demo hint -->
+          <!-- Footer -->
           <div class="mt-6 text-center">
-            <p class="text-urba-400 text-sm">
+            <p class="text-gray-500 text-xs">
+              Por <span class="text-gray-400">Más Urba Multiservicios</span>
+            </p>
+          </div>
+          
+          <!-- Demo hint -->
+          <div class="mt-4 text-center">
+            <p class="text-gray-500 text-xs">
               <i class="fas fa-info-circle mr-1"></i>
               Demo: cliente@demo.es / demo123
             </p>
@@ -269,6 +273,10 @@ const App = {
       </div>
     `;
   },
+
+  // =============================================
+  // DASHBOARD
+  // =============================================
   
   // =============================================
   // DASHBOARD
@@ -282,15 +290,15 @@ const App = {
     return `
       <div class="space-y-6">
         <!-- Bienvenida -->
-        <div class="bg-gradient-to-r from-urba-900 to-urba-700 rounded-2xl p-6 text-white">
+        <div class="gradient-bg rounded-2xl p-6 text-white">
           <div class="flex items-center justify-between">
             <div>
               <h2 class="text-2xl font-bold">Hola, ${d.user?.name?.split(' ')[0] || 'Usuario'}</h2>
-              <p class="text-urba-200 mt-1">Bienvenido a tu panel de control</p>
+              <p class="text-white/80 mt-1">Bienvenido a tu panel de control</p>
             </div>
             <div class="hidden sm:block">
               <button onclick="App.requestContact('diagnosis_360')" 
-                      class="bg-accent hover:bg-accent-dark text-white px-5 py-2 rounded-lg font-medium transition">
+                      class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-lg font-medium transition backdrop-blur">
                 <i class="fas fa-phone-alt mr-2"></i>
                 Solicitar revisión
               </button>
@@ -301,11 +309,11 @@ const App = {
         <!-- Tarjetas principales -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Score técnico -->
-          <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-urba-500 text-sm font-medium">Estado técnico</p>
-                <p class="text-3xl font-bold text-urba-900 mt-1">${d.technicalScore}</p>
+                <p class="text-gray-500 text-sm font-medium">Estado técnico</p>
+                <p class="text-3xl font-bold text-gray-900 mt-1">${d.technicalScore}</p>
                 <p class="text-sm ${scoreColor.text} mt-1">
                   <i class="fas fa-${scoreColor.icon} mr-1"></i>
                   ${d.scoreLabel?.label || 'Sin evaluar'}
@@ -325,19 +333,19 @@ const App = {
           </div>
           
           <!-- Mantenimientos pendientes -->
-          <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-urba-500 text-sm font-medium">Mantenimientos</p>
-                <p class="text-3xl font-bold text-urba-900 mt-1">${d.pendingMaintenances || 0}</p>
-                <p class="text-sm text-urba-500 mt-1">pendientes de revisar</p>
+                <p class="text-gray-500 text-sm font-medium">Mantenimientos</p>
+                <p class="text-3xl font-bold text-gray-900 mt-1">${d.pendingMaintenances || 0}</p>
+                <p class="text-sm text-gray-500 mt-1">pendientes de revisar</p>
               </div>
               <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center">
                 <i class="fas fa-tools text-2xl text-amber-600"></i>
               </div>
             </div>
             <button onclick="App.navigate('maintenance')" 
-                    class="mt-4 text-sm text-urba-600 hover:text-urba-800 font-medium">
+                    class="mt-4 text-sm text-green-600 hover:text-green-800 font-medium">
               Ver checklist <i class="fas fa-arrow-right ml-1"></i>
             </button>
           </div>

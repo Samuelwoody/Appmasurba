@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'mas-urba',
+      name: 'urba-valdemorillo',
       script: 'npx',
       args: 'wrangler pages dev dist --d1=masurba-db --local --ip 0.0.0.0 --port 3000',
       cwd: '/home/user/webapp',

@@ -2,6 +2,7 @@
 export type Bindings = {
   DB: D1Database;
   JWT_SECRET: string;
+  DEEPSEEK_API_KEY?: string;
   OPENAI_API_KEY?: string;
 }
 

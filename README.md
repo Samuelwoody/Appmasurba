@@ -1,153 +1,235 @@
-# Más Urba - Control y Estrategia de Vivienda
+# Urbanizaciones de Valdemorillo
 
-## Descripción
+**Control y estrategia en Mantenimiento, reforma y compraventa de chalets**
 
-Aplicación web progresiva (PWA) para propietarios de chalets en urbanizaciones de Valdemorillo (Madrid). 
-Permite control técnico de vivienda, consulta con asistente estratégica (Chari), registro de mantenimientos 
-y estimaciones orientativas de reformas.
+Por **Más Urba Multiservicios**
 
-## Funcionalidades Completadas
+---
 
-### Panel Cliente
-- ✅ Dashboard con estado técnico de vivienda
-- ✅ Score técnico calculado automáticamente
-- ✅ Indicadores de mantenimientos pendientes
-- ✅ Acceso rápido a Chari
+## 📱 Vista General
+
+PWA (Progressive Web App) diseñada para propietarios de chalets en las urbanizaciones de Valdemorillo (Madrid). Permite control técnico básico de la vivienda, acceso al asistente IA "Chari", registro de mantenimientos, estimaciones de reforma y asesoramiento estratégico.
+
+### 🔗 URLs
+
+- **Sandbox/Demo**: https://3000-i4dn5f0sazre04l9uxj55-cc2fbc16.sandbox.novita.ai
+- **Producción** (pendiente despliegue): urbanizaciones-valdemorillo.pages.dev
+
+### 👤 Credenciales Demo
+
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| Cliente | cliente@demo.es | demo123 |
+| Admin (Samuel) | samuel@masurba.es | admin123 |
+
+---
+
+## ✅ Funcionalidades Implementadas
+
+### Panel Cliente (Dashboard)
+- Estado técnico general de la vivienda (puntuación 0-100)
+- Mantenimientos pendientes
+- Acceso rápido a Chari
+- Botón "Solicitar revisión con Samuel"
 
 ### Mi Vivienda
-- ✅ Configuración de datos de vivienda
-- ✅ Selección de urbanización y tipo
-- ✅ Estado de instalaciones (electricidad, fontanería, etc.)
-- ✅ Indicador de estado percibido
+- Datos configurables: año construcción, urbanización, tipo, m², última reforma
+- Estado de 6 instalaciones: electricidad, fontanería, calefacción, aislamiento, cubierta, fachada
+- Indicador de salud técnica (no alarmista)
 
 ### Control de Mantenimiento
-- ✅ Checklist por categorías (cubierta, caldera, piscina, etc.)
-- ✅ Marcar como revisado
-- ✅ Historial de mantenimientos
-- ✅ Próximos mantenimientos recomendados
+- Checklist de 8 categorías: cubierta, electricidad, fontanería, caldera, fachada, aislamiento, piscina, jardín
+- Estados: Pendiente, Revisado, Necesita reparación, Reparado
+- Historial de acciones
+- Frecuencias de revisión recomendadas
 
 ### Estimaciones Orientativas
-- ✅ Calculadora de rangos de precio
-- ✅ Múltiples tipos de intervención
-- ✅ Niveles de acabado (básico, medio, premium)
-- ✅ Variables que afectan al precio
-- ✅ Disclaimer de orientación
+- 14 tipos de intervención
+- 3 niveles de acabado: básico, medio, premium
+- Rangos de precio consistentes con mercado de Valdemorillo
+- Variables que afectan al precio
+- Disclaimer (no es presupuesto final)
 
 ### Valoración Estratégica
-- ✅ Análisis de intención de venta
-- ✅ Horizonte temporal
-- ✅ Recomendaciones personalizadas
-- ✅ Próximos pasos sugeridos
+- Inputs: intención de venta, horizonte temporal, nivel de reforma actual
+- Outputs: recomendación estratégica (reformar antes, vender como está, reforma parcial)
+- Sin valoración oficial
 
-### Chari - Asistente
-- ✅ Chat conversacional
-- ✅ Memoria persistente por usuario
-- ✅ Clasificación de intenciones
-- ✅ Respuestas contextualizadas
-- ✅ Ofrecimiento de contacto con Samuel
+### Chari - Asistente IA 🤖
+- **Integración con Deepseek** para respuestas naturales e inteligentes
+- Memoria persistente por usuario
+- Clasifica tipo de proyecto: pequeño/medio/integral
+- Da rangos orientativos de precios
+- Explica variables técnicas
+- Ofrece contacto con Samuel (máximo 1 vez por conversación)
+- **Nunca revela que es IA**
+- Fallback a sistema de reglas si no hay API key
 
-### Panel Administrador (Samuel)
-- ✅ Dashboard con métricas
-- ✅ Lista de clientes
-- ✅ Detalle de cliente con historial
-- ✅ Etiquetas de clasificación
-- ✅ Gestión de solicitudes de contacto
+### Panel Admin (Samuel)
+- Dashboard con métricas globales
+- Lista de todos los clientes
+- Vista detallada de cada cliente
+- Etiquetas: reforma parcial/integral, venta potencial, premium, educable
+- Gestión de solicitudes de contacto
 
-## URLs
+---
 
-- **Desarrollo local**: http://localhost:3000
-- **Producción**: (pendiente despliegue)
+## 🏗️ Arquitectura Técnica
 
-## API Endpoints
+### Stack
+| Capa | Tecnología |
+|------|------------|
+| Frontend | HTML5 + TailwindCSS (CDN) + JavaScript vanilla |
+| Backend | Hono (TypeScript) en Cloudflare Workers |
+| Base de datos | Cloudflare D1 (SQLite distribuido) |
+| Autenticación | JWT + hash SHA-256 |
+| IA | Deepseek API (deepseek-chat) |
+| PWA | Service Worker + Web App Manifest |
+| Hosting | Cloudflare Pages |
 
-### Autenticación
-- `POST /api/auth/login` - Iniciar sesión
-- `POST /api/auth/register` - Registrar usuario
-- `GET /api/auth/verify` - Verificar token
+### Estructura de Archivos
+```
+webapp/
+├── src/
+│   ├── index.tsx         # Entry point + HTML principal
+│   ├── routes/           # API endpoints
+│   │   ├── auth.ts       # Login/verificación
+│   │   ├── dashboard.ts  # Panel cliente
+│   │   ├── properties.ts # Mi vivienda
+│   │   ├── maintenances.ts # Control mantenimiento
+│   │   ├── estimates.ts  # Estimaciones
+│   │   ├── strategic.ts  # Valoración estratégica
+│   │   ├── chari.ts      # Asistente IA
+│   │   ├── contacts.ts   # Solicitudes contacto
+│   │   └── admin.ts      # Panel administrador
+│   ├── lib/
+│   │   ├── auth.ts       # Utilidades JWT
+│   │   ├── chari.ts      # Lógica reglas (fallback)
+│   │   ├── deepseek.ts   # Cliente API Deepseek
+│   │   ├── estimates.ts  # Cálculos estimaciones
+│   │   └── strategic.ts  # Lógica estratégica
+│   ├── middleware/
+│   │   └── auth.ts       # Middleware autenticación
+│   └── types/
+│       └── index.ts      # TypeScript types
+├── public/static/
+│   ├── app.js            # Frontend JavaScript
+│   ├── logo.png          # Logo Más Urba Multiservicios
+│   ├── manifest.json     # PWA manifest
+│   └── sw.js             # Service Worker
+├── migrations/
+│   ├── 0001_initial_schema.sql
+│   └── 0002_seed_data.sql
+├── wrangler.jsonc        # Config Cloudflare
+└── ecosystem.config.cjs  # PM2 config
+```
 
-### Dashboard
-- `GET /api/dashboard` - Datos completos del dashboard
-- `GET /api/dashboard/summary` - Resumen rápido
+### API Endpoints
 
-### Propiedades
-- `GET /api/properties` - Obtener vivienda del usuario
-- `POST /api/properties` - Crear/actualizar vivienda
-- `PUT /api/properties/installations/:type` - Actualizar instalación
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| POST | /api/auth/login | Autenticación |
+| GET | /api/auth/verify | Verificar token |
+| GET | /api/dashboard | Panel cliente |
+| GET/PUT | /api/properties/:id | Datos vivienda |
+| GET/PUT | /api/maintenances | Mantenimientos |
+| POST | /api/estimates | Calcular estimación |
+| POST | /api/strategic | Valoración estratégica |
+| GET | /api/chari/conversation | Obtener/crear conversación |
+| POST | /api/chari/message | Enviar mensaje a Chari |
+| GET | /api/chari/status | Estado IA (Deepseek/reglas) |
+| POST | /api/contacts | Solicitar contacto |
+| GET | /api/admin/clients | [Admin] Lista clientes |
+| GET | /api/admin/clients/:id | [Admin] Detalle cliente |
 
-### Mantenimientos
-- `GET /api/maintenances` - Listar mantenimientos
-- `GET /api/maintenances/:id` - Detalle de mantenimiento
-- `PUT /api/maintenances/:id` - Actualizar mantenimiento
-- `POST /api/maintenances/:id/check` - Marcar como revisado
+---
 
-### Estimaciones
-- `GET /api/estimates/types` - Tipos de intervención
-- `POST /api/estimates/calculate` - Calcular estimación
-- `GET /api/estimates` - Historial de estimaciones
+## 🔐 Configuración Deepseek (IA para Chari)
 
-### Valoración Estratégica
-- `GET /api/strategic/options` - Opciones disponibles
-- `POST /api/strategic/assess` - Generar valoración
+### Obtener API Key
+1. Registrarse en https://platform.deepseek.com/
+2. Crear una API key en la sección "API Keys"
+3. El modelo `deepseek-chat` es económico (~$0.14/M tokens input)
 
-### Chari
-- `GET /api/chari/conversation` - Obtener conversación activa
-- `POST /api/chari/message` - Enviar mensaje
-- `POST /api/chari/new` - Nueva conversación
+### Desarrollo Local
+Editar `.dev.vars`:
+```
+DEEPSEEK_API_KEY=tu_api_key_real_aqui
+```
 
-### Admin
-- `GET /api/admin/dashboard` - Dashboard admin
-- `GET /api/admin/clients` - Lista de clientes
-- `GET /api/admin/clients/:id` - Detalle de cliente
-- `POST /api/admin/clients/:id/tags` - Añadir etiqueta
+### Producción (Cloudflare)
+```bash
+npx wrangler secret put DEEPSEEK_API_KEY --project-name urbanizaciones-valdemorillo
+```
 
-## Tecnología
+### Sin API Key
+Si no hay API key configurada, Chari usa un sistema de reglas que:
+- Detecta intenciones (saludo, precio, técnico, venta, etc.)
+- Responde con rangos predefinidos
+- Funciona offline
 
-- **Frontend**: HTML5, TailwindCSS, JavaScript vanilla
-- **Backend**: Hono (TypeScript)
-- **Base de datos**: Cloudflare D1 (SQLite)
-- **Hosting**: Cloudflare Pages
-- **PWA**: Service Worker + Web App Manifest
+---
 
-## Usuarios de Prueba
-
-| Email | Contraseña | Rol |
-|-------|------------|-----|
-| cliente@demo.es | demo123 | Cliente |
-| samuel@masurba.es | admin123 | Admin |
-
-## Instalación Local
+## 🚀 Desarrollo Local
 
 ```bash
 # Instalar dependencias
 npm install
 
-# Construir
+# Compilar
 npm run build
 
-# Inicializar base de datos
-npm run db:migrate:local
-npm run db:seed:local
+# Iniciar servidor (PM2)
+pm2 start ecosystem.config.cjs
 
-# Iniciar servidor de desarrollo
-npm run dev:sandbox
+# O directamente con wrangler
+npm run dev:d1
+
+# Ver logs
+pm2 logs --nostream
+
+# Reset base de datos
+npm run db:reset
 ```
 
-## Despliegue
+---
+
+## 📦 Despliegue a Producción
 
 ```bash
-# Construir y desplegar a Cloudflare Pages
+# 1. Configurar Cloudflare API
+# (desde panel Genspark → Deploy)
+
+# 2. Crear base de datos D1
+npx wrangler d1 create masurba-db
+
+# 3. Actualizar database_id en wrangler.jsonc
+
+# 4. Aplicar migraciones
+npm run db:migrate:prod
+
+# 5. Configurar secretos
+npx wrangler secret put DEEPSEEK_API_KEY --project-name urbanizaciones-valdemorillo
+
+# 6. Desplegar
 npm run deploy:prod
 ```
 
-## Próximos Pasos
+---
 
-1. [ ] Integración con WhatsApp Business API
-2. [ ] Sistema de notificaciones push
-3. [ ] Subida de fotos a R2
-4. [ ] Integración con OpenAI para Chari avanzada
-5. [ ] Exportación de informes PDF
-6. [ ] Sistema de recordatorios de mantenimiento
+## 📈 Próximas Funcionalidades
 
-## Licencia
+- [ ] Integración WhatsApp Business API
+- [ ] Subida de fotos a Cloudflare R2
+- [ ] Notificaciones push
+- [ ] Exportar informes en PDF
+- [ ] Calendario de mantenimientos
+- [ ] Múltiples propiedades por usuario
 
-Privado - © 2025 Más Urba
+---
+
+## 📄 Licencia
+
+Proyecto privado de **Más Urba Multiservicios**.
+
+© 2024-2026 Más Urba Multiservicios - Urbanizaciones de Valdemorillo, Madrid

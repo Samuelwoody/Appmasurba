@@ -6,6 +6,10 @@ import {
   updateChariMemory, 
   classifyIntent 
 } from '../lib/chari';
+import {
+  generateChariResponseWithAI,
+  classifyIntentFromMessage
+} from '../lib/deepseek';
 
 const chari = new Hono<{ Bindings: Bindings }>();
 
@@ -72,7 +76,7 @@ chari.get('/conversation', async (c) => {
           lastTopics: memory.last_topics
         } : null,
         greeting: memory?.interaction_count === 0 
-          ? `¡Hola ${user.name}! Soy Chari, tu asistente en Más Urba. Estoy aquí para ayudarte con cualquier duda sobre tu vivienda. ¿En qué puedo orientarte?`
+          ? `¡Hola ${user.name}! Soy Chari, del equipo de Más Urba. Estoy aquí para ayudarte con cualquier duda sobre tu vivienda. ¿En qué puedo orientarte?`
           : `¡Hola de nuevo, ${user.name}! ¿En qué puedo ayudarte hoy?`
       }
     });
@@ -143,19 +147,62 @@ chari.post('/message', async (c) => {
       'SELECT * FROM estimates WHERE user_id = ? ORDER BY created_at DESC LIMIT 5'
     ).bind(user.sub).all<Estimate>();
     
-    // Generar respuesta de Chari
-    const { response, intent, shouldOfferSamuel } = generateChariResponse(
-      message,
-      {
-        memory: memory || null,
-        property: property || null,
-        maintenances: maintenancesResult.results || [],
-        estimates: estimatesResult.results || [],
-        userName: user.name,
-        messageCount: messages.length,
-        samuelOffered: conversation.samuel_contact_offered === 1
-      }
-    );
+    let response: string;
+    let intent: string;
+    let shouldOfferSamuel: boolean;
+    
+    // Verificar si tenemos API key de Deepseek
+    const deepseekApiKey = c.env.DEEPSEEK_API_KEY;
+    
+    if (deepseekApiKey) {
+      // Usar IA Deepseek
+      console.log('Usando Deepseek AI para respuesta de Chari');
+      
+      // Preparar historial de conversación
+      const conversationHistory = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+      
+      const aiResult = await generateChariResponseWithAI(
+        deepseekApiKey,
+        message,
+        {
+          memory: memory || null,
+          property: property || null,
+          maintenances: maintenancesResult.results || [],
+          estimates: estimatesResult.results || [],
+          userName: user.name,
+          messageCount: messages.length,
+          samuelOffered: conversation.samuel_contact_offered === 1,
+          conversationHistory
+        }
+      );
+      
+      response = aiResult.response;
+      shouldOfferSamuel = aiResult.shouldOfferSamuel;
+      intent = classifyIntentFromMessage(message);
+    } else {
+      // Fallback a respuestas basadas en reglas
+      console.log('Usando sistema de reglas para respuesta de Chari');
+      
+      const ruleResult = generateChariResponse(
+        message,
+        {
+          memory: memory || null,
+          property: property || null,
+          maintenances: maintenancesResult.results || [],
+          estimates: estimatesResult.results || [],
+          userName: user.name,
+          messageCount: messages.length,
+          samuelOffered: conversation.samuel_contact_offered === 1
+        }
+      );
+      
+      response = ruleResult.response;
+      intent = ruleResult.intent;
+      shouldOfferSamuel = ruleResult.shouldOfferSamuel;
+    }
     
     // Añadir mensaje del usuario
     const userMessage: Message = {
@@ -193,7 +240,7 @@ chari.post('/message', async (c) => {
     ).run();
     
     // Actualizar memoria de Chari
-    const memoryUpdate = updateChariMemory(memory || null, message, intent);
+    const memoryUpdate = updateChariMemory(memory || null, message, intent as any);
     
     if (memory) {
       await c.env.DB.prepare(
@@ -225,7 +272,8 @@ chari.post('/message', async (c) => {
         userMessage,
         assistantMessage,
         intent,
-        samuelOffered: shouldOfferSamuel
+        samuelOffered: shouldOfferSamuel,
+        aiPowered: !!deepseekApiKey
       }
     });
   } catch (error) {
@@ -285,6 +333,20 @@ chari.post('/new', async (c) => {
     console.error('New conversation error:', error);
     return c.json({ success: false, error: 'Error creando conversación' }, 500);
   }
+});
+
+// Estado de IA
+chari.get('/status', async (c) => {
+  const hasAI = !!c.env.DEEPSEEK_API_KEY;
+  
+  return c.json({
+    success: true,
+    data: {
+      aiEnabled: hasAI,
+      provider: hasAI ? 'Deepseek' : 'Rule-based',
+      version: '1.1.0'
+    }
+  });
 });
 
 export default chari;

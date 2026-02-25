@@ -48,7 +48,7 @@ app.get('/api/health', (c) => {
     success: true, 
     status: 'ok',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.1.0'
   });
 });
 
@@ -63,14 +63,14 @@ function getMainHTML(): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Más Urba - Control y Estrategia de Vivienda para propietarios de chalets en Valdemorillo">
-    <meta name="theme-color" content="#1e3a5f">
-    <title>Más Urba - Control y Estrategia de Vivienda</title>
+    <meta name="description" content="Urbanizaciones de Valdemorillo - Control y estrategia en mantenimiento, reforma y compraventa de chalets. Por Más Urba Multiservicios.">
+    <meta name="theme-color" content="#2d3748">
+    <title>Urbanizaciones de Valdemorillo | Más Urba Multiservicios</title>
     
     <!-- PWA -->
     <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" href="/static/logo.png">
+    <link rel="apple-touch-icon" href="/static/logo.png">
     
     <!-- Estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -82,21 +82,27 @@ function getMainHTML(): string {
           extend: {
             colors: {
               'urba': {
-                50: '#f0f4f8',
-                100: '#d9e2ec',
-                200: '#bcccdc',
-                300: '#9fb3c8',
-                400: '#829ab1',
-                500: '#627d98',
-                600: '#486581',
-                700: '#334e68',
-                800: '#243b53',
-                900: '#1e3a5f',
+                50: '#faf5f7',
+                100: '#f5ebef',
+                200: '#ebdae1',
+                300: '#dcc2cd',
+                400: '#c9a0b0',
+                500: '#b47d94',
+                600: '#9c6178',
+                700: '#834d62',
+                800: '#6d4152',
+                900: '#5c3946',
+              },
+              'gradient': {
+                pink: '#e88ba5',
+                green: '#7dd3a8',
+                cyan: '#7dd3d3',
+                blue: '#a5d4e8'
               },
               'accent': {
-                light: '#c9a227',
-                DEFAULT: '#b8860b',
-                dark: '#8b6914'
+                light: '#7dd3a8',
+                DEFAULT: '#5bb88a',
+                dark: '#4a9c74'
               }
             }
           }
@@ -109,6 +115,17 @@ function getMainHTML(): string {
       
       * {
         font-family: 'Inter', sans-serif;
+      }
+      
+      .gradient-bg {
+        background: linear-gradient(135deg, #e88ba5 0%, #7dd3a8 50%, #7dd3d3 100%);
+      }
+      
+      .gradient-text {
+        background: linear-gradient(135deg, #e88ba5 0%, #7dd3a8 50%, #7dd3d3 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
       
       .fade-in {
@@ -154,7 +171,7 @@ function getMainHTML(): string {
       /* Loading spinner */
       .spinner {
         border: 3px solid #f3f3f3;
-        border-top: 3px solid #1e3a5f;
+        border-top: 3px solid #5bb88a;
         border-radius: 50%;
         width: 24px;
         height: 24px;
@@ -177,16 +194,20 @@ function getMainHTML(): string {
         0% { background-position: 200% 0; }
         100% { background-position: -200% 0; }
       }
+      
+      .header-gradient {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+      }
     </style>
 </head>
-<body class="bg-urba-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen">
     <div id="app">
         <!-- Loading inicial -->
-        <div id="loading-screen" class="fixed inset-0 bg-urba-900 flex items-center justify-center z-50">
+        <div id="loading-screen" class="fixed inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center z-50">
             <div class="text-center">
-                <div class="w-16 h-16 border-4 border-urba-100 border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
-                <h1 class="text-2xl font-semibold text-white">Más Urba</h1>
-                <p class="text-urba-300 mt-2">Cargando...</p>
+                <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-24 h-24 mx-auto mb-4 animate-pulse">
+                <h1 class="text-xl font-semibold text-white">Urbanizaciones de Valdemorillo</h1>
+                <p class="text-gray-400 mt-2 text-sm">Cargando...</p>
             </div>
         </div>
     </div>
