@@ -149,11 +149,70 @@ function getMainHTML(): string {
       
       .chat-container {
         height: calc(100vh - 280px);
-        min-height: 400px;
+        min-height: 300px;
+        max-height: 60vh;
+      }
+      
+      /* Mobile optimizations */
+      @media (max-width: 640px) {
+        .chat-container {
+          height: calc(100vh - 320px);
+          min-height: 200px;
+          max-height: 50vh;
+        }
+        
+        /* Chat form mobile */
+        .chat-form-mobile {
+          padding: 12px !important;
+        }
+        
+        .chat-form-mobile input {
+          padding: 10px 12px !important;
+          font-size: 16px !important; /* Evita zoom en iOS */
+        }
+        
+        .chat-form-mobile button {
+          padding: 10px 14px !important;
+        }
+        
+        /* Navigation mobile */
+        .nav-mobile-scroll {
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        
+        .nav-mobile-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Header compacto en móvil */
+        .header-mobile {
+          padding-top: 8px !important;
+          padding-bottom: 8px !important;
+        }
+        
+        /* Botones de acción rápida más pequeños */
+        .quick-action-mobile {
+          padding: 8px !important;
+          font-size: 12px !important;
+        }
+        
+        /* Footer más compacto en móvil */
+        footer {
+          padding-top: 16px !important;
+          padding-bottom: 16px !important;
+          margin-top: 24px !important;
+        }
       }
       
       .message-bubble {
         max-width: 85%;
+      }
+      
+      @media (max-width: 640px) {
+        .message-bubble {
+          max-width: 90%;
+        }
       }
       
       /* Scrollbar personalizado */

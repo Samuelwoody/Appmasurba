@@ -281,27 +281,27 @@ const App = {
       <div class="min-h-screen bg-white">
         <!-- Header -->
         <header class="header-gradient shadow-sm">
-          <div class="max-w-7xl mx-auto px-4 py-3">
+          <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3 header-mobile">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <img src="/static/logo.png" alt="Más Urba" class="w-12 h-12">
+              <div class="flex items-center space-x-2 sm:space-x-3">
+                <img src="/static/logo.png" alt="Más Urba" class="w-10 h-10 sm:w-12 sm:h-12">
                 <div>
-                  <h1 class="text-lg font-semibold leading-tight text-gray-800">Urbanizaciones de Valdemorillo</h1>
-                  <p class="text-gray-500 text-xs">Control y Estrategia de Chalets</p>
+                  <h1 class="text-sm sm:text-lg font-semibold leading-tight text-gray-800">Urbanizaciones Valdemorillo</h1>
+                  <p class="text-gray-500 text-xs hidden sm:block">Control y Estrategia de Chalets</p>
                 </div>
               </div>
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- Botón Administración (sutil) -->
                 <button onclick="App.toggleWhatsApp()" 
                         class="text-gray-400 hover:text-gray-600 transition text-sm flex items-center"
                         title="Contactar con administración">
-                  <i class="fas fa-headset mr-1"></i>
-                  <span class="hidden sm:inline text-xs">Administración</span>
+                  <i class="fas fa-headset"></i>
+                  <span class="hidden sm:inline text-xs ml-1">Administración</span>
                 </button>
-                <span class="text-sm text-gray-600 hidden sm:block">
+                <span class="text-sm text-gray-600 hidden md:block">
                   <i class="fas fa-user mr-1 text-gray-400"></i> ${this.state.user?.name || ''}
                 </span>
-                <button onclick="App.logout()" class="text-gray-400 hover:text-gray-600 transition" title="Cerrar sesión">
+                <button onclick="App.logout()" class="text-gray-400 hover:text-gray-600 transition p-1" title="Cerrar sesión">
                   <i class="fas fa-sign-out-alt"></i>
                 </button>
               </div>
@@ -311,31 +311,31 @@ const App = {
         
         <!-- Navegación -->
         <nav class="bg-gray-50 border-b border-gray-200 sticky top-0 z-40" data-tour="nav">
-          <div class="max-w-7xl mx-auto px-4">
-            <div class="flex space-x-1 overflow-x-auto py-2">
+          <div class="max-w-7xl mx-auto px-2 sm:px-4">
+            <div class="flex overflow-x-auto py-2 nav-mobile-scroll gap-1">
               ${isAdmin ? this.renderAdminNav() : this.renderClientNav()}
             </div>
           </div>
         </nav>
         
         <!-- Contenido principal -->
-        <main class="max-w-7xl mx-auto px-4 py-6 fade-in">
+        <main class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 fade-in pb-20 sm:pb-6">
           ${content}
         </main>
         
         <!-- Footer -->
-        <footer class="bg-gray-50 border-t border-gray-200 text-gray-500 py-6 mt-12">
-          <div class="max-w-7xl mx-auto px-4 text-center text-sm">
-            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-10 h-10 mx-auto mb-2 opacity-80">
+        <footer class="bg-gray-50 border-t border-gray-200 text-gray-500 py-4 sm:py-6 mt-8 sm:mt-12">
+          <div class="max-w-7xl mx-auto px-4 text-center text-xs sm:text-sm">
+            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 opacity-80">
             <p class="text-gray-600">© ${new Date().getFullYear()} Más Urba Multiservicios</p>
-            <p class="text-gray-400 mt-1">Urbanizaciones de Valdemorillo, Madrid</p>
+            <p class="text-gray-400 mt-1 hidden sm:block">Urbanizaciones de Valdemorillo, Madrid</p>
           </div>
         </footer>
         
         <!-- WhatsApp Popup -->
         ${this.whatsappVisible ? `
-        <div class="fixed bottom-6 right-6 z-50 whatsapp-popup">
-          <div class="bg-white rounded-2xl shadow-xl p-4 mb-3 border border-gray-100 max-w-xs">
+        <div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 whatsapp-popup">
+          <div class="bg-white rounded-2xl shadow-xl p-3 sm:p-4 mb-3 border border-gray-100 max-w-[280px] sm:max-w-xs">
             <div class="flex items-start space-x-3">
               <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-green-400 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-user text-white text-sm"></i>
@@ -343,11 +343,11 @@ const App = {
               <div>
                 <p class="font-medium text-gray-800 text-sm">Samuel Castellano</p>
                 <p class="text-gray-500 text-xs mt-0.5">Más Urba Multiservicios</p>
-                <p class="text-gray-600 text-sm mt-2">¿En qué puedo ayudarte?</p>
+                <p class="text-gray-600 text-xs sm:text-sm mt-2">¿En qué puedo ayudarte?</p>
               </div>
             </div>
             <button onclick="App.openWhatsApp()" 
-                    class="whatsapp-btn w-full mt-3 text-white py-2.5 rounded-xl font-medium flex items-center justify-center">
+                    class="whatsapp-btn w-full mt-3 text-white py-2 sm:py-2.5 rounded-xl font-medium flex items-center justify-center text-sm">
               <i class="fab fa-whatsapp mr-2 text-lg"></i>
               Iniciar chat en WhatsApp
             </button>
@@ -365,21 +365,21 @@ const App = {
   renderClientNav() {
     const items = [
       { id: 'dashboard', icon: 'tachometer-alt', label: 'Panel' },
-      { id: 'property', icon: 'home', label: 'Mi Vivienda' },
-      { id: 'maintenance', icon: 'tools', label: 'Mantenimiento' },
-      { id: 'estimates', icon: 'calculator', label: 'Estimaciones' },
+      { id: 'property', icon: 'home', label: 'Vivienda' },
+      { id: 'maintenance', icon: 'tools', label: 'Manten.' },
+      { id: 'estimates', icon: 'calculator', label: 'Estim.' },
       { id: 'strategic', icon: 'chess', label: 'Estrategia' },
       { id: 'chari', icon: 'comments', label: 'Chari' }
     ];
     
     return items.map(item => `
       <button onclick="App.navigate('${item.id}')" 
-              class="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap
+              class="flex items-center px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap flex-shrink-0
                      ${this.state.currentView === item.id 
                        ? 'gradient-bg text-white' 
                        : 'text-gray-600 hover:bg-gray-100'}">
-        <i class="fas fa-${item.icon} mr-2"></i>
-        <span class="hidden sm:inline">${item.label}</span>
+        <i class="fas fa-${item.icon} sm:mr-2"></i>
+        <span class="ml-1 sm:ml-0">${item.label}</span>
       </button>
     `).join('');
   },
@@ -2036,32 +2036,36 @@ const App = {
                   Soy <strong>Chari</strong>, tu asesora personal de <strong>Más Urba</strong>. 
                   Llevo 8 años ayudando a vecinos de Valdemorillo con sus chalets.
                 </p>
-                <div class="mt-6 space-y-3 max-w-sm mx-auto">
-                  <p class="text-gray-500 text-sm font-medium">¿Por dónde empezamos?</p>
+                <div class="mt-4 sm:mt-6 space-y-3 max-w-sm mx-auto px-2">
+                  <p class="text-gray-500 text-xs sm:text-sm font-medium">¿Por dónde empezamos?</p>
                   <div class="grid grid-cols-2 gap-2">
                     <button onclick="App.sendQuickMessage('Quiero que me ayudes a rellenar los datos de mi vivienda')" 
-                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
-                      <i class="fas fa-home text-green-500 mr-2"></i>
-                      Configurar mi vivienda
+                            class="text-left p-2 sm:p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-xs sm:text-sm quick-action-mobile">
+                      <i class="fas fa-home text-green-500 mr-1 sm:mr-2"></i>
+                      <span class="hidden sm:inline">Configurar mi vivienda</span>
+                      <span class="sm:hidden">Mi vivienda</span>
                     </button>
                     <button onclick="App.sendQuickMessage('¿Cómo funciona la app y qué puedo hacer?')" 
-                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
-                      <i class="fas fa-question-circle text-blue-500 mr-2"></i>
-                      Cómo funciona
+                            class="text-left p-2 sm:p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-xs sm:text-sm quick-action-mobile">
+                      <i class="fas fa-question-circle text-blue-500 mr-1 sm:mr-2"></i>
+                      <span class="hidden sm:inline">Cómo funciona</span>
+                      <span class="sm:hidden">Ayuda</span>
                     </button>
                     <button onclick="App.sendQuickMessage('Tengo una duda sobre una reforma en mi casa')" 
-                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
-                      <i class="fas fa-tools text-amber-500 mr-2"></i>
-                      Preguntar reforma
+                            class="text-left p-2 sm:p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-xs sm:text-sm quick-action-mobile">
+                      <i class="fas fa-tools text-amber-500 mr-1 sm:mr-2"></i>
+                      <span class="hidden sm:inline">Preguntar reforma</span>
+                      <span class="sm:hidden">Reforma</span>
                     </button>
                     <button onclick="App.sendQuickMessage('¿Cuánto vale mi casa y qué puedo hacer para aumentar su valor?')" 
-                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
-                      <i class="fas fa-chart-line text-purple-500 mr-2"></i>
-                      Valorar mi chalet
+                            class="text-left p-2 sm:p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-xs sm:text-sm quick-action-mobile">
+                      <i class="fas fa-chart-line text-purple-500 mr-1 sm:mr-2"></i>
+                      <span class="hidden sm:inline">Valorar mi chalet</span>
+                      <span class="sm:hidden">Valorar</span>
                     </button>
                   </div>
-                  <p class="text-gray-400 text-xs mt-4">
-                    O escríbeme directamente lo que necesites 👇
+                  <p class="text-gray-400 text-xs mt-3 sm:mt-4">
+                    O escríbeme directamente 👇
                   </p>
                 </div>
               </div>
@@ -2100,38 +2104,38 @@ const App = {
           ` : ''}
           
           <!-- Input -->
-          <form id="chat-form" class="p-4 bg-white border-t border-gray-100">
+          <form id="chat-form" class="p-3 sm:p-4 bg-white border-t border-gray-100 chat-form-mobile">
             <!-- Preview de imagen seleccionada -->
-            <div id="image-preview-container" class="hidden mb-3">
+            <div id="image-preview-container" class="hidden mb-2 sm:mb-3">
               <div class="relative inline-block">
-                <img id="image-preview" src="" alt="Preview" class="max-h-32 rounded-lg border border-gray-200">
+                <img id="image-preview" src="" alt="Preview" class="max-h-24 sm:max-h-32 rounded-lg border border-gray-200">
                 <button type="button" onclick="App.removeSelectedImage()" 
                         class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600">
                   <i class="fas fa-times text-xs"></i>
                 </button>
               </div>
-              <p class="text-xs text-gray-500 mt-1">Imagen adjunta - Chari la analizará</p>
+              <p class="text-xs text-gray-500 mt-1">Imagen adjunta</p>
             </div>
             
-            <div class="flex space-x-2">
+            <div class="flex items-center gap-2">
               <!-- Botón subir imagen -->
               <input type="file" id="image-input" accept="image/*" class="hidden" onchange="App.handleImageSelect(event)">
               <button type="button" onclick="document.getElementById('image-input').click()" 
-                      class="px-3 py-3 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-green-600 transition"
+                      class="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 hover:text-green-600 transition flex items-center justify-center"
                       title="Adjuntar imagen">
-                <i class="fas fa-camera"></i>
+                <i class="fas fa-camera text-sm sm:text-base"></i>
               </button>
               
               <input type="text" id="chat-input" 
-                     class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                     class="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent text-sm sm:text-base"
                      placeholder="Escribe tu mensaje..."
                      autocomplete="off">
               <button type="submit" 
-                      class="gradient-bg text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 transition">
-                <i class="fas fa-paper-plane"></i>
+                      class="flex-shrink-0 w-10 h-10 sm:w-auto sm:h-auto sm:px-5 sm:py-3 gradient-bg text-white rounded-xl font-medium hover:opacity-90 transition flex items-center justify-center">
+                <i class="fas fa-paper-plane text-sm sm:text-base"></i>
               </button>
             </div>
-            <p class="text-xs text-gray-400 mt-2 text-center">
+            <p class="text-xs text-gray-400 mt-2 text-center hidden sm:block">
               <i class="fas fa-image mr-1"></i> Puedes enviar fotos de tu vivienda para que Chari las analice
             </p>
           </form>
