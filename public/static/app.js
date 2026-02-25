@@ -14,7 +14,244 @@ const App = {
     maintenances: [],
     conversations: [],
     currentConversation: null,
-    isLoading: false
+    isLoading: false,
+    onboardingStep: 0,
+    onboardingCompleted: false
+  },
+  
+  // =============================================
+  // SISTEMA DE ONBOARDING
+  // =============================================
+  onboardingSteps: [
+    {
+      id: 'welcome',
+      title: '¡Bienvenido a tu panel de control! 🏠',
+      description: 'Esta app te ayuda a tener tu chalet de Valdemorillo siempre bajo control. Te voy a enseñar cómo funciona en unos segundos.',
+      target: null,
+      position: 'center'
+    },
+    {
+      id: 'score',
+      title: 'Tu puntuación técnica',
+      description: 'Este número indica el estado general de tu vivienda. Cuanto más alto, mejor. Se calcula según los datos que registres.',
+      target: '[data-tour="score"]',
+      position: 'bottom'
+    },
+    {
+      id: 'maintenance',
+      title: 'Control de mantenimientos',
+      description: 'Aquí ves cuántos mantenimientos tienes pendientes de revisar: caldera, tejado, piscina... ¡Nunca más se te olvidará nada!',
+      target: '[data-tour="maintenance"]',
+      position: 'bottom'
+    },
+    {
+      id: 'chari',
+      title: 'Chari, tu asesora personal',
+      description: 'Chari es experta en viviendas y conoce Valdemorillo de toda la vida. Pregúntale lo que quieras: precios, reformas, trámites, consejos...',
+      target: '[data-tour="chari"]',
+      position: 'bottom'
+    },
+    {
+      id: 'property',
+      title: 'Configura tu vivienda',
+      description: 'En "Mi Vivienda" puedes registrar los datos de tu chalet. Cuanta más información pongas, mejores consejos podrá darte Chari.',
+      target: '[data-tour="property"]',
+      position: 'top'
+    },
+    {
+      id: 'nav',
+      title: 'Navega por las secciones',
+      description: 'Desde el menú puedes acceder a: tu vivienda, mantenimientos, calculadora de presupuestos, estrategia de valor y hablar con Chari.',
+      target: '[data-tour="nav"]',
+      position: 'right'
+    },
+    {
+      id: 'finish',
+      title: '¡Ya estás listo! 🎉',
+      description: 'Te recomiendo empezar hablando con Chari. Cuéntale sobre tu chalet y ella te guiará para sacarle el máximo partido a la app.',
+      target: null,
+      position: 'center',
+      action: 'go-to-chari'
+    }
+  ],
+  
+  startOnboarding() {
+    const completed = localStorage.getItem('masurba_onboarding_completed');
+    if (completed) {
+      this.state.onboardingCompleted = true;
+      return;
+    }
+    this.state.onboardingStep = 0;
+    this.showOnboardingStep();
+  },
+  
+  showOnboardingStep() {
+    const step = this.onboardingSteps[this.state.onboardingStep];
+    if (!step) {
+      this.finishOnboarding();
+      return;
+    }
+    
+    // Eliminar overlay anterior si existe
+    document.getElementById('onboarding-overlay')?.remove();
+    
+    // Crear overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'onboarding-overlay';
+    overlay.className = 'fixed inset-0 z-50 transition-opacity duration-300';
+    
+    // Encontrar elemento objetivo
+    let targetRect = null;
+    let targetElement = null;
+    if (step.target) {
+      targetElement = document.querySelector(step.target);
+      if (targetElement) {
+        targetRect = targetElement.getBoundingClientRect();
+        targetElement.classList.add('onboarding-highlight');
+      }
+    }
+    
+    // Calcular posición del tooltip
+    let tooltipStyle = '';
+    let arrowClass = '';
+    
+    if (step.position === 'center' || !targetRect) {
+      tooltipStyle = 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
+    } else if (step.position === 'bottom') {
+      tooltipStyle = `top: ${targetRect.bottom + 15}px; left: ${targetRect.left + targetRect.width/2}px; transform: translateX(-50%);`;
+      arrowClass = 'arrow-top';
+    } else if (step.position === 'top') {
+      tooltipStyle = `top: ${targetRect.top - 15}px; left: ${targetRect.left + targetRect.width/2}px; transform: translate(-50%, -100%);`;
+      arrowClass = 'arrow-bottom';
+    } else if (step.position === 'right') {
+      tooltipStyle = `top: ${targetRect.top + targetRect.height/2}px; left: ${targetRect.right + 15}px; transform: translateY(-50%);`;
+      arrowClass = 'arrow-left';
+    }
+    
+    const isLastStep = this.state.onboardingStep === this.onboardingSteps.length - 1;
+    const isFirstStep = this.state.onboardingStep === 0;
+    
+    overlay.innerHTML = `
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      ${targetRect ? `
+        <div class="absolute bg-transparent rounded-xl shadow-[0_0_0_4000px_rgba(0,0,0,0.6)]" 
+             style="top: ${targetRect.top - 8}px; left: ${targetRect.left - 8}px; width: ${targetRect.width + 16}px; height: ${targetRect.height + 16}px;">
+        </div>
+      ` : ''}
+      <div class="absolute bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 ${arrowClass}" style="${tooltipStyle}">
+        <div class="flex items-start justify-between mb-3">
+          <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+            ${this.state.onboardingStep + 1} / ${this.onboardingSteps.length}
+          </span>
+          <button onclick="App.skipOnboarding()" class="text-gray-400 hover:text-gray-600 text-sm">
+            Saltar tour
+          </button>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">${step.title}</h3>
+        <p class="text-gray-600 text-sm mb-5">${step.description}</p>
+        <div class="flex items-center justify-between">
+          ${!isFirstStep ? `
+            <button onclick="App.prevOnboardingStep()" class="text-gray-500 hover:text-gray-700 text-sm font-medium">
+              <i class="fas fa-arrow-left mr-1"></i> Anterior
+            </button>
+          ` : '<div></div>'}
+          <button onclick="App.nextOnboardingStep()" 
+                  class="gradient-bg text-white px-5 py-2 rounded-lg font-medium hover:opacity-90 transition">
+            ${isLastStep ? '<i class="fas fa-comments mr-2"></i>Hablar con Chari' : 'Siguiente <i class="fas fa-arrow-right ml-1"></i>'}
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Añadir estilos del onboarding
+    if (!document.getElementById('onboarding-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'onboarding-styles';
+      styles.textContent = `
+        .onboarding-highlight {
+          position: relative;
+          z-index: 51;
+          box-shadow: 0 0 0 4px rgba(91, 184, 138, 0.5);
+          border-radius: 12px;
+        }
+        .arrow-top::before {
+          content: '';
+          position: absolute;
+          top: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-bottom: 8px solid white;
+        }
+        .arrow-bottom::after {
+          content: '';
+          position: absolute;
+          bottom: -8px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-left: 8px solid transparent;
+          border-right: 8px solid transparent;
+          border-top: 8px solid white;
+        }
+        .arrow-left::before {
+          content: '';
+          position: absolute;
+          left: -8px;
+          top: 50%;
+          transform: translateY(-50%);
+          border-top: 8px solid transparent;
+          border-bottom: 8px solid transparent;
+          border-right: 8px solid white;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+    
+    document.body.appendChild(overlay);
+  },
+  
+  nextOnboardingStep() {
+    // Quitar highlight del elemento anterior
+    document.querySelectorAll('.onboarding-highlight').forEach(el => {
+      el.classList.remove('onboarding-highlight');
+    });
+    
+    const currentStep = this.onboardingSteps[this.state.onboardingStep];
+    
+    // Si es el último paso, ir a Chari
+    if (this.state.onboardingStep === this.onboardingSteps.length - 1) {
+      this.finishOnboarding();
+      this.navigate('chari');
+      return;
+    }
+    
+    this.state.onboardingStep++;
+    this.showOnboardingStep();
+  },
+  
+  prevOnboardingStep() {
+    document.querySelectorAll('.onboarding-highlight').forEach(el => {
+      el.classList.remove('onboarding-highlight');
+    });
+    
+    if (this.state.onboardingStep > 0) {
+      this.state.onboardingStep--;
+      this.showOnboardingStep();
+    }
+  },
+  
+  skipOnboarding() {
+    this.finishOnboarding();
+  },
+  
+  finishOnboarding() {
+    document.querySelectorAll('.onboarding-highlight').forEach(el => {
+      el.classList.remove('onboarding-highlight');
+    });
+    document.getElementById('onboarding-overlay')?.remove();
+    localStorage.setItem('masurba_onboarding_completed', 'true');
+    this.state.onboardingCompleted = true;
   },
   
   // Inicialización
@@ -165,7 +402,7 @@ const App = {
         </header>
         
         <!-- Navegación -->
-        <nav class="bg-gray-50 border-b border-gray-200 sticky top-0 z-40">
+        <nav class="bg-gray-50 border-b border-gray-200 sticky top-0 z-40" data-tour="nav">
           <div class="max-w-7xl mx-auto px-4">
             <div class="flex space-x-1 overflow-x-auto py-2">
               ${isAdmin ? this.renderAdminNav() : this.renderClientNav()}
@@ -504,7 +741,7 @@ const App = {
         <!-- Tarjetas principales -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Score técnico -->
-          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100" data-tour="score">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-gray-500 text-sm font-medium">Estado técnico</p>
@@ -528,7 +765,7 @@ const App = {
           </div>
           
           <!-- Mantenimientos pendientes -->
-          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100" data-tour="maintenance">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-gray-500 text-sm font-medium">Mantenimientos</p>
@@ -546,7 +783,7 @@ const App = {
           </div>
           
           <!-- Chari -->
-          <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
+          <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100" data-tour="chari">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-urba-500 text-sm font-medium">Asistente</p>
@@ -567,7 +804,7 @@ const App = {
         <!-- Vivienda y próximo mantenimiento -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <!-- Mi vivienda -->
-          <div class="bg-white rounded-xl shadow-sm border border-urba-100 overflow-hidden">
+          <div class="bg-white rounded-xl shadow-sm border border-urba-100 overflow-hidden" data-tour="property">
             <div class="bg-urba-50 px-6 py-4 border-b border-urba-100">
               <h3 class="font-semibold text-urba-900">
                 <i class="fas fa-home mr-2 text-urba-500"></i>
@@ -1182,12 +1419,43 @@ const App = {
           <!-- Mensajes -->
           <div id="chat-messages" class="chat-container overflow-y-auto p-6 space-y-4 bg-gray-50">
             ${messages.length === 0 ? `
-              <div class="text-center py-8">
-                <div class="w-16 h-16 bg-gradient-to-br from-pink-200 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i class="fas fa-comments text-2xl text-gray-600"></i>
+              <div class="text-center py-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-pink-200 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <i class="fas fa-user-tie text-3xl text-gray-600"></i>
                 </div>
-                <p class="text-gray-700 font-medium">¡Hola ${this.state.user?.name?.split(' ')[0]}!</p>
-                <p class="text-gray-500 text-sm mt-2">Soy Chari, tu asistente en Más Urba.<br>Pregúntame sobre reformas, mantenimiento o estrategia.</p>
+                <p class="text-gray-800 font-semibold text-lg">¡Hola ${this.state.user?.name?.split(' ')[0]}! 👋</p>
+                <p class="text-gray-600 text-sm mt-3 max-w-md mx-auto">
+                  Soy <strong>Chari</strong>, tu asesora personal de <strong>Más Urba</strong>. 
+                  Llevo 8 años ayudando a vecinos de Valdemorillo con sus chalets.
+                </p>
+                <div class="mt-6 space-y-3 max-w-sm mx-auto">
+                  <p class="text-gray-500 text-sm font-medium">¿Por dónde empezamos?</p>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button onclick="App.sendQuickMessage('Quiero que me ayudes a rellenar los datos de mi vivienda')" 
+                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
+                      <i class="fas fa-home text-green-500 mr-2"></i>
+                      Configurar mi vivienda
+                    </button>
+                    <button onclick="App.sendQuickMessage('¿Cómo funciona la app y qué puedo hacer?')" 
+                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
+                      <i class="fas fa-question-circle text-blue-500 mr-2"></i>
+                      Cómo funciona
+                    </button>
+                    <button onclick="App.sendQuickMessage('Tengo una duda sobre una reforma en mi casa')" 
+                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
+                      <i class="fas fa-tools text-amber-500 mr-2"></i>
+                      Preguntar reforma
+                    </button>
+                    <button onclick="App.sendQuickMessage('¿Cuánto vale mi casa y qué puedo hacer para aumentar su valor?')" 
+                            class="text-left p-3 bg-white rounded-xl border border-gray-200 hover:border-green-400 hover:shadow-sm transition text-sm">
+                      <i class="fas fa-chart-line text-purple-500 mr-2"></i>
+                      Valorar mi chalet
+                    </button>
+                  </div>
+                  <p class="text-gray-400 text-xs mt-4">
+                    O escríbeme directamente lo que necesites 👇
+                  </p>
+                </div>
               </div>
             ` : messages.map(m => `
               <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
@@ -1452,6 +1720,11 @@ const App = {
         await this.loadDashboard();
         this.navigate(this.state.user.role === 'admin' ? 'admin' : 'dashboard');
         this.showToast('¡Bienvenido!', 'success');
+        
+        // Iniciar onboarding para clientes nuevos
+        if (this.state.user.role !== 'admin') {
+          setTimeout(() => this.startOnboarding(), 800);
+        }
       }
     } catch (error) {
       throw new Error(error.response?.data?.error || 'Error de conexión');
@@ -1624,6 +1897,66 @@ const App = {
     } catch (error) {
       this.showToast('Error al enviar mensaje', 'error');
       return null;
+    }
+  },
+  
+  // Enviar mensaje rápido desde botones
+  async sendQuickMessage(message) {
+    // Poner el mensaje en el input y enviarlo
+    const input = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const typingIndicator = document.getElementById('typing-indicator');
+    
+    if (input) {
+      input.value = message;
+    }
+    
+    // Limpiar la pantalla de bienvenida y mostrar el mensaje del usuario
+    if (chatMessages) {
+      chatMessages.innerHTML = `
+        <div class="flex justify-end">
+          <div class="message-bubble gradient-bg text-white rounded-2xl rounded-br-md px-4 py-3">
+            <p class="text-sm whitespace-pre-line">${message}</p>
+            <p class="text-xs text-white/70 mt-1">${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+          </div>
+        </div>
+        <div id="typing-indicator" class="flex justify-start">
+          <div class="bg-white rounded-2xl rounded-bl-md shadow-sm border border-gray-100 px-4 py-3">
+            <div class="flex space-x-1">
+              <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+              <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+              <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Limpiar input
+    if (input) input.value = '';
+    
+    // Enviar mensaje
+    const result = await this.sendMessage(message);
+    
+    // Ocultar indicador de escritura y mostrar respuesta
+    const newTypingIndicator = document.getElementById('typing-indicator');
+    if (newTypingIndicator) {
+      newTypingIndicator.remove();
+    }
+    
+    if (result && chatMessages) {
+      // Añadir respuesta de Chari
+      const assistantBubble = document.createElement('div');
+      assistantBubble.className = 'flex justify-start';
+      assistantBubble.innerHTML = `
+        <div class="message-bubble bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100 px-4 py-3">
+          <p class="text-sm whitespace-pre-line">${this.formatMessage(result.assistantMessage.content)}</p>
+          <p class="text-xs text-gray-400 mt-1">${this.formatTime(result.assistantMessage.timestamp)}</p>
+        </div>
+      `;
+      chatMessages.appendChild(assistantBubble);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
     }
   },
   
