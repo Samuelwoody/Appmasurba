@@ -28,49 +28,56 @@ const App = {
       title: '¡Bienvenido a tu panel de control! 🏠',
       description: 'Esta app te ayuda a tener tu chalet de Valdemorillo siempre bajo control. Te voy a enseñar cómo funciona en unos segundos.',
       target: null,
-      position: 'center'
+      position: 'center',
+      special: null
     },
     {
       id: 'score',
       title: 'Tu puntuación técnica',
       description: 'Este número indica el estado general de tu vivienda. Cuanto más alto, mejor. Se calcula según los datos que registres.',
       target: '[data-tour="score"]',
-      position: 'bottom'
+      position: 'bottom',
+      special: null
     },
     {
       id: 'maintenance',
       title: 'Control de mantenimientos',
       description: 'Aquí ves cuántos mantenimientos tienes pendientes de revisar: caldera, tejado, piscina... ¡Nunca más se te olvidará nada!',
       target: '[data-tour="maintenance"]',
-      position: 'bottom'
+      position: 'bottom',
+      special: null
     },
     {
       id: 'chari',
-      title: 'Chari, tu asesora personal',
-      description: 'Chari es experta en viviendas y conoce Valdemorillo de toda la vida. Pregúntale lo que quieras: precios, reformas, trámites, consejos...',
-      target: '[data-tour="chari"]',
-      position: 'bottom'
+      title: '✨ Conoce a Chari, tu asesora personal ✨',
+      description: null, // Se renderiza de forma especial
+      target: null,
+      position: 'center',
+      special: 'chari'
     },
     {
       id: 'property',
       title: 'Configura tu vivienda',
       description: 'En "Mi Vivienda" puedes registrar los datos de tu chalet. Cuanta más información pongas, mejores consejos podrá darte Chari.',
       target: '[data-tour="property"]',
-      position: 'top'
+      position: 'top',
+      special: null
     },
     {
       id: 'nav',
       title: 'Navega por las secciones',
       description: 'Desde el menú puedes acceder a: tu vivienda, mantenimientos, calculadora de presupuestos, estrategia de valor y hablar con Chari.',
       target: '[data-tour="nav"]',
-      position: 'right'
+      position: 'right',
+      special: null
     },
     {
       id: 'finish',
       title: '¡Ya estás listo! 🎉',
-      description: 'Te recomiendo empezar hablando con Chari. Cuéntale sobre tu chalet y ella te guiará para sacarle el máximo partido a la app.',
+      description: 'Ahora Chari te guiará para configurar tu vivienda y sacarle el máximo partido a la app. ¡Empecemos!',
       target: null,
       position: 'center',
+      special: null,
       action: 'go-to-chari'
     }
   ],
@@ -92,8 +99,11 @@ const App = {
       return;
     }
     
-    // Eliminar overlay anterior si existe
+    // Eliminar overlay anterior y quitar TODOS los highlights
     document.getElementById('onboarding-overlay')?.remove();
+    document.querySelectorAll('.onboarding-highlight').forEach(el => {
+      el.classList.remove('onboarding-highlight');
+    });
     
     // Crear overlay
     const overlay = document.createElement('div');
@@ -131,37 +141,114 @@ const App = {
     const isLastStep = this.state.onboardingStep === this.onboardingSteps.length - 1;
     const isFirstStep = this.state.onboardingStep === 0;
     
-    overlay.innerHTML = `
-      <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-      ${targetRect ? `
-        <div class="absolute bg-transparent rounded-xl shadow-[0_0_0_4000px_rgba(0,0,0,0.6)]" 
-             style="top: ${targetRect.top - 8}px; left: ${targetRect.left - 8}px; width: ${targetRect.width + 16}px; height: ${targetRect.height + 16}px;">
+    // Popup especial para Chari
+    if (step.special === 'chari') {
+      overlay.innerHTML = `
+        <div class="absolute inset-0 bg-gradient-to-br from-green-900/90 via-emerald-800/90 to-teal-900/90 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden transform animate-pulse-subtle">
+            <!-- Header con gradiente -->
+            <div class="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 p-6 text-center relative overflow-hidden">
+              <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTAiIGN5PSIxMCIgcj0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+PC9zdmc+')] opacity-30"></div>
+              <div class="relative">
+                <div class="w-24 h-24 mx-auto bg-white rounded-full shadow-lg flex items-center justify-center mb-4 ring-4 ring-white/30">
+                  <span class="text-5xl">👩‍💼</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-1">¡Hola! Soy Chari</h2>
+                <p class="text-green-100 text-sm">Tu asesora personal de confianza</p>
+              </div>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="p-6 space-y-4">
+              <div class="text-center">
+                <p class="text-gray-700 text-lg leading-relaxed">
+                  Estoy aquí para ayudarte con <strong>todo lo relacionado con tu vivienda</strong>. 
+                  Llevo <span class="text-green-600 font-semibold">8 años</span> asesorando a propietarios de Valdemorillo.
+                </p>
+              </div>
+              
+              <!-- Capacidades -->
+              <div class="grid grid-cols-2 gap-3 my-5">
+                <div class="bg-green-50 rounded-xl p-3 text-center">
+                  <i class="fas fa-calculator text-green-500 text-xl mb-1"></i>
+                  <p class="text-xs text-gray-600">Presupuestos y precios</p>
+                </div>
+                <div class="bg-blue-50 rounded-xl p-3 text-center">
+                  <i class="fas fa-tools text-blue-500 text-xl mb-1"></i>
+                  <p class="text-xs text-gray-600">Reformas y obras</p>
+                </div>
+                <div class="bg-amber-50 rounded-xl p-3 text-center">
+                  <i class="fas fa-file-alt text-amber-500 text-xl mb-1"></i>
+                  <p class="text-xs text-gray-600">Licencias y trámites</p>
+                </div>
+                <div class="bg-purple-50 rounded-xl p-3 text-center">
+                  <i class="fas fa-lightbulb text-purple-500 text-xl mb-1"></i>
+                  <p class="text-xs text-gray-600">Consejos personalizados</p>
+                </div>
+              </div>
+              
+              <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                <p class="text-sm text-gray-600 text-center">
+                  <i class="fas fa-quote-left text-green-300 mr-1"></i>
+                  Pregúntame lo que quieras, sin compromiso. Estoy aquí para orientarte y que tomes las mejores decisiones.
+                  <i class="fas fa-quote-right text-green-300 ml-1"></i>
+                </p>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
+              <span class="text-xs font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full">
+                ${this.state.onboardingStep + 1} / ${this.onboardingSteps.length}
+              </span>
+              <div class="flex gap-2">
+                <button onclick="App.prevOnboardingStep()" class="text-gray-500 hover:text-gray-700 text-sm font-medium px-3 py-2">
+                  <i class="fas fa-arrow-left mr-1"></i> Anterior
+                </button>
+                <button onclick="App.nextOnboardingStep()" 
+                        class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-2 rounded-xl font-medium hover:from-green-600 hover:to-emerald-600 transition shadow-lg shadow-green-500/30">
+                  Continuar <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      ` : ''}
-      <div class="absolute bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 ${arrowClass}" style="${tooltipStyle}">
-        <div class="flex items-start justify-between mb-3">
-          <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-            ${this.state.onboardingStep + 1} / ${this.onboardingSteps.length}
-          </span>
-          <button onclick="App.skipOnboarding()" class="text-gray-400 hover:text-gray-600 text-sm">
-            Saltar tour
-          </button>
-        </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-2">${step.title}</h3>
-        <p class="text-gray-600 text-sm mb-5">${step.description}</p>
-        <div class="flex items-center justify-between">
-          ${!isFirstStep ? `
-            <button onclick="App.prevOnboardingStep()" class="text-gray-500 hover:text-gray-700 text-sm font-medium">
-              <i class="fas fa-arrow-left mr-1"></i> Anterior
+      `;
+    } else {
+      // Popup normal
+      overlay.innerHTML = `
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        ${targetRect ? `
+          <div class="absolute bg-transparent rounded-xl shadow-[0_0_0_4000px_rgba(0,0,0,0.6)]" 
+               style="top: ${targetRect.top - 8}px; left: ${targetRect.left - 8}px; width: ${targetRect.width + 16}px; height: ${targetRect.height + 16}px;">
+          </div>
+        ` : ''}
+        <div class="absolute bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 ${arrowClass}" style="${tooltipStyle}">
+          <div class="flex items-start justify-between mb-3">
+            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              ${this.state.onboardingStep + 1} / ${this.onboardingSteps.length}
+            </span>
+            <button onclick="App.skipOnboarding()" class="text-gray-400 hover:text-gray-600 text-sm">
+              Saltar tour
             </button>
-          ` : '<div></div>'}
-          <button onclick="App.nextOnboardingStep()" 
-                  class="gradient-bg text-white px-5 py-2 rounded-lg font-medium hover:opacity-90 transition">
-            ${isLastStep ? '<i class="fas fa-comments mr-2"></i>Hablar con Chari' : 'Siguiente <i class="fas fa-arrow-right ml-1"></i>'}
-          </button>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900 mb-2">${step.title}</h3>
+          <p class="text-gray-600 text-sm mb-5">${step.description}</p>
+          <div class="flex items-center justify-between">
+            ${!isFirstStep ? `
+              <button onclick="App.prevOnboardingStep()" class="text-gray-500 hover:text-gray-700 text-sm font-medium">
+                <i class="fas fa-arrow-left mr-1"></i> Anterior
+              </button>
+            ` : '<div></div>'}
+            <button onclick="App.nextOnboardingStep()" 
+                    class="gradient-bg text-white px-5 py-2 rounded-lg font-medium hover:opacity-90 transition">
+              ${isLastStep ? '<i class="fas fa-comments mr-2"></i>Hablar con Chari' : 'Siguiente <i class="fas fa-arrow-right ml-1"></i>'}
+            </button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
     
     // Añadir estilos del onboarding
     if (!document.getElementById('onboarding-styles')) {
@@ -204,6 +291,13 @@ const App = {
           border-bottom: 8px solid transparent;
           border-right: 8px solid white;
         }
+        @keyframes pulse-subtle {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.01); }
+        }
+        .animate-pulse-subtle {
+          animation: pulse-subtle 2s ease-in-out infinite;
+        }
       `;
       document.head.appendChild(styles);
     }
@@ -217,12 +311,11 @@ const App = {
       el.classList.remove('onboarding-highlight');
     });
     
-    const currentStep = this.onboardingSteps[this.state.onboardingStep];
-    
     // Si es el último paso, ir a Chari
     if (this.state.onboardingStep === this.onboardingSteps.length - 1) {
       this.finishOnboarding();
-      this.navigate('chari');
+      // Pequeño delay para asegurar que todo se limpie
+      setTimeout(() => this.navigate('chari'), 100);
       return;
     }
     
@@ -243,15 +336,20 @@ const App = {
   
   skipOnboarding() {
     this.finishOnboarding();
+    // Al saltar, también ir a Chari
+    setTimeout(() => this.navigate('chari'), 100);
   },
   
   finishOnboarding() {
+    // Limpiar TODOS los highlights y overlays
     document.querySelectorAll('.onboarding-highlight').forEach(el => {
       el.classList.remove('onboarding-highlight');
     });
     document.getElementById('onboarding-overlay')?.remove();
+    document.getElementById('onboarding-styles')?.remove();
     localStorage.setItem('masurba_onboarding_completed', 'true');
     this.state.onboardingCompleted = true;
+    this.state.onboardingStep = -1;
   },
   
   // Inicialización
