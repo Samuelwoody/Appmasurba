@@ -513,10 +513,9 @@ const App = {
     toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle mr-2"></i>${message}`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
-  }
-};
+  },
 
-// =============================================
+  // =============================================
   // MI VIVIENDA
   // =============================================
   renderProperty() {
