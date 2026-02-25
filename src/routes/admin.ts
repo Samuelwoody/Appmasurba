@@ -1,367 +1,513 @@
 import { Hono } from 'hono';
 import { authMiddleware, adminMiddleware } from '../middleware/auth';
-import type { Bindings, User, Property, ClientTag, ContactRequest, Conversation, ChariMemory } from '../types';
-import { hashPassword } from '../lib/auth';
+import type { Bindings, Service, Reminder, PropertyManagement, UserPublic, Property } from '../types';
 
 const admin = new Hono<{ Bindings: Bindings }>();
 
-// Aplicar auth y admin a todas las rutas
 admin.use('*', authMiddleware);
 admin.use('*', adminMiddleware);
 
-// Dashboard de admin
+// =============================================
+// DASHBOARD ADMIN - Resumen general
+// =============================================
 admin.get('/dashboard', async (c) => {
   try {
-    // Total de clientes
-    const totalClients = await c.env.DB.prepare(
-      "SELECT COUNT(*) as count FROM users WHERE role = 'client'"
+    // Total vecinos
+    const totalNeighbors = await c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM users WHERE role = 'client' AND is_active = 1"
     ).first<{ count: number }>();
-    
-    // Clientes por etiqueta
-    const tagCounts = await c.env.DB.prepare(
-      `SELECT tag_name, COUNT(*) as count FROM client_tags GROUP BY tag_name`
-    ).all<{ tag_name: string; count: number }>();
-    
-    const clientsByTag: Record<string, number> = {};
-    for (const row of tagCounts.results || []) {
-      clientsByTag[row.tag_name] = row.count;
-    }
-    
-    // Solicitudes pendientes
-    const pendingRequests = await c.env.DB.prepare(
-      "SELECT COUNT(*) as count FROM contact_requests WHERE status = 'pending'"
+
+    // Servicios pendientes
+    const pendingServices = await c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM services WHERE status IN ('pending', 'scheduled', 'in_progress')"
     ).first<{ count: number }>();
-    
-    // Conversaciones recientes (última semana)
-    const recentConversations = await c.env.DB.prepare(
-      `SELECT COUNT(*) as count FROM conversations 
-       WHERE updated_at >= datetime('now', '-7 days')`
+
+    // Recordatorios próximos (7 días)
+    const upcomingReminders = await c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM reminders WHERE status = 'pending' AND due_date <= date('now', '+7 days')"
     ).first<{ count: number }>();
-    
-    // Clientes que necesitan atención (sin actividad en 30 días)
-    const inactiveClients = await c.env.DB.prepare(
-      `SELECT u.id, u.name, u.email, u.last_login
+
+    // Gestiones activas (arrendamientos/ventas)
+    const activeManagements = await c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM property_management WHERE status = 'active'"
+    ).first<{ count: number }>();
+
+    // Servicios urgentes
+    const urgentServices = await c.env.DB.prepare(
+      `SELECT s.*, u.name as user_name, p.name as property_name, p.address
+       FROM services s
+       JOIN users u ON s.user_id = u.id
+       JOIN properties p ON s.property_id = p.id
+       WHERE s.priority = 'urgent' AND s.status != 'completed'
+       ORDER BY s.created_at DESC
+       LIMIT 5`
+    ).all();
+
+    // Recordatorios de hoy
+    const todayReminders = await c.env.DB.prepare(
+      `SELECT r.*, u.name as user_name, p.name as property_name
+       FROM reminders r
+       LEFT JOIN users u ON r.user_id = u.id
+       LEFT JOIN properties p ON r.property_id = p.id
+       WHERE r.status = 'pending' AND date(r.due_date) <= date('now')
+       ORDER BY r.due_date ASC
+       LIMIT 10`
+    ).all();
+
+    // Últimos vecinos registrados
+    const recentNeighbors = await c.env.DB.prepare(
+      `SELECT u.id, u.name, u.email, u.phone, u.created_at, p.name as property_name, p.address
        FROM users u
-       WHERE u.role = 'client' 
-       AND (u.last_login IS NULL OR u.last_login < datetime('now', '-30 days'))
-       LIMIT 10`
+       LEFT JOIN properties p ON p.user_id = u.id
+       WHERE u.role = 'client'
+       ORDER BY u.created_at DESC
+       LIMIT 5`
     ).all();
-    
-    // Últimas solicitudes
-    const latestRequests = await c.env.DB.prepare(
-      `SELECT cr.*, u.name as user_name, u.email as user_email
-       FROM contact_requests cr
-       JOIN users u ON cr.user_id = u.id
-       ORDER BY cr.created_at DESC
-       LIMIT 10`
-    ).all();
-    
+
     return c.json({
       success: true,
       data: {
-        totalClients: totalClients?.count || 0,
-        clientsByTag,
-        pendingRequests: pendingRequests?.count || 0,
-        recentConversations: recentConversations?.count || 0,
-        inactiveClients: inactiveClients.results || [],
-        latestRequests: latestRequests.results || []
+        stats: {
+          totalNeighbors: totalNeighbors?.count || 0,
+          pendingServices: pendingServices?.count || 0,
+          upcomingReminders: upcomingReminders?.count || 0,
+          activeManagements: activeManagements?.count || 0
+        },
+        urgentServices: urgentServices.results || [],
+        todayReminders: todayReminders.results || [],
+        recentNeighbors: recentNeighbors.results || []
       }
     });
   } catch (error) {
     console.error('Admin dashboard error:', error);
-    return c.json({ success: false, error: 'Error obteniendo dashboard' }, 500);
+    return c.json({ success: false, error: 'Error cargando dashboard' }, 500);
   }
 });
 
-// Listar todos los clientes
-admin.get('/clients', async (c) => {
+// =============================================
+// VECINOS - Listado y búsqueda
+// =============================================
+admin.get('/neighbors', async (c) => {
   try {
-    const clients = await c.env.DB.prepare(
-      `SELECT u.id, u.email, u.name, u.phone, u.created_at, u.last_login,
-              p.name as property_name, p.urbanization, p.technical_score,
-              GROUP_CONCAT(ct.tag_name) as tags
-       FROM users u
-       LEFT JOIN properties p ON p.user_id = u.id
-       LEFT JOIN client_tags ct ON ct.user_id = u.id
-       WHERE u.role = 'client'
-       GROUP BY u.id
-       ORDER BY u.created_at DESC`
-    ).all();
+    const search = c.req.query('search') || '';
+    const filter = c.req.query('filter') || 'all'; // all, with_services, with_management
     
-    // Procesar tags
-    const processedClients = (clients.results || []).map((client: any) => ({
-      ...client,
-      tags: client.tags ? client.tags.split(',') : []
-    }));
+    let query = `
+      SELECT u.id, u.name, u.email, u.phone, u.created_at, u.last_login,
+             p.id as property_id, p.name as property_name, p.address, p.urbanization,
+             p.technical_score, p.year_built, p.square_meters,
+             (SELECT COUNT(*) FROM services WHERE user_id = u.id AND status != 'completed') as pending_services,
+             (SELECT COUNT(*) FROM property_management WHERE property_id = p.id AND status = 'active') as active_managements
+      FROM users u
+      LEFT JOIN properties p ON p.user_id = u.id
+      WHERE u.role = 'client' AND u.is_active = 1
+    `;
+    
+    const params: string[] = [];
+    
+    if (search) {
+      query += ` AND (u.name LIKE ? OR u.email LIKE ? OR p.address LIKE ? OR p.urbanization LIKE ?)`;
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+    }
+    
+    query += ` ORDER BY u.name ASC`;
+    
+    const stmt = params.length > 0 
+      ? c.env.DB.prepare(query).bind(...params)
+      : c.env.DB.prepare(query);
+    
+    const result = await stmt.all();
     
     return c.json({
       success: true,
-      data: processedClients
+      data: result.results || []
     });
   } catch (error) {
-    console.error('List clients error:', error);
-    return c.json({ success: false, error: 'Error listando clientes' }, 500);
+    console.error('Get neighbors error:', error);
+    return c.json({ success: false, error: 'Error obteniendo vecinos' }, 500);
   }
 });
 
-// Ver detalle de un cliente
-admin.get('/clients/:id', async (c) => {
-  const clientId = c.req.param('id');
+// =============================================
+// VECINO DETALLE - Vista completa
+// =============================================
+admin.get('/neighbors/:id', async (c) => {
+  const neighborId = parseInt(c.req.param('id'));
   
   try {
-    // Datos del cliente
-    const client = await c.env.DB.prepare(
-      `SELECT id, email, name, phone, created_at, last_login
-       FROM users WHERE id = ? AND role = 'client'`
-    ).bind(clientId).first();
+    // Datos del usuario
+    const user = await c.env.DB.prepare(
+      'SELECT id, name, email, phone, created_at, last_login FROM users WHERE id = ?'
+    ).bind(neighborId).first<UserPublic>();
     
-    if (!client) {
-      return c.json({ success: false, error: 'Cliente no encontrado' }, 404);
+    if (!user) {
+      return c.json({ success: false, error: 'Vecino no encontrado' }, 404);
     }
     
-    // Vivienda
+    // Propiedad
     const property = await c.env.DB.prepare(
       'SELECT * FROM properties WHERE user_id = ?'
-    ).bind(clientId).first<Property>();
+    ).bind(neighborId).first<Property>();
     
     // Instalaciones
-    const installations = property ? await c.env.DB.prepare(
+    const installations = await c.env.DB.prepare(
       'SELECT * FROM installations WHERE property_id = ?'
-    ).bind(property.id).all() : { results: [] };
+    ).bind(property?.id || 0).all();
     
     // Mantenimientos
-    const maintenances = property ? await c.env.DB.prepare(
+    const maintenances = await c.env.DB.prepare(
       'SELECT * FROM maintenances WHERE property_id = ?'
-    ).bind(property.id).all() : { results: [] };
+    ).bind(property?.id || 0).all();
+    
+    // Servicios
+    const services = await c.env.DB.prepare(
+      'SELECT * FROM services WHERE user_id = ? ORDER BY created_at DESC'
+    ).bind(neighborId).all();
+    
+    // Gestiones (arrendamiento/venta)
+    const managements = await c.env.DB.prepare(
+      'SELECT * FROM property_management WHERE property_id = ? ORDER BY created_at DESC'
+    ).bind(property?.id || 0).all();
+    
+    // Recordatorios
+    const reminders = await c.env.DB.prepare(
+      'SELECT * FROM reminders WHERE user_id = ? OR property_id = ? ORDER BY due_date ASC'
+    ).bind(neighborId, property?.id || 0).all();
     
     // Etiquetas
     const tags = await c.env.DB.prepare(
       'SELECT * FROM client_tags WHERE user_id = ?'
-    ).bind(clientId).all<ClientTag>();
+    ).bind(neighborId).all();
     
-    // Estimaciones
-    const estimates = await c.env.DB.prepare(
-      'SELECT * FROM estimates WHERE user_id = ? ORDER BY created_at DESC'
-    ).bind(clientId).all();
-    
-    // Solicitudes
-    const requests = await c.env.DB.prepare(
-      'SELECT * FROM contact_requests WHERE user_id = ? ORDER BY created_at DESC'
-    ).bind(clientId).all<ContactRequest>();
-    
-    // Memoria de Chari
-    let memory = await c.env.DB.prepare(
-      'SELECT * FROM chari_memory WHERE user_id = ?'
-    ).bind(clientId).first<ChariMemory>();
-    
-    if (memory) {
-      if (typeof memory.context === 'string') memory.context = JSON.parse(memory.context);
-      if (typeof memory.preferences === 'string') memory.preferences = JSON.parse(memory.preferences);
-      if (typeof memory.last_topics === 'string') memory.last_topics = JSON.parse(memory.last_topics);
-    }
-    
-    // Últimas conversaciones
+    // Últimas conversaciones con Chari
     const conversations = await c.env.DB.prepare(
-      `SELECT id, title, intent_classification, samuel_contact_offered, created_at, updated_at
-       FROM conversations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 5`
-    ).bind(clientId).all();
+      'SELECT id, title, intent_classification, created_at, updated_at FROM conversations WHERE user_id = ? ORDER BY updated_at DESC LIMIT 5'
+    ).bind(neighborId).all();
     
     return c.json({
       success: true,
       data: {
-        client,
-        property: property ? {
-          ...property,
-          installations: installations.results || [],
-          maintenances: maintenances.results || []
-        } : null,
+        user,
+        property,
+        installations: installations.results || [],
+        maintenances: maintenances.results || [],
+        services: services.results || [],
+        managements: managements.results || [],
+        reminders: reminders.results || [],
         tags: tags.results || [],
-        estimates: estimates.results || [],
-        requests: requests.results || [],
-        chariMemory: memory,
-        conversations: conversations.results || []
+        conversations: conversations.results || [],
+        technicalScore: property?.technical_score || 0
       }
     });
   } catch (error) {
-    console.error('Get client detail error:', error);
-    return c.json({ success: false, error: 'Error obteniendo cliente' }, 500);
+    console.error('Get neighbor detail error:', error);
+    return c.json({ success: false, error: 'Error obteniendo detalle' }, 500);
   }
 });
 
-// Ver conversación de un cliente
-admin.get('/clients/:id/conversations/:convId', async (c) => {
-  const clientId = c.req.param('id');
-  const convId = c.req.param('convId');
-  
+// =============================================
+// SERVICIOS - CRUD
+// =============================================
+admin.get('/services', async (c) => {
   try {
-    const conversation = await c.env.DB.prepare(
-      'SELECT * FROM conversations WHERE id = ? AND user_id = ?'
-    ).bind(convId, clientId).first<Conversation>();
+    const status = c.req.query('status') || 'all';
+    const type = c.req.query('type') || 'all';
     
-    if (!conversation) {
-      return c.json({ success: false, error: 'Conversación no encontrada' }, 404);
+    let query = `
+      SELECT s.*, u.name as user_name, u.phone as user_phone,
+             p.name as property_name, p.address
+      FROM services s
+      JOIN users u ON s.user_id = u.id
+      JOIN properties p ON s.property_id = p.id
+      WHERE 1=1
+    `;
+    
+    if (status !== 'all') {
+      query += ` AND s.status = '${status}'`;
+    }
+    if (type !== 'all') {
+      query += ` AND s.service_type = '${type}'`;
     }
     
-    if (typeof conversation.messages === 'string') {
-      conversation.messages = JSON.parse(conversation.messages);
-    }
+    query += ` ORDER BY 
+      CASE s.priority 
+        WHEN 'urgent' THEN 1 
+        WHEN 'high' THEN 2 
+        WHEN 'normal' THEN 3 
+        ELSE 4 
+      END,
+      s.scheduled_date ASC`;
+    
+    const result = await c.env.DB.prepare(query).all();
     
     return c.json({
       success: true,
-      data: conversation
+      data: result.results || []
     });
   } catch (error) {
-    console.error('Get conversation error:', error);
-    return c.json({ success: false, error: 'Error obteniendo conversación' }, 500);
+    console.error('Get services error:', error);
+    return c.json({ success: false, error: 'Error obteniendo servicios' }, 500);
   }
 });
 
-// Añadir etiqueta a cliente
-admin.post('/clients/:id/tags', async (c) => {
-  const user = c.get('user');
-  const clientId = c.req.param('id');
+admin.post('/services', async (c) => {
+  const adminUser = c.get('user');
   
   try {
-    const { tag_name, notes } = await c.req.json();
+    const body = await c.req.json();
+    const { user_id, property_id, service_type, category, title, description, 
+            priority, scheduled_date, estimated_cost, provider_name, provider_phone, notes } = body;
     
-    const validTags = ['partial_reform', 'integral_reform', 'potential_sale', 'premium_client', 'educable_client', 'urgent', 'vip'];
-    if (!tag_name || !validTags.includes(tag_name)) {
-      return c.json({ success: false, error: 'Etiqueta no válida' }, 400);
+    const result = await c.env.DB.prepare(`
+      INSERT INTO services (user_id, property_id, service_type, category, title, description,
+                           priority, scheduled_date, estimated_cost, provider_name, provider_phone, notes, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      user_id, property_id, service_type, category || null, title, description || null,
+      priority || 'normal', scheduled_date || null, estimated_cost || null,
+      provider_name || null, provider_phone || null, notes || null, adminUser.sub
+    ).run();
+    
+    return c.json({
+      success: true,
+      data: { id: result.meta.last_row_id }
+    });
+  } catch (error) {
+    console.error('Create service error:', error);
+    return c.json({ success: false, error: 'Error creando servicio' }, 500);
+  }
+});
+
+admin.put('/services/:id', async (c) => {
+  const serviceId = parseInt(c.req.param('id'));
+  
+  try {
+    const body = await c.req.json();
+    const { status, scheduled_date, completed_date, final_cost, notes } = body;
+    
+    await c.env.DB.prepare(`
+      UPDATE services SET
+        status = COALESCE(?, status),
+        scheduled_date = COALESCE(?, scheduled_date),
+        completed_date = COALESCE(?, completed_date),
+        final_cost = COALESCE(?, final_cost),
+        notes = COALESCE(?, notes),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(status, scheduled_date, completed_date, final_cost, notes, serviceId).run();
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Update service error:', error);
+    return c.json({ success: false, error: 'Error actualizando servicio' }, 500);
+  }
+});
+
+// =============================================
+// RECORDATORIOS - CRUD
+// =============================================
+admin.get('/reminders', async (c) => {
+  try {
+    const status = c.req.query('status') || 'pending';
+    
+    const result = await c.env.DB.prepare(`
+      SELECT r.*, u.name as user_name, p.name as property_name, p.address
+      FROM reminders r
+      LEFT JOIN users u ON r.user_id = u.id
+      LEFT JOIN properties p ON r.property_id = p.id
+      WHERE r.status = ?
+      ORDER BY r.due_date ASC
+    `).bind(status).all();
+    
+    return c.json({
+      success: true,
+      data: result.results || []
+    });
+  } catch (error) {
+    console.error('Get reminders error:', error);
+    return c.json({ success: false, error: 'Error obteniendo recordatorios' }, 500);
+  }
+});
+
+admin.post('/reminders', async (c) => {
+  const adminUser = c.get('user');
+  
+  try {
+    const body = await c.req.json();
+    const { user_id, property_id, service_id, title, description, 
+            reminder_type, due_date, notify_admin, notify_user } = body;
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO reminders (user_id, property_id, service_id, title, description,
+                            reminder_type, due_date, notify_admin, notify_user, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      user_id || null, property_id || null, service_id || null, title, description || null,
+      reminder_type || 'general', due_date, notify_admin ?? 1, notify_user ?? 1, adminUser.sub
+    ).run();
+    
+    return c.json({
+      success: true,
+      data: { id: result.meta.last_row_id }
+    });
+  } catch (error) {
+    console.error('Create reminder error:', error);
+    return c.json({ success: false, error: 'Error creando recordatorio' }, 500);
+  }
+});
+
+admin.put('/reminders/:id', async (c) => {
+  const reminderId = parseInt(c.req.param('id'));
+  
+  try {
+    const body = await c.req.json();
+    const { status } = body;
+    
+    await c.env.DB.prepare(
+      'UPDATE reminders SET status = ? WHERE id = ?'
+    ).bind(status, reminderId).run();
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Update reminder error:', error);
+    return c.json({ success: false, error: 'Error actualizando recordatorio' }, 500);
+  }
+});
+
+// =============================================
+// GESTIONES (Arrendamiento/Venta)
+// =============================================
+admin.get('/managements', async (c) => {
+  try {
+    const type = c.req.query('type') || 'all'; // rental, sale, all
+    const status = c.req.query('status') || 'active';
+    
+    let query = `
+      SELECT pm.*, p.name as property_name, p.address, p.square_meters,
+             u.name as owner_name, u.phone as owner_phone
+      FROM property_management pm
+      JOIN properties p ON pm.property_id = p.id
+      JOIN users u ON p.user_id = u.id
+      WHERE pm.status = ?
+    `;
+    
+    if (type !== 'all') {
+      query += ` AND pm.management_type = '${type}'`;
     }
     
-    // Verificar que el cliente existe
-    const client = await c.env.DB.prepare(
-      "SELECT id FROM users WHERE id = ? AND role = 'client'"
-    ).bind(clientId).first();
+    query += ` ORDER BY pm.created_at DESC`;
     
-    if (!client) {
-      return c.json({ success: false, error: 'Cliente no encontrado' }, 404);
-    }
+    const result = await c.env.DB.prepare(query).bind(status).all();
     
-    // Verificar si ya tiene la etiqueta
+    return c.json({
+      success: true,
+      data: result.results || []
+    });
+  } catch (error) {
+    console.error('Get managements error:', error);
+    return c.json({ success: false, error: 'Error obteniendo gestiones' }, 500);
+  }
+});
+
+admin.post('/managements', async (c) => {
+  const adminUser = c.get('user');
+  
+  try {
+    const body = await c.req.json();
+    const { property_id, management_type, start_date, end_date, price, commission,
+            tenant_name, tenant_phone, tenant_email, notes } = body;
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO property_management (property_id, management_type, start_date, end_date,
+                                       price, commission, tenant_name, tenant_phone, tenant_email,
+                                       notes, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      property_id, management_type, start_date || null, end_date || null,
+      price || null, commission || null, tenant_name || null, tenant_phone || null,
+      tenant_email || null, notes || null, adminUser.sub
+    ).run();
+    
+    return c.json({
+      success: true,
+      data: { id: result.meta.last_row_id }
+    });
+  } catch (error) {
+    console.error('Create management error:', error);
+    return c.json({ success: false, error: 'Error creando gestión' }, 500);
+  }
+});
+
+admin.put('/managements/:id', async (c) => {
+  const managementId = parseInt(c.req.param('id'));
+  
+  try {
+    const body = await c.req.json();
+    const { status, end_date, price, notes } = body;
+    
+    await c.env.DB.prepare(`
+      UPDATE property_management SET
+        status = COALESCE(?, status),
+        end_date = COALESCE(?, end_date),
+        price = COALESCE(?, price),
+        notes = COALESCE(?, notes),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(status, end_date, price, notes, managementId).run();
+    
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Update management error:', error);
+    return c.json({ success: false, error: 'Error actualizando gestión' }, 500);
+  }
+});
+
+// =============================================
+// ETIQUETAS DE VECINOS
+// =============================================
+admin.post('/neighbors/:id/tags', async (c) => {
+  const neighborId = parseInt(c.req.param('id'));
+  const adminUser = c.get('user');
+  
+  try {
+    const body = await c.req.json();
+    const { tag_name, notes } = body;
+    
+    // Verificar si ya existe
     const existing = await c.env.DB.prepare(
       'SELECT id FROM client_tags WHERE user_id = ? AND tag_name = ?'
-    ).bind(clientId, tag_name).first();
+    ).bind(neighborId, tag_name).first();
     
     if (existing) {
-      return c.json({ success: false, error: 'El cliente ya tiene esta etiqueta' }, 400);
+      return c.json({ success: false, error: 'Etiqueta ya existe' }, 400);
     }
     
     await c.env.DB.prepare(
-      `INSERT INTO client_tags (user_id, tag_name, assigned_by, notes)
-       VALUES (?, ?, ?, ?)`
-    ).bind(clientId, tag_name, user.sub, notes || null).run();
+      'INSERT INTO client_tags (user_id, tag_name, assigned_by, notes) VALUES (?, ?, ?, ?)'
+    ).bind(neighborId, tag_name, adminUser.sub, notes || null).run();
     
-    return c.json({ success: true, message: 'Etiqueta añadida' });
+    return c.json({ success: true });
   } catch (error) {
     console.error('Add tag error:', error);
     return c.json({ success: false, error: 'Error añadiendo etiqueta' }, 500);
   }
 });
 
-// Eliminar etiqueta de cliente
-admin.delete('/clients/:id/tags/:tagName', async (c) => {
-  const clientId = c.req.param('id');
+admin.delete('/neighbors/:id/tags/:tagName', async (c) => {
+  const neighborId = parseInt(c.req.param('id'));
   const tagName = c.req.param('tagName');
   
   try {
     await c.env.DB.prepare(
       'DELETE FROM client_tags WHERE user_id = ? AND tag_name = ?'
-    ).bind(clientId, tagName).run();
+    ).bind(neighborId, tagName).run();
     
-    return c.json({ success: true, message: 'Etiqueta eliminada' });
+    return c.json({ success: true });
   } catch (error) {
     console.error('Remove tag error:', error);
     return c.json({ success: false, error: 'Error eliminando etiqueta' }, 500);
   }
-});
-
-// Actualizar estado de solicitud de contacto
-admin.put('/requests/:id', async (c) => {
-  const requestId = c.req.param('id');
-  
-  try {
-    const { status, notes, scheduled_at } = await c.req.json();
-    
-    const validStatuses = ['pending', 'contacted', 'scheduled', 'completed', 'cancelled'];
-    if (status && !validStatuses.includes(status)) {
-      return c.json({ success: false, error: 'Estado no válido' }, 400);
-    }
-    
-    await c.env.DB.prepare(
-      `UPDATE contact_requests SET 
-       status = COALESCE(?, status),
-       notes = COALESCE(?, notes),
-       scheduled_at = COALESCE(?, scheduled_at),
-       updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`
-    ).bind(status || null, notes || null, scheduled_at || null, requestId).run();
-    
-    return c.json({ success: true, message: 'Solicitud actualizada' });
-  } catch (error) {
-    console.error('Update request error:', error);
-    return c.json({ success: false, error: 'Error actualizando solicitud' }, 500);
-  }
-});
-
-// Crear nuevo cliente
-admin.post('/clients', async (c) => {
-  try {
-    const { email, password, name, phone } = await c.req.json();
-    
-    if (!email || !password || !name) {
-      return c.json({ success: false, error: 'Email, contraseña y nombre requeridos' }, 400);
-    }
-    
-    // Verificar si existe
-    const existing = await c.env.DB.prepare(
-      'SELECT id FROM users WHERE email = ?'
-    ).bind(email.toLowerCase()).first();
-    
-    if (existing) {
-      return c.json({ success: false, error: 'El email ya está registrado' }, 400);
-    }
-    
-    const passwordHash = await hashPassword(password);
-    
-    const result = await c.env.DB.prepare(
-      `INSERT INTO users (email, password_hash, name, phone, role)
-       VALUES (?, ?, ?, ?, 'client')`
-    ).bind(email.toLowerCase(), passwordHash, name, phone || null).run();
-    
-    const userId = result.meta.last_row_id;
-    
-    // Crear memoria de Chari
-    await c.env.DB.prepare(
-      `INSERT INTO chari_memory (user_id, context, preferences, interaction_count, last_topics)
-       VALUES (?, '{}', '{}', 0, '[]')`
-    ).bind(userId).run();
-    
-    return c.json({
-      success: true,
-      data: { id: userId, email: email.toLowerCase(), name },
-      message: 'Cliente creado correctamente'
-    });
-  } catch (error) {
-    console.error('Create client error:', error);
-    return c.json({ success: false, error: 'Error creando cliente' }, 500);
-  }
-});
-
-// Etiquetas disponibles
-admin.get('/tags', async (c) => {
-  return c.json({
-    success: true,
-    data: [
-      { value: 'partial_reform', label: 'Reforma parcial', color: 'blue' },
-      { value: 'integral_reform', label: 'Reforma integral', color: 'purple' },
-      { value: 'potential_sale', label: 'Venta potencial', color: 'orange' },
-      { value: 'premium_client', label: 'Cliente premium', color: 'gold' },
-      { value: 'educable_client', label: 'Cliente educable', color: 'green' },
-      { value: 'urgent', label: 'Urgente', color: 'red' },
-      { value: 'vip', label: 'VIP', color: 'pink' }
-    ]
-  });
 });
 
 export default admin;

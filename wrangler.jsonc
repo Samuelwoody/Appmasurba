@@ -9,8 +9,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "masurba-db",
-      "database_id": "local-dev-placeholder"
+      "database_name": "masurba-production",
+      "database_id": "0355b25e-d878-48c2-bbcf-6840fb1692a7"
     }
   ],
   "vars": {

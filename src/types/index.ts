@@ -214,3 +214,112 @@ export interface AdminStats {
   recentConversations: number;
   clientsNeedingAttention: UserPublic[];
 }
+
+// =============================================
+// NUEVOS TIPOS PARA ADMINISTRACIÓN
+// =============================================
+
+// Gestión de propiedad (arrendamiento/venta)
+export type ManagementType = 'rental' | 'sale';
+export type ManagementStatus = 'active' | 'pending' | 'completed' | 'cancelled';
+
+export interface PropertyManagement {
+  id: number;
+  property_id: number;
+  management_type: ManagementType;
+  status: ManagementStatus;
+  start_date?: string;
+  end_date?: string;
+  price?: number;
+  commission?: number;
+  tenant_name?: string;
+  tenant_phone?: string;
+  tenant_email?: string;
+  notes?: string;
+  created_by?: number;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  property?: Property;
+  user?: UserPublic;
+}
+
+// Servicios/Trabajos
+export type ServiceType = 'maintenance' | 'repair' | 'renovation' | 'inspection' | 'cleaning' | 'other';
+export type ServiceStatus = 'pending' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+export type ServicePriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export interface Service {
+  id: number;
+  property_id: number;
+  user_id: number;
+  service_type: ServiceType;
+  category?: string;
+  title: string;
+  description?: string;
+  status: ServiceStatus;
+  priority: ServicePriority;
+  scheduled_date?: string;
+  completed_date?: string;
+  estimated_cost?: number;
+  final_cost?: number;
+  provider_name?: string;
+  provider_phone?: string;
+  notes?: string;
+  created_by?: number;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  property?: Property;
+  user?: UserPublic;
+}
+
+// Recordatorios
+export type ReminderType = 'maintenance' | 'payment' | 'renewal' | 'inspection' | 'general';
+export type ReminderStatus = 'pending' | 'sent' | 'completed' | 'cancelled';
+
+export interface Reminder {
+  id: number;
+  user_id?: number;
+  property_id?: number;
+  service_id?: number;
+  title: string;
+  description?: string;
+  reminder_type: ReminderType;
+  due_date: string;
+  status: ReminderStatus;
+  notify_admin: number;
+  notify_user: number;
+  created_by?: number;
+  created_at: string;
+  // Joins
+  user?: UserPublic;
+  property?: Property;
+}
+
+// Actividad/Historial
+export interface ActivityLog {
+  id: number;
+  user_id?: number;
+  action_type: string;
+  entity_type?: string;
+  entity_id?: number;
+  description?: string;
+  metadata: Record<string, any>;
+  created_at: string;
+  user?: UserPublic;
+}
+
+// Vista completa de vecino para admin
+export interface NeighborFullView {
+  user: UserPublic;
+  property: Property | null;
+  installations: Installation[];
+  maintenances: Maintenance[];
+  services: Service[];
+  managements: PropertyManagement[];
+  reminders: Reminder[];
+  tags: ClientTag[];
+  conversations: Conversation[];
+  technicalScore: number;
+}

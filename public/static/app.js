@@ -88,8 +88,21 @@ const App = {
       case 'admin':
         content = this.renderLayout(this.renderAdmin());
         break;
+      case 'admin-neighbors':
+        content = this.renderLayout(this.renderAdminNeighbors());
+        break;
+      case 'admin-services':
+        content = this.renderLayout(this.renderAdminServices());
+        break;
+      case 'admin-reminders':
+        content = this.renderLayout(this.renderAdminReminders());
+        break;
+      case 'admin-managements':
+        content = this.renderLayout(this.renderAdminManagements());
+        break;
       case 'admin-client':
-        content = this.renderLayout(this.renderAdminClient());
+      case 'neighbor-detail':
+        content = this.renderLayout(this.renderNeighborDetail());
         break;
       default:
         content = this.renderLayout(this.renderDashboard());
@@ -99,28 +112,51 @@ const App = {
     this.attachEventListeners();
   },
   
+  // Estado para WhatsApp
+  whatsappVisible: false,
+
+  // Mostrar/ocultar WhatsApp
+  toggleWhatsApp() {
+    this.whatsappVisible = !this.whatsappVisible;
+    this.render();
+  },
+
+  // Abrir WhatsApp directamente
+  openWhatsApp(message = '') {
+    const phone = '34742094169';
+    const text = message || 'Hola, me gustaría contactar con Más Urba Multiservicios';
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+  },
+
   // Layout principal con navegación
   renderLayout(content) {
     const isAdmin = this.state.user?.role === 'admin';
     
     return `
-      <div class="min-h-screen bg-gray-50">
+      <div class="min-h-screen bg-white">
         <!-- Header -->
-        <header class="header-gradient text-white shadow-lg">
+        <header class="header-gradient shadow-sm">
           <div class="max-w-7xl mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
                 <img src="/static/logo.png" alt="Más Urba" class="w-12 h-12">
                 <div>
-                  <h1 class="text-lg font-semibold leading-tight">Urbanizaciones de Valdemorillo</h1>
-                  <p class="text-gray-400 text-xs">Control y Estrategia de Chalets</p>
+                  <h1 class="text-lg font-semibold leading-tight text-gray-800">Urbanizaciones de Valdemorillo</h1>
+                  <p class="text-gray-500 text-xs">Control y Estrategia de Chalets</p>
                 </div>
               </div>
-              <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-300 hidden sm:block">
-                  <i class="fas fa-user mr-1"></i> ${this.state.user?.name || ''}
+              <div class="flex items-center space-x-3">
+                <!-- Botón Administración (sutil) -->
+                <button onclick="App.toggleWhatsApp()" 
+                        class="text-gray-400 hover:text-gray-600 transition text-sm flex items-center"
+                        title="Contactar con administración">
+                  <i class="fas fa-headset mr-1"></i>
+                  <span class="hidden sm:inline text-xs">Administración</span>
+                </button>
+                <span class="text-sm text-gray-600 hidden sm:block">
+                  <i class="fas fa-user mr-1 text-gray-400"></i> ${this.state.user?.name || ''}
                 </span>
-                <button onclick="App.logout()" class="text-gray-400 hover:text-white transition">
+                <button onclick="App.logout()" class="text-gray-400 hover:text-gray-600 transition" title="Cerrar sesión">
                   <i class="fas fa-sign-out-alt"></i>
                 </button>
               </div>
@@ -129,7 +165,7 @@ const App = {
         </header>
         
         <!-- Navegación -->
-        <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <nav class="bg-gray-50 border-b border-gray-200 sticky top-0 z-40">
           <div class="max-w-7xl mx-auto px-4">
             <div class="flex space-x-1 overflow-x-auto py-2">
               ${isAdmin ? this.renderAdminNav() : this.renderClientNav()}
@@ -143,13 +179,40 @@ const App = {
         </main>
         
         <!-- Footer -->
-        <footer class="bg-gray-800 text-gray-400 py-6 mt-12">
+        <footer class="bg-gray-50 border-t border-gray-200 text-gray-500 py-6 mt-12">
           <div class="max-w-7xl mx-auto px-4 text-center text-sm">
-            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-10 h-10 mx-auto mb-2 opacity-70">
-            <p class="text-gray-300">© ${new Date().getFullYear()} Más Urba Multiservicios</p>
-            <p class="text-gray-500 mt-1">Urbanizaciones de Valdemorillo, Madrid</p>
+            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-10 h-10 mx-auto mb-2 opacity-80">
+            <p class="text-gray-600">© ${new Date().getFullYear()} Más Urba Multiservicios</p>
+            <p class="text-gray-400 mt-1">Urbanizaciones de Valdemorillo, Madrid</p>
           </div>
         </footer>
+        
+        <!-- WhatsApp Popup -->
+        ${this.whatsappVisible ? `
+        <div class="fixed bottom-6 right-6 z-50 whatsapp-popup">
+          <div class="bg-white rounded-2xl shadow-xl p-4 mb-3 border border-gray-100 max-w-xs">
+            <div class="flex items-start space-x-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-green-400 flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-user text-white text-sm"></i>
+              </div>
+              <div>
+                <p class="font-medium text-gray-800 text-sm">Samuel García</p>
+                <p class="text-gray-500 text-xs mt-0.5">Más Urba Multiservicios</p>
+                <p class="text-gray-600 text-sm mt-2">¿En qué puedo ayudarte?</p>
+              </div>
+            </div>
+            <button onclick="App.openWhatsApp()" 
+                    class="whatsapp-btn w-full mt-3 text-white py-2.5 rounded-xl font-medium flex items-center justify-center">
+              <i class="fab fa-whatsapp mr-2 text-lg"></i>
+              Iniciar chat en WhatsApp
+            </button>
+          </div>
+          <button onclick="App.toggleWhatsApp()" 
+                  class="absolute -top-2 -right-2 w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center text-gray-600 text-xs transition">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        ` : ''}
       </div>
     `;
   },
@@ -179,7 +242,10 @@ const App = {
   renderAdminNav() {
     const items = [
       { id: 'admin', icon: 'chart-line', label: 'Dashboard' },
-      { id: 'admin-clients', icon: 'users', label: 'Clientes' }
+      { id: 'admin-neighbors', icon: 'users', label: 'Vecinos' },
+      { id: 'admin-services', icon: 'tools', label: 'Servicios' },
+      { id: 'admin-reminders', icon: 'bell', label: 'Recordatorios' },
+      { id: 'admin-managements', icon: 'building', label: 'Gestiones' }
     ];
     
     return items.map(item => `
@@ -199,17 +265,17 @@ const App = {
   // =============================================
   renderLogin() {
     return `
-      <div class="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center p-4">
+      <div class="min-h-screen bg-white flex items-center justify-center p-4">
         <div class="w-full max-w-md">
           <!-- Logo -->
           <div class="text-center mb-8">
-            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-24 h-24 mx-auto mb-4">
-            <h1 class="text-2xl font-bold text-white">Urbanizaciones de Valdemorillo</h1>
-            <p class="text-gray-400 mt-2 text-sm">Control y estrategia en mantenimiento,<br>reforma y compraventa de chalets</p>
+            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-28 h-28 mx-auto mb-4">
+            <h1 class="text-2xl font-bold text-gray-800">Urbanizaciones de Valdemorillo</h1>
+            <p class="text-gray-500 mt-2 text-sm">Control y estrategia en mantenimiento,<br>reforma y compraventa de chalets</p>
           </div>
           
           <!-- Formulario -->
-          <div class="bg-white rounded-2xl shadow-2xl p-8">
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
             <form id="login-form" class="space-y-5">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
@@ -963,68 +1029,84 @@ const App = {
     const conv = this.state.currentConversation;
     const messages = conv?.messages || [];
     
+    // Verificar si Samuel fue ofrecido en la conversación
+    const samuelOffered = conv?.samuel_contact_offered || messages.some(m => 
+      m.role === 'assistant' && (m.content.includes('Samuel') || m.content.includes('WhatsApp'))
+    );
+    
     return `
       <div class="max-w-3xl mx-auto">
-        <div class="bg-white rounded-xl shadow-sm border border-urba-100 overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <!-- Header -->
-          <div class="bg-gradient-to-r from-urba-900 to-urba-700 px-6 py-4">
+          <div class="gradient-bg px-6 py-4">
             <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center">
                 <i class="fas fa-user-tie text-2xl text-white"></i>
               </div>
               <div>
                 <h2 class="text-lg font-semibold text-white">Chari</h2>
-                <p class="text-urba-200 text-sm">Tu asistente estratégica</p>
+                <p class="text-white/80 text-sm">Tu asistente estratégica</p>
               </div>
             </div>
           </div>
           
           <!-- Mensajes -->
-          <div id="chat-messages" class="chat-container overflow-y-auto p-6 space-y-4 bg-urba-50">
+          <div id="chat-messages" class="chat-container overflow-y-auto p-6 space-y-4 bg-gray-50">
             ${messages.length === 0 ? `
               <div class="text-center py-8">
-                <div class="w-16 h-16 bg-urba-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i class="fas fa-comments text-2xl text-urba-500"></i>
+                <div class="w-16 h-16 bg-gradient-to-br from-pink-200 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i class="fas fa-comments text-2xl text-gray-600"></i>
                 </div>
-                <p class="text-urba-600 font-medium">¡Hola ${this.state.user?.name?.split(' ')[0]}!</p>
-                <p class="text-urba-500 text-sm mt-2">Soy Chari, tu asistente en Más Urba.<br>Pregúntame sobre reformas, mantenimiento o estrategia.</p>
+                <p class="text-gray-700 font-medium">¡Hola ${this.state.user?.name?.split(' ')[0]}!</p>
+                <p class="text-gray-500 text-sm mt-2">Soy Chari, tu asistente en Más Urba.<br>Pregúntame sobre reformas, mantenimiento o estrategia.</p>
               </div>
             ` : messages.map(m => `
               <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
                 <div class="message-bubble ${m.role === 'user' 
-                  ? 'bg-urba-900 text-white rounded-2xl rounded-br-md' 
-                  : 'bg-white text-urba-800 rounded-2xl rounded-bl-md shadow-sm border border-urba-100'} px-4 py-3">
+                  ? 'gradient-bg text-white rounded-2xl rounded-br-md' 
+                  : 'bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100'} px-4 py-3">
                   <p class="text-sm whitespace-pre-line">${this.formatMessage(m.content)}</p>
-                  <p class="text-xs ${m.role === 'user' ? 'text-urba-300' : 'text-urba-400'} mt-1">
+                  <p class="text-xs ${m.role === 'user' ? 'text-white/70' : 'text-gray-400'} mt-1">
                     ${this.formatTime(m.timestamp)}
                   </p>
                 </div>
               </div>
             `).join('')}
             <div id="typing-indicator" class="hidden flex justify-start">
-              <div class="bg-white rounded-2xl rounded-bl-md shadow-sm border border-urba-100 px-4 py-3">
+              <div class="bg-white rounded-2xl rounded-bl-md shadow-sm border border-gray-100 px-4 py-3">
                 <div class="flex space-x-1">
-                  <div class="w-2 h-2 bg-urba-400 rounded-full animate-bounce"></div>
-                  <div class="w-2 h-2 bg-urba-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                  <div class="w-2 h-2 bg-urba-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                  <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                  <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
                 </div>
               </div>
             </div>
           </div>
           
+          <!-- Botón WhatsApp si Samuel fue ofrecido -->
+          ${samuelOffered ? `
+          <div class="px-4 py-3 bg-green-50 border-t border-green-100">
+            <button onclick="App.openWhatsApp('Hola Samuel, vengo de hablar con Chari y me gustaría una valoración personalizada.')" 
+                    class="w-full whatsapp-btn text-white py-3 rounded-xl font-medium flex items-center justify-center">
+              <i class="fab fa-whatsapp mr-2 text-lg"></i>
+              Contactar con Samuel por WhatsApp
+            </button>
+          </div>
+          ` : ''}
+          
           <!-- Input -->
-          <form id="chat-form" class="p-4 bg-white border-t border-urba-100">
+          <form id="chat-form" class="p-4 bg-white border-t border-gray-100">
             <div class="flex space-x-3">
               <input type="text" id="chat-input" 
-                     class="flex-1 px-4 py-3 border border-urba-200 rounded-xl focus:ring-2 focus:ring-urba-500 focus:border-transparent"
+                     class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent"
                      placeholder="Escribe tu mensaje..."
                      autocomplete="off">
               <button type="submit" 
-                      class="bg-urba-900 text-white px-6 py-3 rounded-xl font-medium hover:bg-urba-800 transition">
+                      class="gradient-bg text-white px-6 py-3 rounded-xl font-medium hover:opacity-90 transition">
                 <i class="fas fa-paper-plane"></i>
               </button>
             </div>
-            <p class="text-xs text-urba-400 mt-2 text-center">
+            <p class="text-xs text-gray-400 mt-2 text-center">
               Chari recuerda tus conversaciones anteriores para darte mejor orientación
             </p>
           </form>
@@ -1046,14 +1128,39 @@ const App = {
   },
   
   // =============================================
-  // ADMIN (SAMUEL)
+  // ADMIN (SAMUEL) - Panel completo de administración
   // =============================================
+  
+  // Estado de admin
+  adminState: {
+    neighbors: [],
+    services: [],
+    reminders: [],
+    managements: [],
+    selectedNeighbor: null,
+    searchTerm: '',
+    filters: {}
+  },
+
   renderAdmin() {
     return `
       <div class="space-y-6">
-        <div class="bg-gradient-to-r from-urba-900 to-urba-700 rounded-2xl p-6 text-white">
-          <h2 class="text-2xl font-bold">Panel de Administración</h2>
-          <p class="text-urba-200 mt-1">Gestiona tus clientes y solicitudes</p>
+        <!-- Header -->
+        <div class="gradient-bg rounded-2xl p-6 text-white">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-bold">Panel de Administración</h2>
+              <p class="text-white/80 mt-1">Control total de vecinos y servicios</p>
+            </div>
+            <div class="flex space-x-3">
+              <button onclick="App.showNewServiceModal()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-plus mr-2"></i>Nuevo Servicio
+              </button>
+              <button onclick="App.showNewReminderModal()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition">
+                <i class="fas fa-bell mr-2"></i>Nuevo Recordatorio
+              </button>
+            </div>
+          </div>
         </div>
         
         <div id="admin-content">
@@ -1062,19 +1169,143 @@ const App = {
       </div>
     `;
   },
-  
-  renderAdminClient() {
+
+  renderAdminNeighbors() {
     return `
       <div class="space-y-6">
-        <button onclick="App.navigate('admin')" class="text-urba-600 hover:text-urba-800">
-          <i class="fas fa-arrow-left mr-2"></i> Volver
-        </button>
+        <!-- Header con búsqueda -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-users mr-2 text-gray-500"></i>Vecinos
+              </h2>
+              <p class="text-gray-500 text-sm mt-1">Gestiona todos los propietarios de la urbanización</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="neighbor-search" placeholder="Buscar vecino..." 
+                       class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-400 w-64"
+                       onkeyup="App.searchNeighbors(this.value)">
+              </div>
+            </div>
+          </div>
+        </div>
         
-        <div id="client-detail">
+        <div id="neighbors-list">
           ${this.renderLoading()}
         </div>
       </div>
     `;
+  },
+
+  renderAdminServices() {
+    return `
+      <div class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-tools mr-2 text-gray-500"></i>Servicios
+              </h2>
+              <p class="text-gray-500 text-sm mt-1">Mantenimientos, reparaciones y renovaciones</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <select id="service-status-filter" onchange="App.filterServices()" 
+                      class="px-4 py-2 border border-gray-200 rounded-lg">
+                <option value="all">Todos los estados</option>
+                <option value="pending" selected>Pendientes</option>
+                <option value="scheduled">Programados</option>
+                <option value="in_progress">En progreso</option>
+                <option value="completed">Completados</option>
+              </select>
+              <button onclick="App.showNewServiceModal()" class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>Nuevo
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="services-list">
+          ${this.renderLoading()}
+        </div>
+      </div>
+    `;
+  },
+
+  renderAdminReminders() {
+    return `
+      <div class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-bell mr-2 text-gray-500"></i>Recordatorios
+              </h2>
+              <p class="text-gray-500 text-sm mt-1">Avisos y vencimientos programados</p>
+            </div>
+            <button onclick="App.showNewReminderModal()" class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium">
+              <i class="fas fa-plus mr-2"></i>Nuevo Recordatorio
+            </button>
+          </div>
+        </div>
+        
+        <div id="reminders-list">
+          ${this.renderLoading()}
+        </div>
+      </div>
+    `;
+  },
+
+  renderAdminManagements() {
+    return `
+      <div class="space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-building mr-2 text-gray-500"></i>Gestiones
+              </h2>
+              <p class="text-gray-500 text-sm mt-1">Arrendamientos y ventas en curso</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <select id="management-type-filter" onchange="App.filterManagements()" 
+                      class="px-4 py-2 border border-gray-200 rounded-lg">
+                <option value="all">Todos</option>
+                <option value="rental">Arrendamientos</option>
+                <option value="sale">Ventas</option>
+              </select>
+              <button onclick="App.showNewManagementModal()" class="gradient-bg text-white px-4 py-2 rounded-lg text-sm font-medium">
+                <i class="fas fa-plus mr-2"></i>Nueva Gestión
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div id="managements-list">
+          ${this.renderLoading()}
+        </div>
+      </div>
+    `;
+  },
+
+  renderNeighborDetail() {
+    return `
+      <div class="space-y-6">
+        <button onclick="App.navigate('admin-neighbors')" class="text-gray-600 hover:text-gray-800 flex items-center">
+          <i class="fas fa-arrow-left mr-2"></i> Volver a vecinos
+        </button>
+        
+        <div id="neighbor-detail">
+          ${this.renderLoading()}
+        </div>
+      </div>
+    `;
+  },
+
+  renderAdminClient() {
+    return this.renderNeighborDetail();
   },
 
   // =============================================
@@ -1212,6 +1443,35 @@ const App = {
       const response = await axios.get('/api/chari/conversation');
       if (response.data.success) {
         this.state.currentConversation = response.data.data.conversation;
+        
+        // Actualizar el DOM directamente sin re-render completo
+        const messagesDiv = document.getElementById('chat-messages');
+        if (messagesDiv && this.state.currentConversation?.messages?.length > 0) {
+          const messages = this.state.currentConversation.messages;
+          messagesDiv.innerHTML = messages.map(m => `
+            <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
+              <div class="message-bubble ${m.role === 'user' 
+                ? 'gradient-bg text-white rounded-2xl rounded-br-md' 
+                : 'bg-white text-gray-800 rounded-2xl rounded-bl-md shadow-sm border border-gray-100'} px-4 py-3">
+                <p class="text-sm whitespace-pre-line">${this.formatMessage(m.content)}</p>
+                <p class="text-xs ${m.role === 'user' ? 'text-white/70' : 'text-gray-400'} mt-1">
+                  ${this.formatTime(m.timestamp)}
+                </p>
+              </div>
+            </div>
+          `).join('') + `
+            <div id="typing-indicator" class="hidden flex justify-start">
+              <div class="bg-white rounded-2xl rounded-bl-md shadow-sm border border-gray-100 px-4 py-3">
+                <div class="flex space-x-1">
+                  <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                  <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                </div>
+              </div>
+            </div>
+          `;
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
       }
     } catch (error) {
       console.error('Error loading conversation:', error);
@@ -1451,59 +1711,79 @@ const App = {
       });
     }
     
-    // Chat form
-    const chatForm = document.getElementById('chat-form');
-    if (chatForm) {
-      chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const input = document.getElementById('chat-input');
-        const message = input.value.trim();
+    // Chat form - solo si estamos en la vista chari
+    if (this.state.currentView === 'chari') {
+      const chatForm = document.getElementById('chat-form');
+      if (chatForm && !chatForm.dataset.initialized) {
+        chatForm.dataset.initialized = 'true';
         
-        if (!message) return;
-        
-        input.value = '';
-        
-        // Añadir mensaje del usuario inmediatamente
-        const messagesDiv = document.getElementById('chat-messages');
-        messagesDiv.innerHTML += `
-          <div class="flex justify-end fade-in">
-            <div class="message-bubble bg-urba-900 text-white rounded-2xl rounded-br-md px-4 py-3">
-              <p class="text-sm">${message}</p>
-            </div>
-          </div>
-        `;
-        
-        // Mostrar indicador de escritura
-        document.getElementById('typing-indicator').classList.remove('hidden');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        
-        // Enviar mensaje
-        const result = await this.sendMessage(message);
-        
-        // Ocultar indicador
-        document.getElementById('typing-indicator').classList.add('hidden');
-        
-        if (result) {
+        chatForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const input = document.getElementById('chat-input');
+          const message = input.value.trim();
+          
+          if (!message) return;
+          
+          input.value = '';
+          
+          // Añadir mensaje del usuario inmediatamente
+          const messagesDiv = document.getElementById('chat-messages');
           messagesDiv.innerHTML += `
-            <div class="flex justify-start fade-in">
-              <div class="message-bubble bg-white text-urba-800 rounded-2xl rounded-bl-md shadow-sm border border-urba-100 px-4 py-3">
-                <p class="text-sm whitespace-pre-line">${this.formatMessage(result.assistantMessage.content)}</p>
+            <div class="flex justify-end fade-in">
+              <div class="message-bubble bg-urba-900 text-white rounded-2xl rounded-br-md px-4 py-3">
+                <p class="text-sm">${message}</p>
               </div>
             </div>
           `;
+          
+          // Mostrar indicador de escritura
+          document.getElementById('typing-indicator').classList.remove('hidden');
           messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-      });
-      
-      // Cargar conversación
-      this.loadConversation().then(() => this.render());
+          
+          // Enviar mensaje
+          const result = await this.sendMessage(message);
+          
+          // Ocultar indicador
+          document.getElementById('typing-indicator').classList.add('hidden');
+          
+          if (result) {
+            messagesDiv.innerHTML += `
+              <div class="flex justify-start fade-in">
+                <div class="message-bubble bg-white text-urba-800 rounded-2xl rounded-bl-md shadow-sm border border-urba-100 px-4 py-3">
+                  <p class="text-sm whitespace-pre-line">${this.formatMessage(result.assistantMessage.content)}</p>
+                </div>
+              </div>
+            `;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          }
+        });
+        
+        // Cargar conversación solo una vez
+        this.loadConversation();
+      }
     }
     
-    // Admin content
-    if (this.state.currentView === 'admin' && this.state.user?.role === 'admin') {
-      this.loadAdminDashboard();
+    // Admin content - cargar según vista
+    if (this.state.user?.role === 'admin') {
+      if (this.state.currentView === 'admin') {
+        this.loadAdminDashboard();
+      } else if (this.state.currentView === 'admin-neighbors') {
+        this.loadNeighbors();
+      } else if (this.state.currentView === 'admin-services') {
+        this.loadServices();
+      } else if (this.state.currentView === 'admin-reminders') {
+        this.loadReminders();
+      } else if (this.state.currentView === 'admin-managements') {
+        this.loadManagements();
+      } else if (this.state.currentView === 'neighbor-detail' || this.state.currentView === 'admin-client') {
+        this.loadNeighborDetail(this.adminState.selectedNeighbor);
+      }
     }
   },
+  
+  // =============================================
+  // FUNCIONES ADMIN
+  // =============================================
   
   async loadAdminDashboard() {
     try {
@@ -1514,55 +1794,132 @@ const App = {
         
         if (adminContent) {
           adminContent.innerHTML = `
+            <!-- Estadísticas principales -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
-                <p class="text-urba-500 text-sm">Total clientes</p>
-                <p class="text-3xl font-bold text-urba-900">${d.totalClients}</p>
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-500 text-sm">Total Vecinos</p>
+                    <p class="text-3xl font-bold text-gray-900">${d.stats?.totalNeighbors || 0}</p>
+                  </div>
+                  <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-xl text-blue-600"></i>
+                  </div>
+                </div>
               </div>
-              <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
-                <p class="text-urba-500 text-sm">Solicitudes pendientes</p>
-                <p class="text-3xl font-bold text-amber-600">${d.pendingRequests}</p>
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-500 text-sm">Servicios Pendientes</p>
+                    <p class="text-3xl font-bold text-amber-600">${d.stats?.pendingServices || 0}</p>
+                  </div>
+                  <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-tools text-xl text-amber-600"></i>
+                  </div>
+                </div>
               </div>
-              <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
-                <p class="text-urba-500 text-sm">Conversaciones (7 días)</p>
-                <p class="text-3xl font-bold text-urba-900">${d.recentConversations}</p>
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-500 text-sm">Recordatorios (7 días)</p>
+                    <p class="text-3xl font-bold text-purple-600">${d.stats?.upcomingReminders || 0}</p>
+                  </div>
+                  <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-bell text-xl text-purple-600"></i>
+                  </div>
+                </div>
               </div>
-              <div class="bg-white rounded-xl shadow-sm p-6 border border-urba-100">
-                <p class="text-urba-500 text-sm">Clientes inactivos</p>
-                <p class="text-3xl font-bold text-red-600">${d.inactiveClients?.length || 0}</p>
+              <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-gray-500 text-sm">Gestiones Activas</p>
+                    <p class="text-3xl font-bold text-green-600">${d.stats?.activeManagements || 0}</p>
+                  </div>
+                  <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-building text-xl text-green-600"></i>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-sm border border-urba-100 overflow-hidden">
-              <div class="bg-urba-50 px-6 py-4 border-b border-urba-100">
-                <h3 class="font-semibold text-urba-900">Últimas solicitudes</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Servicios urgentes -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-red-50 px-6 py-4 border-b border-red-100">
+                  <h3 class="font-semibold text-red-800">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Servicios Urgentes
+                  </h3>
+                </div>
+                <div class="p-4">
+                  ${(d.urgentServices || []).length > 0 ? d.urgentServices.map(s => `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                      <div>
+                        <p class="font-medium text-gray-800">${s.title}</p>
+                        <p class="text-sm text-gray-500">${s.user_name} - ${s.property_name}</p>
+                      </div>
+                      <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">Urgente</span>
+                    </div>
+                  `).join('') : '<p class="text-gray-500 text-center py-4">No hay servicios urgentes</p>'}
+                </div>
+              </div>
+              
+              <!-- Recordatorios de hoy -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-amber-50 px-6 py-4 border-b border-amber-100">
+                  <h3 class="font-semibold text-amber-800">
+                    <i class="fas fa-clock mr-2"></i>Recordatorios Pendientes
+                  </h3>
+                </div>
+                <div class="p-4">
+                  ${(d.todayReminders || []).length > 0 ? d.todayReminders.map(r => `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                      <div>
+                        <p class="font-medium text-gray-800">${r.title}</p>
+                        <p class="text-sm text-gray-500">${r.user_name || 'General'} - ${this.formatDate(r.due_date)}</p>
+                      </div>
+                      <button onclick="App.completeReminder(${r.id})" class="text-green-600 hover:text-green-800">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    </div>
+                  `).join('') : '<p class="text-gray-500 text-center py-4">No hay recordatorios pendientes</p>'}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Últimos vecinos -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+              <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-semibold text-gray-800">
+                  <i class="fas fa-user-plus mr-2"></i>Últimos Vecinos
+                </h3>
+                <button onclick="App.navigate('admin-neighbors')" class="text-sm text-green-600 hover:text-green-800">
+                  Ver todos <i class="fas fa-arrow-right ml-1"></i>
+                </button>
               </div>
               <div class="overflow-x-auto">
                 <table class="w-full">
-                  <thead class="bg-urba-50 text-left">
+                  <thead class="bg-gray-50 text-left">
                     <tr>
-                      <th class="px-6 py-3 text-sm font-medium text-urba-600">Cliente</th>
-                      <th class="px-6 py-3 text-sm font-medium text-urba-600">Tipo</th>
-                      <th class="px-6 py-3 text-sm font-medium text-urba-600">Estado</th>
-                      <th class="px-6 py-3 text-sm font-medium text-urba-600">Fecha</th>
+                      <th class="px-6 py-3 text-sm font-medium text-gray-600">Vecino</th>
+                      <th class="px-6 py-3 text-sm font-medium text-gray-600">Vivienda</th>
+                      <th class="px-6 py-3 text-sm font-medium text-gray-600">Fecha registro</th>
+                      <th class="px-6 py-3 text-sm font-medium text-gray-600">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-urba-100">
-                    ${(d.latestRequests || []).map(r => `
-                      <tr class="hover:bg-urba-50">
+                  <tbody class="divide-y divide-gray-100">
+                    ${(d.recentNeighbors || []).map(n => `
+                      <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4">
-                          <p class="font-medium text-urba-900">${r.user_name}</p>
-                          <p class="text-sm text-urba-500">${r.user_email}</p>
+                          <p class="font-medium text-gray-900">${n.name}</p>
+                          <p class="text-sm text-gray-500">${n.email}</p>
                         </td>
-                        <td class="px-6 py-4 text-sm text-urba-700">${r.request_type}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${n.property_name || 'Sin vivienda'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${this.formatDate(n.created_at)}</td>
                         <td class="px-6 py-4">
-                          <span class="px-2 py-1 text-xs rounded-full ${
-                            r.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                            r.status === 'completed' ? 'bg-green-100 text-green-700' :
-                            'bg-blue-100 text-blue-700'
-                          }">${r.status}</span>
+                          <button onclick="App.viewNeighbor(${n.id})" class="text-green-600 hover:text-green-800">
+                            <i class="fas fa-eye mr-1"></i>Ver
+                          </button>
                         </td>
-                        <td class="px-6 py-4 text-sm text-urba-500">${this.formatDate(r.created_at)}</td>
                       </tr>
                     `).join('')}
                   </tbody>
@@ -1574,7 +1931,504 @@ const App = {
       }
     } catch (error) {
       console.error('Error loading admin dashboard:', error);
+      document.getElementById('admin-content').innerHTML = '<p class="text-red-600 text-center py-8">Error cargando datos</p>';
     }
+  },
+
+  async loadNeighbors(search = '') {
+    try {
+      const response = await axios.get(`/api/admin/neighbors?search=${encodeURIComponent(search)}`);
+      if (response.data.success) {
+        this.adminState.neighbors = response.data.data;
+        this.renderNeighborsList();
+      }
+    } catch (error) {
+      console.error('Error loading neighbors:', error);
+    }
+  },
+
+  searchNeighbors(term) {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.loadNeighbors(term);
+    }, 300);
+  },
+
+  renderNeighborsList() {
+    const container = document.getElementById('neighbors-list');
+    if (!container) return;
+
+    const neighbors = this.adminState.neighbors;
+    
+    container.innerHTML = `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 text-left">
+              <tr>
+                <th class="px-6 py-3 text-sm font-medium text-gray-600">Vecino</th>
+                <th class="px-6 py-3 text-sm font-medium text-gray-600">Vivienda</th>
+                <th class="px-6 py-3 text-sm font-medium text-gray-600">Estado Técnico</th>
+                <th class="px-6 py-3 text-sm font-medium text-gray-600">Servicios</th>
+                <th class="px-6 py-3 text-sm font-medium text-gray-600">Gestiones</th>
+                <th class="px-6 py-3 text-sm font-medium text-gray-600">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              ${neighbors.length > 0 ? neighbors.map(n => `
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-10 h-10 rounded-full gradient-bg flex items-center justify-center text-white font-medium">
+                        ${n.name?.charAt(0) || '?'}
+                      </div>
+                      <div>
+                        <p class="font-medium text-gray-900">${n.name}</p>
+                        <p class="text-sm text-gray-500">${n.phone || n.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <p class="text-sm text-gray-800">${n.property_name || 'Sin vivienda'}</p>
+                    <p class="text-xs text-gray-500">${n.urbanization || ''} ${n.address ? '- ' + n.address : ''}</p>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-lg font-bold ${n.technical_score >= 70 ? 'text-green-600' : n.technical_score >= 50 ? 'text-amber-600' : 'text-red-600'}">${n.technical_score || 0}</span>
+                      <span class="text-gray-400">/100</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    ${n.pending_services > 0 
+                      ? `<span class="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded-full">${n.pending_services} pendiente(s)</span>`
+                      : '<span class="text-gray-400 text-sm">Ninguno</span>'}
+                  </td>
+                  <td class="px-6 py-4">
+                    ${n.active_managements > 0 
+                      ? `<span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">${n.active_managements} activa(s)</span>`
+                      : '<span class="text-gray-400 text-sm">Ninguna</span>'}
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center space-x-2">
+                      <button onclick="App.viewNeighbor(${n.id})" class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="Ver detalle">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button onclick="App.callNeighbor('${n.phone}')" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="Llamar">
+                        <i class="fas fa-phone"></i>
+                      </button>
+                      <button onclick="App.whatsappNeighbor('${n.phone}')" class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition" title="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('') : '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No se encontraron vecinos</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  },
+
+  viewNeighbor(id) {
+    this.adminState.selectedNeighbor = id;
+    this.navigate('neighbor-detail');
+  },
+
+  async loadNeighborDetail(id) {
+    if (!id) return;
+    
+    try {
+      const response = await axios.get(`/api/admin/neighbors/${id}`);
+      if (response.data.success) {
+        const d = response.data.data;
+        const container = document.getElementById('neighbor-detail');
+        
+        if (container) {
+          container.innerHTML = `
+            <!-- Cabecera del vecino -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-4">
+                  <div class="w-16 h-16 rounded-full gradient-bg flex items-center justify-center text-white text-2xl font-bold">
+                    ${d.user.name?.charAt(0) || '?'}
+                  </div>
+                  <div>
+                    <h2 class="text-2xl font-bold text-gray-900">${d.user.name}</h2>
+                    <p class="text-gray-500">${d.user.email}</p>
+                    <p class="text-gray-500">${d.user.phone || 'Sin teléfono'}</p>
+                  </div>
+                </div>
+                <div class="flex space-x-2">
+                  <button onclick="App.callNeighbor('${d.user.phone}')" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-phone mr-2"></i>Llamar
+                  </button>
+                  <button onclick="App.whatsappNeighbor('${d.user.phone}')" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                    <i class="fab fa-whatsapp mr-2"></i>WhatsApp
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Info de vivienda y score -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-semibold text-gray-800 mb-4">
+                  <i class="fas fa-home mr-2 text-gray-500"></i>Vivienda
+                </h3>
+                ${d.property ? `
+                  <p class="font-medium text-gray-900">${d.property.name}</p>
+                  <p class="text-sm text-gray-500 mt-1">${d.property.address || 'Sin dirección'}</p>
+                  <p class="text-sm text-gray-500">${d.property.urbanization || ''}</p>
+                  <div class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p class="text-gray-500">Año</p>
+                      <p class="font-medium">${d.property.year_built || '-'}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500">Superficie</p>
+                      <p class="font-medium">${d.property.square_meters || '-'} m²</p>
+                    </div>
+                  </div>
+                ` : '<p class="text-gray-500">Sin vivienda registrada</p>'}
+              </div>
+              
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-semibold text-gray-800 mb-4">
+                  <i class="fas fa-chart-line mr-2 text-gray-500"></i>Estado Técnico
+                </h3>
+                <div class="flex items-center justify-center">
+                  <div class="relative w-32 h-32">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+                      <circle cx="50" cy="50" r="45" fill="none" 
+                              stroke="${d.technicalScore >= 70 ? '#22c55e' : d.technicalScore >= 50 ? '#f59e0b' : '#ef4444'}" 
+                              stroke-width="10"
+                              stroke-dasharray="${d.technicalScore * 2.83} 283" 
+                              stroke-linecap="round"
+                              transform="rotate(-90 50 50)"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-3xl font-bold text-gray-900">${d.technicalScore}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-semibold text-gray-800 mb-4">
+                  <i class="fas fa-tags mr-2 text-gray-500"></i>Etiquetas
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  ${(d.tags || []).map(t => `
+                    <span class="px-3 py-1 text-sm rounded-full ${this.getTagColor(t.tag_name)}">${this.getTagLabel(t.tag_name)}</span>
+                  `).join('') || '<p class="text-gray-500 text-sm">Sin etiquetas</p>'}
+                </div>
+                <button onclick="App.showAddTagModal(${d.user.id})" class="mt-4 text-sm text-green-600 hover:text-green-800">
+                  <i class="fas fa-plus mr-1"></i>Añadir etiqueta
+                </button>
+              </div>
+            </div>
+            
+            <!-- Servicios y Gestiones -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <h3 class="font-semibold text-gray-800">
+                    <i class="fas fa-tools mr-2"></i>Servicios
+                  </h3>
+                  <button onclick="App.showNewServiceModal(${d.user.id}, ${d.property?.id})" class="text-sm text-green-600 hover:text-green-800">
+                    <i class="fas fa-plus mr-1"></i>Nuevo
+                  </button>
+                </div>
+                <div class="p-4 max-h-64 overflow-y-auto">
+                  ${(d.services || []).length > 0 ? d.services.map(s => `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                      <div>
+                        <p class="font-medium text-gray-800">${s.title}</p>
+                        <p class="text-xs text-gray-500">${s.service_type} - ${this.formatDate(s.scheduled_date)}</p>
+                      </div>
+                      <span class="px-2 py-1 text-xs rounded-full ${this.getStatusColor(s.status)}">${this.getStatusLabel(s.status)}</span>
+                    </div>
+                  `).join('') : '<p class="text-gray-500 text-center py-4">Sin servicios registrados</p>'}
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <h3 class="font-semibold text-gray-800">
+                    <i class="fas fa-building mr-2"></i>Gestiones
+                  </h3>
+                  <button onclick="App.showNewManagementModal(${d.property?.id})" class="text-sm text-green-600 hover:text-green-800">
+                    <i class="fas fa-plus mr-1"></i>Nueva
+                  </button>
+                </div>
+                <div class="p-4 max-h-64 overflow-y-auto">
+                  ${(d.managements || []).length > 0 ? d.managements.map(m => `
+                    <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                      <div>
+                        <p class="font-medium text-gray-800">${m.management_type === 'rental' ? 'Arrendamiento' : 'Venta'}</p>
+                        <p class="text-xs text-gray-500">${m.price ? m.price.toLocaleString() + '€' : 'Sin precio'}</p>
+                      </div>
+                      <span class="px-2 py-1 text-xs rounded-full ${this.getStatusColor(m.status)}">${this.getStatusLabel(m.status)}</span>
+                    </div>
+                  `).join('') : '<p class="text-gray-500 text-center py-4">Sin gestiones registradas</p>'}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading neighbor detail:', error);
+    }
+  },
+
+  async loadServices() {
+    try {
+      const status = document.getElementById('service-status-filter')?.value || 'pending';
+      const response = await axios.get(`/api/admin/services?status=${status}`);
+      if (response.data.success) {
+        this.adminState.services = response.data.data;
+        this.renderServicesList();
+      }
+    } catch (error) {
+      console.error('Error loading services:', error);
+    }
+  },
+
+  filterServices() {
+    this.loadServices();
+  },
+
+  renderServicesList() {
+    const container = document.getElementById('services-list');
+    if (!container) return;
+    
+    const services = this.adminState.services;
+    
+    container.innerHTML = `
+      <div class="space-y-4">
+        ${services.length > 0 ? services.map(s => `
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center space-x-3">
+                  <span class="px-2 py-1 text-xs rounded-full ${s.priority === 'urgent' ? 'bg-red-100 text-red-700' : s.priority === 'high' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700'}">
+                    ${s.priority === 'urgent' ? 'Urgente' : s.priority === 'high' ? 'Alta' : 'Normal'}
+                  </span>
+                  <span class="px-2 py-1 text-xs rounded-full ${this.getStatusColor(s.status)}">${this.getStatusLabel(s.status)}</span>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mt-2">${s.title}</h3>
+                <p class="text-gray-500 text-sm mt-1">${s.description || 'Sin descripción'}</p>
+                <div class="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                  <span><i class="fas fa-user mr-1"></i>${s.user_name}</span>
+                  <span><i class="fas fa-home mr-1"></i>${s.property_name}</span>
+                  ${s.scheduled_date ? `<span><i class="fas fa-calendar mr-1"></i>${this.formatDate(s.scheduled_date)}</span>` : ''}
+                </div>
+              </div>
+              <div class="flex flex-col space-y-2 ml-4">
+                <button onclick="App.updateServiceStatus(${s.id}, 'in_progress')" class="px-3 py-1 text-sm border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-50">
+                  En progreso
+                </button>
+                <button onclick="App.updateServiceStatus(${s.id}, 'completed')" class="px-3 py-1 text-sm border border-green-200 text-green-600 rounded-lg hover:bg-green-50">
+                  Completar
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('') : '<p class="text-gray-500 text-center py-8">No hay servicios con este filtro</p>'}
+      </div>
+    `;
+  },
+
+  async loadReminders() {
+    try {
+      const response = await axios.get('/api/admin/reminders?status=pending');
+      if (response.data.success) {
+        this.adminState.reminders = response.data.data;
+        this.renderRemindersList();
+      }
+    } catch (error) {
+      console.error('Error loading reminders:', error);
+    }
+  },
+
+  renderRemindersList() {
+    const container = document.getElementById('reminders-list');
+    if (!container) return;
+    
+    const reminders = this.adminState.reminders;
+    
+    container.innerHTML = `
+      <div class="space-y-4">
+        ${reminders.length > 0 ? reminders.map(r => `
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-gray-900">${r.title}</h3>
+                <p class="text-sm text-gray-500 mt-1">${r.description || ''}</p>
+                <div class="flex items-center space-x-4 mt-3 text-sm text-gray-500">
+                  <span><i class="fas fa-calendar mr-1"></i>${this.formatDate(r.due_date)}</span>
+                  ${r.user_name ? `<span><i class="fas fa-user mr-1"></i>${r.user_name}</span>` : ''}
+                  ${r.property_name ? `<span><i class="fas fa-home mr-1"></i>${r.property_name}</span>` : ''}
+                </div>
+              </div>
+              <button onclick="App.completeReminder(${r.id})" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <i class="fas fa-check mr-2"></i>Completar
+              </button>
+            </div>
+          </div>
+        `).join('') : '<p class="text-gray-500 text-center py-8">No hay recordatorios pendientes</p>'}
+      </div>
+    `;
+  },
+
+  async loadManagements() {
+    try {
+      const type = document.getElementById('management-type-filter')?.value || 'all';
+      const response = await axios.get(`/api/admin/managements?type=${type}`);
+      if (response.data.success) {
+        this.adminState.managements = response.data.data;
+        this.renderManagementsList();
+      }
+    } catch (error) {
+      console.error('Error loading managements:', error);
+    }
+  },
+
+  filterManagements() {
+    this.loadManagements();
+  },
+
+  renderManagementsList() {
+    const container = document.getElementById('managements-list');
+    if (!container) return;
+    
+    const managements = this.adminState.managements;
+    
+    container.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        ${managements.length > 0 ? managements.map(m => `
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-start justify-between mb-4">
+              <span class="px-3 py-1 text-sm rounded-full ${m.management_type === 'rental' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">
+                ${m.management_type === 'rental' ? 'Arrendamiento' : 'Venta'}
+              </span>
+              <span class="px-2 py-1 text-xs rounded-full ${this.getStatusColor(m.status)}">${this.getStatusLabel(m.status)}</span>
+            </div>
+            <h3 class="font-semibold text-gray-900">${m.property_name}</h3>
+            <p class="text-sm text-gray-500">${m.address || ''}</p>
+            <p class="text-sm text-gray-500 mt-1">Propietario: ${m.owner_name}</p>
+            ${m.price ? `<p class="text-2xl font-bold text-gray-900 mt-3">${m.price.toLocaleString()}€</p>` : ''}
+            ${m.tenant_name ? `<p class="text-sm text-gray-500 mt-2"><i class="fas fa-user mr-1"></i>Inquilino: ${m.tenant_name}</p>` : ''}
+          </div>
+        `).join('') : '<p class="text-gray-500 text-center py-8 col-span-2">No hay gestiones activas</p>'}
+      </div>
+    `;
+  },
+
+  // Funciones auxiliares para admin
+  async updateServiceStatus(id, status) {
+    try {
+      await axios.put(`/api/admin/services/${id}`, { status });
+      this.showToast('Servicio actualizado', 'success');
+      this.loadServices();
+    } catch (error) {
+      this.showToast('Error actualizando servicio', 'error');
+    }
+  },
+
+  async completeReminder(id) {
+    try {
+      await axios.put(`/api/admin/reminders/${id}`, { status: 'completed' });
+      this.showToast('Recordatorio completado', 'success');
+      if (this.state.currentView === 'admin') {
+        this.loadAdminDashboard();
+      } else {
+        this.loadReminders();
+      }
+    } catch (error) {
+      this.showToast('Error completando recordatorio', 'error');
+    }
+  },
+
+  callNeighbor(phone) {
+    if (phone) window.open(`tel:${phone}`, '_self');
+  },
+
+  whatsappNeighbor(phone) {
+    if (phone) {
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${cleanPhone}`, '_blank');
+    }
+  },
+
+  getTagColor(tag) {
+    const colors = {
+      'partial_reform': 'bg-amber-100 text-amber-700',
+      'integral_reform': 'bg-red-100 text-red-700',
+      'potential_sale': 'bg-purple-100 text-purple-700',
+      'premium_client': 'bg-yellow-100 text-yellow-700',
+      'educable_client': 'bg-blue-100 text-blue-700',
+      'urgent': 'bg-red-100 text-red-700',
+      'vip': 'bg-green-100 text-green-700'
+    };
+    return colors[tag] || 'bg-gray-100 text-gray-700';
+  },
+
+  getTagLabel(tag) {
+    const labels = {
+      'partial_reform': 'Reforma parcial',
+      'integral_reform': 'Reforma integral',
+      'potential_sale': 'Posible venta',
+      'premium_client': 'Premium',
+      'educable_client': 'Educable',
+      'urgent': 'Urgente',
+      'vip': 'VIP'
+    };
+    return labels[tag] || tag;
+  },
+
+  getStatusColor(status) {
+    const colors = {
+      'pending': 'bg-amber-100 text-amber-700',
+      'scheduled': 'bg-blue-100 text-blue-700',
+      'in_progress': 'bg-purple-100 text-purple-700',
+      'completed': 'bg-green-100 text-green-700',
+      'cancelled': 'bg-gray-100 text-gray-700',
+      'active': 'bg-green-100 text-green-700'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+  },
+
+  getStatusLabel(status) {
+    const labels = {
+      'pending': 'Pendiente',
+      'scheduled': 'Programado',
+      'in_progress': 'En progreso',
+      'completed': 'Completado',
+      'cancelled': 'Cancelado',
+      'active': 'Activo'
+    };
+    return labels[status] || status;
+  },
+
+  // Modales (placeholder - se pueden expandir)
+  showNewServiceModal(userId, propertyId) {
+    this.showToast('Función de crear servicio - próximamente', 'info');
+  },
+
+  showNewReminderModal() {
+    this.showToast('Función de crear recordatorio - próximamente', 'info');
+  },
+
+  showNewManagementModal(propertyId) {
+    this.showToast('Función de crear gestión - próximamente', 'info');
+  },
+
+  showAddTagModal(userId) {
+    this.showToast('Función de añadir etiqueta - próximamente', 'info');
   }
 };
 

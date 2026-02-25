@@ -64,7 +64,7 @@ function getMainHTML(): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Urbanizaciones de Valdemorillo - Control y estrategia en mantenimiento, reforma y compraventa de chalets. Por Más Urba Multiservicios.">
-    <meta name="theme-color" content="#2d3748">
+    <meta name="theme-color" content="#ffffff">
     <title>Urbanizaciones de Valdemorillo | Más Urba Multiservicios</title>
     
     <!-- PWA -->
@@ -196,18 +196,39 @@ function getMainHTML(): string {
       }
       
       .header-gradient {
-        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        background: #ffffff;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      
+      /* Botón WhatsApp flotante */
+      .whatsapp-btn {
+        background: #25D366;
+        transition: all 0.3s ease;
+      }
+      
+      .whatsapp-btn:hover {
+        background: #128C7E;
+        transform: scale(1.05);
+      }
+      
+      .whatsapp-popup {
+        animation: slideUp 0.3s ease;
+      }
+      
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
       }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-white min-h-screen">
     <div id="app">
         <!-- Loading inicial -->
-        <div id="loading-screen" class="fixed inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center z-50">
+        <div id="loading-screen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
             <div class="text-center">
                 <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-24 h-24 mx-auto mb-4 animate-pulse">
-                <h1 class="text-xl font-semibold text-white">Urbanizaciones de Valdemorillo</h1>
-                <p class="text-gray-400 mt-2 text-sm">Cargando...</p>
+                <h1 class="text-xl font-semibold text-gray-800">Urbanizaciones de Valdemorillo</h1>
+                <p class="text-gray-500 mt-2 text-sm">Cargando...</p>
             </div>
         </div>
     </div>
