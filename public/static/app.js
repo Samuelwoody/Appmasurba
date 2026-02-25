@@ -1972,8 +1972,87 @@ const App = {
   },
   
   showMaintenanceNotes(id) {
-    // Por implementar: modal para notas
-    alert('Función de notas próximamente');
+    const maintenance = this.state.maintenances.find(m => m.id === id);
+    if (!maintenance) return;
+    
+    const categoryLabels = {
+      heating: 'Calefacción',
+      plumbing: 'Fontanería', 
+      electrical: 'Electricidad',
+      roof: 'Tejado/Cubierta',
+      facade: 'Fachada',
+      pool: 'Piscina',
+      garden: 'Jardín',
+      general: 'General'
+    };
+    
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.id = 'notes-modal';
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="App.closeNotesModal()"></div>
+      <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 fade-in">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">
+            <i class="fas fa-sticky-note text-amber-500 mr-2"></i>
+            Notas de ${categoryLabels[maintenance.category] || maintenance.category}
+          </h3>
+          <button onclick="App.closeNotesModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="notes-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estado actual</label>
+            <select id="notes-status" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
+              <option value="ok" ${maintenance.status === 'ok' ? 'selected' : ''}>✅ Al día</option>
+              <option value="pending" ${maintenance.status === 'pending' ? 'selected' : ''}>⚠️ Pendiente de revisión</option>
+              <option value="needs_repair" ${maintenance.status === 'needs_repair' ? 'selected' : ''}>🔴 Necesita reparación</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+            <textarea id="notes-text" rows="4" 
+                      class="w-full px-3 py-2 border border-gray-200 rounded-lg resize-none"
+                      placeholder="Añade observaciones sobre este elemento...">${maintenance.notes || ''}</textarea>
+          </div>
+          <div class="flex space-x-3 pt-2">
+            <button type="button" onclick="App.closeNotesModal()" 
+                    class="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button type="submit" 
+                    class="flex-1 gradient-bg text-white px-4 py-2 rounded-lg font-medium hover:opacity-90">
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Event listener para el formulario
+    document.getElementById('notes-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('notes-status').value;
+      const notes = document.getElementById('notes-text').value;
+      
+      try {
+        await axios.put(`/api/maintenances/${id}`, { status, notes });
+        await this.loadMaintenances();
+        this.closeNotesModal();
+        this.showToast('Notas guardadas', 'success');
+        this.render();
+      } catch (error) {
+        this.showToast('Error al guardar notas', 'error');
+      }
+    });
+  },
+  
+  closeNotesModal() {
+    document.getElementById('notes-modal')?.remove();
   },
   
   // =============================================
