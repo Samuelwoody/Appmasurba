@@ -4,7 +4,7 @@
 
 -- Usuario Admin (Samuel) - password: admin123
 INSERT OR IGNORE INTO users (id, email, password_hash, name, phone, role) VALUES 
-(1, 'samuel@masurba.es', 'd94dfbee4fc1c23e2f539406eeb0b1ab6b1362a3445133117c7c0d70c392a5b6', 'Samuel García', '+34 600 000 001', 'admin');
+(1, 'samuel@masurba.es', 'd94dfbee4fc1c23e2f539406eeb0b1ab6b1362a3445133117c7c0d70c392a5b6', 'Samuel Castellano', '+34 600 000 001', 'admin');
 
 -- Usuario Cliente de prueba - password: demo123
 INSERT OR IGNORE INTO users (id, email, password_hash, name, phone, role) VALUES 

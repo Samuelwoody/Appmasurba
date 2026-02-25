@@ -55,15 +55,17 @@ const App = {
     
     const overlay = document.createElement('div');
     overlay.id = 'tour-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9998;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;';
     
-    let boxStyle = 'top:50%;left:50%;transform:translate(-50%,-50%);';
-    if (step.target) {
-      const el = document.querySelector(step.target);
-      if (el) {
-        el.classList.add('tour-highlight');
-        const rect = el.getBoundingClientRect();
-        boxStyle = `top:${rect.bottom + 15}px;left:${rect.left + rect.width/2}px;transform:translateX(-50%);`;
+    // En móvil, siempre centrar. En desktop, posicionar cerca del target si existe
+    const isMobile = window.innerWidth < 640;
+    let targetEl = null;
+    
+    if (step.target && !isMobile) {
+      targetEl = document.querySelector(step.target);
+      if (targetEl) {
+        targetEl.classList.add('tour-highlight');
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
     
@@ -74,20 +76,24 @@ const App = {
       document.head.appendChild(style);
     }
     
-    overlay.innerHTML = `
-      <div style="position:absolute;${boxStyle}background:white;padding:24px;border-radius:16px;max-width:320px;width:90%;z-index:9999;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${this.state.onboardingStep + 1} / ${steps.length + 1}</span>
-          <button onclick="App.endTour()" style="color:#999;border:none;background:none;cursor:pointer;font-size:13px;">Saltar</button>
-        </div>
-        <h3 style="margin:0 0 8px;font-size:18px;color:#1a1a1a;">${step.title}</h3>
-        <p style="margin:0 0 20px;color:#666;font-size:14px;line-height:1.5;">${step.text}</p>
-        <div style="display:flex;justify-content:space-between;">
-          ${this.state.onboardingStep > 0 ? '<button onclick="App.prevStep()" style="color:#666;border:none;background:none;cursor:pointer;font-size:14px;">← Anterior</button>' : '<div></div>'}
-          <button onclick="App.nextStep()" style="background:linear-gradient(135deg,#5bb88a,#3d9970);color:white;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;">Siguiente →</button>
-        </div>
+    // Crear la caja del tooltip - siempre centrada en móvil
+    const box = document.createElement('div');
+    box.style.cssText = 'background:white;padding:20px;border-radius:16px;max-width:320px;width:100%;z-index:9999;box-shadow:0 25px 50px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;';
+    
+    box.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="background:#e8f5e9;color:#2e7d32;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;">${this.state.onboardingStep + 1} / ${steps.length + 1}</span>
+        <button onclick="App.endTour()" style="color:#999;border:none;background:none;cursor:pointer;font-size:13px;">Saltar</button>
+      </div>
+      <h3 style="margin:0 0 8px;font-size:18px;color:#1a1a1a;">${step.title}</h3>
+      <p style="margin:0 0 20px;color:#666;font-size:14px;line-height:1.5;">${step.text}</p>
+      <div style="display:flex;justify-content:space-between;gap:12px;">
+        ${this.state.onboardingStep > 0 ? '<button onclick="App.prevStep()" style="color:#666;border:none;background:none;cursor:pointer;font-size:14px;padding:10px 0;">← Anterior</button>' : '<div></div>'}
+        <button onclick="App.nextStep()" style="background:linear-gradient(135deg,#5bb88a,#3d9970);color:white;border:none;padding:12px 24px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;flex-shrink:0;">Siguiente →</button>
       </div>
     `;
+    
+    overlay.appendChild(box);
     document.body.appendChild(overlay);
   },
   
@@ -112,26 +118,26 @@ const App = {
     
     const popup = document.createElement('div');
     popup.id = 'chari-popup';
-    popup.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:16px;';
+    popup.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:12px;overflow-y:auto;';
     popup.innerHTML = `
       <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(20,83,45,0.95),rgba(6,78,59,0.95),rgba(15,118,110,0.95));"></div>
-      <div style="position:relative;background:white;border-radius:24px;max-width:440px;width:100%;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.4);">
-        <div style="background:linear-gradient(135deg,#22c55e,#10b981,#14b8a6);padding:32px;text-align:center;">
-          <div style="width:96px;height:96px;background:white;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.15);"><span style="font-size:48px;">👩‍💼</span></div>
-          <h2 style="color:white;margin:0 0 4px;font-size:24px;">¡Hola! Soy Chari</h2>
-          <p style="color:rgba(255,255,255,0.85);margin:0;font-size:14px;">Tu asesora personal de confianza</p>
+      <div style="position:relative;background:white;border-radius:20px;max-width:400px;width:100%;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.4);margin:auto;">
+        <div style="background:linear-gradient(135deg,#22c55e,#10b981,#14b8a6);padding:24px;text-align:center;">
+          <div style="width:80px;height:80px;background:white;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.15);"><span style="font-size:40px;">👩‍💼</span></div>
+          <h2 style="color:white;margin:0 0 4px;font-size:22px;">¡Hola! Soy Chari</h2>
+          <p style="color:rgba(255,255,255,0.85);margin:0;font-size:13px;">Tu asesora personal de confianza</p>
         </div>
-        <div style="padding:24px;">
-          <p style="text-align:center;color:#374151;font-size:16px;line-height:1.6;margin:0 0 20px;">Estoy aquí para ayudarte con <strong>todo lo relacionado con tu vivienda</strong>. Llevo <span style="color:#22c55e;font-weight:600;">8 años</span> asesorando a propietarios de Valdemorillo.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
-            <div style="background:#f0fdf4;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">📊</div><div style="font-size:11px;color:#666;">Presupuestos</div></div>
-            <div style="background:#eff6ff;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">🔧</div><div style="font-size:11px;color:#666;">Reformas</div></div>
-            <div style="background:#fefce8;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">📋</div><div style="font-size:11px;color:#666;">Licencias</div></div>
-            <div style="background:#faf5ff;padding:12px;border-radius:12px;text-align:center;"><div style="font-size:20px;margin-bottom:4px;">💡</div><div style="font-size:11px;color:#666;">Consejos</div></div>
+        <div style="padding:20px;">
+          <p style="text-align:center;color:#374151;font-size:15px;line-height:1.5;margin:0 0 16px;">Estoy aquí para ayudarte con <strong>todo lo relacionado con tu vivienda</strong>. Llevo <span style="color:#22c55e;font-weight:600;">8 años</span> asesorando a propietarios de Valdemorillo.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+            <div style="background:#f0fdf4;padding:10px;border-radius:10px;text-align:center;"><div style="font-size:18px;margin-bottom:2px;">📊</div><div style="font-size:11px;color:#666;">Presupuestos</div></div>
+            <div style="background:#eff6ff;padding:10px;border-radius:10px;text-align:center;"><div style="font-size:18px;margin-bottom:2px;">🔧</div><div style="font-size:11px;color:#666;">Reformas</div></div>
+            <div style="background:#fefce8;padding:10px;border-radius:10px;text-align:center;"><div style="font-size:18px;margin-bottom:2px;">📋</div><div style="font-size:11px;color:#666;">Licencias</div></div>
+            <div style="background:#faf5ff;padding:10px;border-radius:10px;text-align:center;"><div style="font-size:18px;margin-bottom:2px;">💡</div><div style="font-size:11px;color:#666;">Consejos</div></div>
           </div>
-          <button onclick="App.startChatWithChari()" style="width:100%;background:linear-gradient(135deg,#22c55e,#10b981);color:white;border:none;padding:16px;border-radius:16px;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 24px rgba(34,197,94,0.4);"><span style="font-size:24px;">💬</span> Iniciar Chat con Chari</button>
+          <button onclick="App.startChatWithChari()" style="width:100%;background:linear-gradient(135deg,#22c55e,#10b981);color:white;border:none;padding:14px;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px rgba(34,197,94,0.4);"><span style="font-size:22px;">💬</span> Iniciar Chat con Chari</button>
         </div>
-        <div style="background:#f9fafb;padding:12px;text-align:center;border-top:1px solid #e5e7eb;"><button onclick="App.endTour()" style="color:#9ca3af;border:none;background:none;cursor:pointer;font-size:13px;">Saltar e ir al panel</button></div>
+        <div style="background:#f9fafb;padding:10px;text-align:center;border-top:1px solid #e5e7eb;"><button onclick="App.endTour()" style="color:#9ca3af;border:none;background:none;cursor:pointer;font-size:12px;">Saltar e ir al panel</button></div>
       </div>
     `;
     document.body.appendChild(popup);
@@ -335,7 +341,7 @@ const App = {
                 <i class="fas fa-user text-white text-sm"></i>
               </div>
               <div>
-                <p class="font-medium text-gray-800 text-sm">Samuel García</p>
+                <p class="font-medium text-gray-800 text-sm">Samuel Castellano</p>
                 <p class="text-gray-500 text-xs mt-0.5">Más Urba Multiservicios</p>
                 <p class="text-gray-600 text-sm mt-2">¿En qué puedo ayudarte?</p>
               </div>
