@@ -76,6 +76,22 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 - Etiquetas: reforma parcial/integral, venta potencial, premium, educable
 - Gestión de solicitudes de contacto
 
+### Sistema de Solicitudes de Contacto 🆕
+- **Botón "Solicitar revisión con Samuel"** en dashboard cliente
+- **WhatsApp automático a Samuel** con datos completos del cliente:
+  - Nombre del usuario
+  - Teléfono de contacto
+  - Email
+  - Vivienda (nombre, urbanización, dirección)
+  - Tipo de solicitud (Diagnóstico 360º, Consulta, Post-obra, Otro)
+  - Notas adicionales
+- **Badge/Notificación en el icono de la app** (PWA Badge API)
+- **Panel en admin dashboard** con solicitudes pendientes
+- **Contador visual** en el logo para admin
+- **Botón WhatsApp** para contactar al cliente desde admin
+- **Botón "Atendido"** para marcar como completada
+- **Recordatorio automático** creado en sistema para seguimiento
+
 ---
 
 ## 🏗️ Arquitectura Técnica
@@ -149,8 +165,12 @@ webapp/
 | POST | /api/chari/message | Enviar mensaje a Chari |
 | GET | /api/chari/status | Estado IA (Deepseek/reglas) |
 | POST | /api/contacts | Solicitar contacto |
+| GET | /api/contacts/pending-count | Contador para badge |
+| GET | /api/admin/dashboard | [Admin] Dashboard con stats |
 | GET | /api/admin/clients | [Admin] Lista clientes |
 | GET | /api/admin/clients/:id | [Admin] Detalle cliente |
+| PUT | /api/admin/contact-requests/:id | [Admin] Actualizar solicitud |
+| GET | /api/admin/contact-requests | [Admin] Listar solicitudes |
 | **NUEVO** | | |
 | GET | /api/media/all | Todos los medios del usuario |
 | GET | /api/media/property | Medios de vivienda |
@@ -225,15 +245,18 @@ npx wrangler pages deploy dist --project-name urbanizaciones-valdemorillo
 
 ## 📈 Próximas Funcionalidades
 
-- [ ] Integración WhatsApp Business API
+- [ ] Integración WhatsApp Business API (envío automático sin abrir navegador)
 - [ ] Migración de almacenamiento a Cloudflare R2
-- [ ] Notificaciones push
+- [ ] Notificaciones push nativas
 - [ ] Exportar informes en PDF
 - [ ] Calendario de mantenimientos
 - [ ] Múltiples propiedades por usuario
 - [x] ~~Subida de fotos a la vivienda~~ ✅
 - [x] ~~Análisis de imágenes con IA~~ ✅
 - [x] ~~Generación de visualizaciones con DALL-E~~ ✅
+- [x] ~~WhatsApp automático al solicitar revisión~~ ✅
+- [x] ~~Badge/notificación en icono de app~~ ✅
+- [x] ~~Panel admin de solicitudes pendientes~~ ✅
 
 ---
 
