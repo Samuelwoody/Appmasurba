@@ -20,14 +20,16 @@ const PROPERTY_TYPES = [
 
 // Urbanizaciones de Valdemorillo
 const URBANIZATIONS = [
-  'Los Robles',
-  'Las Colinas',
-  'El Bosque',
-  'La Dehesa',
-  'Los Arroyos',
-  'Monte Alto',
-  'Prado del Rey',
-  'Valdemorillo Centro',
+  'Cerro Alarcón',
+  'Cerro Alarcón Ampliación',
+  'El Paraíso',
+  'Puentelasierra',
+  'Mirador del Romero',
+  'La Esperanza',
+  'La Pizarrera',
+  'Mojadillas',
+  'Montemorillo',
+  'Los Pinos',
   'Otra'
 ];
 

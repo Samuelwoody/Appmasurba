@@ -917,7 +917,7 @@ const App = {
                 <label class="block text-sm font-medium text-urba-700 mb-2">Urbanización</label>
                 <select name="urbanization" class="w-full px-4 py-2 border border-urba-200 rounded-lg focus:ring-2 focus:ring-urba-500">
                   <option value="">Selecciona...</option>
-                  ${['Los Robles', 'Las Colinas', 'El Bosque', 'La Dehesa', 'Los Arroyos', 'Monte Alto', 'Prado del Rey', 'Valdemorillo Centro', 'Otra'].map(u => 
+                  ${['Cerro Alarcón', 'Cerro Alarcón Ampliación', 'El Paraíso', 'Puentelasierra', 'Mirador del Romero', 'La Esperanza', 'La Pizarrera', 'Mojadillas', 'Montemorillo', 'Los Pinos', 'Otra'].map(u => 
                     `<option value="${u}" ${p?.urbanization === u ? 'selected' : ''}>${u}</option>`
                   ).join('')}
                 </select>

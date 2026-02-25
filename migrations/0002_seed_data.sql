@@ -12,7 +12,7 @@ INSERT OR IGNORE INTO users (id, email, password_hash, name, phone, role) VALUES
 
 -- Vivienda de prueba
 INSERT OR IGNORE INTO properties (id, user_id, name, year_built, urbanization, property_type, address, square_meters, last_integral_reform, technical_score, notes) VALUES 
-(1, 2, 'Chalet Los Robles', 1995, 'Los Robles', 'Chalet pareado', 'Calle del Pinar 15, Valdemorillo', 220, 2010, 65, 'Vivienda bien conservada, pendiente revisión cubierta');
+(1, 2, 'Chalet Cerro Alarcón', 1995, 'Cerro Alarcón', 'Chalet pareado', 'Calle del Pinar 15, Valdemorillo', 220, 2010, 65, 'Vivienda bien conservada, pendiente revisión cubierta');
 
 -- Instalaciones de la vivienda
 INSERT OR IGNORE INTO installations (property_id, type, is_updated, year_updated, perceived_state, notes) VALUES 

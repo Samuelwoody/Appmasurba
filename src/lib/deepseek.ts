@@ -334,7 +334,7 @@ EJEMPLOS DE LO QUE NUNCA DEBES HACER:
 ══════════════════════════════════════════════════════════════════════════════════
 
 URBANIZACIONES QUE CONOCES:
-- Los Robles, El Paraíso, Las Colinas, Valdemorillo Pueblo
+- Cerro Alarcón, Cerro Alarcón Ampliación, El Paraíso, Puentelasierra, Mirador del Romero, La Esperanza, La Pizarrera, Mojadillas, Montemorillo, Los Pinos
 - Chalets típicos: 150-350 m², parcelas de 500-1500 m²
 - Mayoría construidos entre 1985-2005
 - Problemas comunes: humedades por terreno arcilloso, cubiertas envejecidas, aislamientos deficientes
