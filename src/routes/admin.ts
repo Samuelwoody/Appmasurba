@@ -64,6 +64,23 @@ admin.get('/dashboard', async (c) => {
        LIMIT 5`
     ).all();
 
+    // Solicitudes de contacto pendientes
+    const pendingContactRequests = await c.env.DB.prepare(
+      `SELECT cr.*, u.name as user_name, u.phone as user_phone, u.email as user_email,
+              p.name as property_name, p.address, p.urbanization
+       FROM contact_requests cr
+       JOIN users u ON cr.user_id = u.id
+       LEFT JOIN properties p ON p.user_id = u.id
+       WHERE cr.status = 'pending'
+       ORDER BY cr.created_at DESC
+       LIMIT 10`
+    ).all();
+
+    // Contador de solicitudes pendientes
+    const pendingContactCount = await c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM contact_requests WHERE status = 'pending'"
+    ).first<{ count: number }>();
+
     return c.json({
       success: true,
       data: {
@@ -71,11 +88,13 @@ admin.get('/dashboard', async (c) => {
           totalNeighbors: totalNeighbors?.count || 0,
           pendingServices: pendingServices?.count || 0,
           upcomingReminders: upcomingReminders?.count || 0,
-          activeManagements: activeManagements?.count || 0
+          activeManagements: activeManagements?.count || 0,
+          pendingContactRequests: pendingContactCount?.count || 0
         },
         urgentServices: urgentServices.results || [],
         todayReminders: todayReminders.results || [],
-        recentNeighbors: recentNeighbors.results || []
+        recentNeighbors: recentNeighbors.results || [],
+        pendingContactRequests: pendingContactRequests.results || []
       }
     });
   } catch (error) {
@@ -507,6 +526,66 @@ admin.delete('/neighbors/:id/tags/:tagName', async (c) => {
   } catch (error) {
     console.error('Remove tag error:', error);
     return c.json({ success: false, error: 'Error eliminando etiqueta' }, 500);
+  }
+});
+
+// =============================================
+// SOLICITUDES DE CONTACTO - Gestión Admin
+// =============================================
+
+// Marcar solicitud como atendida
+admin.put('/contact-requests/:id', async (c) => {
+  const requestId = parseInt(c.req.param('id'));
+  
+  try {
+    const body = await c.req.json();
+    const { status, notes } = body;
+    
+    if (!['contacted', 'completed', 'cancelled'].includes(status)) {
+      return c.json({ success: false, error: 'Estado no válido' }, 400);
+    }
+    
+    await c.env.DB.prepare(
+      `UPDATE contact_requests 
+       SET status = ?, admin_notes = ?, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = ?`
+    ).bind(status, notes || null, requestId).run();
+    
+    return c.json({ success: true, message: 'Solicitud actualizada' });
+  } catch (error) {
+    console.error('Update contact request error:', error);
+    return c.json({ success: false, error: 'Error actualizando solicitud' }, 500);
+  }
+});
+
+// Obtener todas las solicitudes de contacto
+admin.get('/contact-requests', async (c) => {
+  try {
+    const status = c.req.query('status') || 'all';
+    
+    let query = `
+      SELECT cr.*, u.name as user_name, u.phone as user_phone, u.email as user_email,
+             p.name as property_name, p.address, p.urbanization
+      FROM contact_requests cr
+      JOIN users u ON cr.user_id = u.id
+      LEFT JOIN properties p ON p.user_id = u.id
+    `;
+    
+    if (status !== 'all') {
+      query += ` WHERE cr.status = '${status}'`;
+    }
+    
+    query += ` ORDER BY cr.created_at DESC`;
+    
+    const result = await c.env.DB.prepare(query).all();
+    
+    return c.json({
+      success: true,
+      data: result.results || []
+    });
+  } catch (error) {
+    console.error('Get contact requests error:', error);
+    return c.json({ success: false, error: 'Error obteniendo solicitudes' }, 500);
   }
 });
 

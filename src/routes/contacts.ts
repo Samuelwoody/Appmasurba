@@ -30,6 +30,9 @@ const REQUEST_TYPES = {
   }
 };
 
+// Número de Samuel para WhatsApp
+const SAMUEL_PHONE = '34742094169';
+
 // Obtener tipos de solicitud
 contacts.get('/types', async (c) => {
   return c.json({
@@ -64,23 +67,93 @@ contacts.post('/', async (c) => {
       }, 400);
     }
     
+    // Obtener datos completos del usuario
+    const userData = await c.env.DB.prepare(
+      'SELECT name, email, phone FROM users WHERE id = ?'
+    ).bind(user.sub).first<{ name: string; email: string; phone: string }>();
+    
+    // Obtener datos de la propiedad del usuario
+    const propertyData = await c.env.DB.prepare(
+      'SELECT name, address, urbanization FROM properties WHERE user_id = ? LIMIT 1'
+    ).bind(user.sub).first<{ name: string; address: string; urbanization: string }>();
+    
+    // Crear la solicitud
     const result = await c.env.DB.prepare(
       `INSERT INTO contact_requests (user_id, request_type, notes, status)
        VALUES (?, ?, ?, 'pending')`
     ).bind(user.sub, request_type, notes || null).run();
     
+    // Crear recordatorio automático para Samuel (sin priority)
+    try {
+      await c.env.DB.prepare(
+        `INSERT INTO reminders (user_id, property_id, title, description, due_date, status, reminder_type)
+         SELECT ?, p.id, ?, ?, date('now'), 'pending', 'contact_request'
+         FROM properties p WHERE p.user_id = ?`
+      ).bind(
+        user.sub,
+        `📞 Solicitud: ${REQUEST_TYPES[request_type as keyof typeof REQUEST_TYPES].label}`,
+        `${userData?.name || user.name} solicita contacto. Tel: ${userData?.phone || 'No disponible'}`,
+        user.sub
+      ).run();
+    } catch (reminderError) {
+      console.error('Error creating reminder:', reminderError);
+      // No fallar si no se puede crear el recordatorio
+    }
+    
+    // Preparar mensaje de WhatsApp para Samuel
+    const typeInfo = REQUEST_TYPES[request_type as keyof typeof REQUEST_TYPES];
+    const whatsappMessage = `🏠 *NUEVA SOLICITUD DE REVISIÓN*
+
+👤 *Cliente:* ${userData?.name || user.name}
+📱 *Teléfono:* ${userData?.phone || 'No disponible'}
+📧 *Email:* ${userData?.email || user.email}
+
+🏡 *Vivienda:* ${propertyData?.name || 'Sin registrar'}
+📍 *Urbanización:* ${propertyData?.urbanization || 'No especificada'}
+📮 *Dirección:* ${propertyData?.address || 'No especificada'}
+
+📋 *Tipo:* ${typeInfo.icon} ${typeInfo.label}
+${notes ? `📝 *Notas:* ${notes}` : ''}
+
+⏰ Solicitud recibida: ${new Date().toLocaleString('es-ES')}`;
+
     return c.json({
       success: true,
       data: {
         id: result.meta.last_row_id,
         request_type,
-        typeInfo: REQUEST_TYPES[request_type as keyof typeof REQUEST_TYPES]
+        typeInfo,
+        // Datos para el frontend - generar URL de WhatsApp
+        whatsapp: {
+          phone: SAMUEL_PHONE,
+          message: whatsappMessage
+        },
+        user: {
+          name: userData?.name || user.name,
+          phone: userData?.phone
+        }
       },
-      message: 'Solicitud enviada. Samuel se pondrá en contacto contigo pronto.'
+      message: 'Solicitud enviada. Se abrirá WhatsApp para confirmar.'
     });
   } catch (error) {
     console.error('Create contact request error:', error);
     return c.json({ success: false, error: 'Error creando solicitud' }, 500);
+  }
+});
+
+// Obtener contador de solicitudes pendientes (para badge)
+contacts.get('/pending-count', async (c) => {
+  try {
+    const result = await c.env.DB.prepare(
+      "SELECT COUNT(*) as count FROM contact_requests WHERE status = 'pending'"
+    ).first<{ count: number }>();
+    
+    return c.json({
+      success: true,
+      count: result?.count || 0
+    });
+  } catch (error) {
+    return c.json({ success: false, count: 0 });
   }
 });
 

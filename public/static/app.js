@@ -173,6 +173,12 @@ const App = {
         if (response.data.success && response.data.valid) {
           this.state.user = response.data.user;
           await this.loadDashboard();
+          
+          // Cargar notificaciones si es admin
+          if (this.state.user.role === 'admin') {
+            await this.loadPendingNotifications();
+          }
+          
           this.navigate(this.state.user.role === 'admin' ? 'admin' : 'dashboard');
         } else {
           this.logout();
@@ -255,15 +261,63 @@ const App = {
     
     app.innerHTML = content + (loadingScreen ? loadingScreen.outerHTML : '');
     this.attachEventListeners();
+    
+    // Actualizar badge de notificaciones si es admin
+    if (this.state.user?.role === 'admin') {
+      this.updateNotificationBadge();
+    }
   },
   
   // Estado para WhatsApp
   whatsappVisible: false,
+  
+  // Estado para notificaciones pendientes
+  pendingNotifications: 0,
 
   // Mostrar/ocultar WhatsApp
   toggleWhatsApp() {
     this.whatsappVisible = !this.whatsappVisible;
     this.render();
+  },
+  
+  // Cargar contador de notificaciones pendientes
+  async loadPendingNotifications() {
+    if (this.state.user?.role !== 'admin') return;
+    
+    try {
+      const response = await axios.get('/api/contacts/pending-count');
+      if (response.data.success) {
+        this.pendingNotifications = response.data.count;
+        this.updateNotificationBadge();
+        this.updatePWABadge(response.data.count);
+      }
+    } catch (error) {
+      console.error('Error loading notifications:', error);
+    }
+  },
+  
+  // Actualizar badge visual en el header
+  updateNotificationBadge() {
+    const badge = document.getElementById('notification-badge');
+    if (badge) {
+      if (this.pendingNotifications > 0) {
+        badge.textContent = this.pendingNotifications > 9 ? '9+' : this.pendingNotifications;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+  },
+  
+  // Actualizar badge del icono de la PWA (si el navegador lo soporta)
+  updatePWABadge(count) {
+    if ('setAppBadge' in navigator) {
+      if (count > 0) {
+        navigator.setAppBadge(count).catch(err => console.log('Badge not supported'));
+      } else {
+        navigator.clearAppBadge().catch(err => console.log('Badge not supported'));
+      }
+    }
   },
 
   // Abrir WhatsApp directamente
@@ -284,7 +338,15 @@ const App = {
           <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3 header-mobile">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-2 sm:space-x-3">
-                <img src="/static/logo.png" alt="Más Urba" class="w-10 h-10 sm:w-12 sm:h-12">
+                <div class="relative">
+                  <img src="/static/logo.png" alt="Más Urba" class="w-10 h-10 sm:w-12 sm:h-12">
+                  ${isAdmin ? `
+                  <span id="notification-badge" 
+                        class="${this.pendingNotifications > 0 ? '' : 'hidden'} absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                    ${this.pendingNotifications > 9 ? '9+' : this.pendingNotifications}
+                  </span>
+                  ` : ''}
+                </div>
                 <div>
                   <h1 class="text-sm sm:text-lg font-semibold leading-tight text-gray-800">Urbanizaciones Valdemorillo</h1>
                   <p class="text-gray-500 text-xs hidden sm:block">Control y Estrategia de Chalets</p>
@@ -2607,7 +2669,17 @@ const App = {
     try {
       const response = await axios.post('/api/contacts', { request_type: type });
       if (response.data.success) {
-        this.showToast(response.data.message, 'success');
+        const { whatsapp, user } = response.data.data;
+        
+        // Mostrar confirmación
+        this.showToast('✅ Solicitud enviada. Abriendo WhatsApp...', 'success');
+        
+        // Abrir WhatsApp con el mensaje automático para Samuel
+        if (whatsapp && whatsapp.phone && whatsapp.message) {
+          setTimeout(() => {
+            window.open(`https://wa.me/${whatsapp.phone}?text=${encodeURIComponent(whatsapp.message)}`, '_blank');
+          }, 500);
+        }
       }
     } catch (error) {
       this.showToast(error.response?.data?.error || 'Error al enviar solicitud', 'error');
@@ -3446,6 +3518,53 @@ const App = {
               </div>
             </div>
             
+            <!-- SOLICITUDES DE CONTACTO PENDIENTES -->
+            ${(d.pendingContactRequests || []).length > 0 ? `
+            <div class="bg-white rounded-xl shadow-sm border-2 border-green-400 overflow-hidden mt-6">
+              <div class="bg-green-50 px-6 py-4 border-b border-green-200 flex items-center justify-between">
+                <h3 class="font-semibold text-green-800">
+                  <i class="fas fa-phone-volume mr-2 animate-pulse"></i>
+                  Solicitudes de Contacto Pendientes 
+                  <span class="ml-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full">${d.stats?.pendingContactRequests || 0}</span>
+                </h3>
+              </div>
+              <div class="p-4 space-y-3">
+                ${d.pendingContactRequests.map(cr => `
+                  <div class="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200">
+                    <div class="flex-1">
+                      <div class="flex items-center space-x-2">
+                        <p class="font-semibold text-gray-900">${cr.user_name}</p>
+                        <span class="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
+                          ${cr.request_type === 'diagnosis_360' ? '🔍 Diagnóstico' : 
+                            cr.request_type === 'consultation' ? '💬 Consulta' : 
+                            cr.request_type === 'post_work' ? '✅ Post-obra' : '📋 Otro'}
+                        </span>
+                      </div>
+                      <p class="text-sm text-gray-600 mt-1">
+                        <i class="fas fa-phone mr-1"></i>${cr.user_phone || 'Sin teléfono'}
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-home mr-1"></i>${cr.urbanization || 'Sin urbanización'}
+                      </p>
+                      <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-clock mr-1"></i>Solicitado: ${this.formatDate(cr.created_at)}
+                      </p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <button onclick="App.callContactRequest(${cr.id}, '${cr.user_phone}', '${cr.user_name}')" 
+                              class="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm">
+                        <i class="fab fa-whatsapp mr-1"></i>WhatsApp
+                      </button>
+                      <button onclick="App.markContactRequestDone(${cr.id})" 
+                              class="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm">
+                        <i class="fas fa-check mr-1"></i>Atendido
+                      </button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
+            
             <!-- Últimos vecinos -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-6">
               <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -3492,6 +3611,35 @@ const App = {
     } catch (error) {
       console.error('Error loading admin dashboard:', error);
       document.getElementById('admin-content').innerHTML = '<p class="text-red-600 text-center py-8">Error cargando datos</p>';
+    }
+  },
+
+  // Llamar/WhatsApp a solicitud de contacto
+  callContactRequest(requestId, phone, userName) {
+    if (!phone) {
+      this.showToast('Este usuario no tiene teléfono registrado', 'error');
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, '');
+    const message = `Hola ${userName}, soy Samuel de Más Urba. He recibido tu solicitud de revisión. ¿Cuándo te viene bien que pase a verla?`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+  },
+
+  // Marcar solicitud como atendida
+  async markContactRequestDone(requestId) {
+    try {
+      const response = await axios.put(`/api/admin/contact-requests/${requestId}`, {
+        status: 'completed'
+      });
+      
+      if (response.data.success) {
+        this.showToast('Solicitud marcada como atendida', 'success');
+        // Recargar dashboard y notificaciones
+        await this.loadPendingNotifications();
+        this.loadAdminDashboard();
+      }
+    } catch (error) {
+      this.showToast('Error actualizando solicitud', 'error');
     }
   },
 
