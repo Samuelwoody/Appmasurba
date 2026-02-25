@@ -403,14 +403,6 @@ const App = {
               Por <span class="font-medium">Más Urba Multiservicios</span> · Solo para vecinos de las urbanizaciones de Valdemorillo
             </p>
           </div>
-          
-          <!-- Demo hint -->
-          <div class="mt-4 text-center pb-8">
-            <p class="text-gray-400 text-xs">
-              <i class="fas fa-info-circle mr-1"></i>
-              ¿Quieres probar? Usa: cliente@demo.es / demo123
-            </p>
-          </div>
         </div>
       </div>
     `;
