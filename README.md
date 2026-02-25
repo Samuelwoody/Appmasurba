@@ -12,15 +12,15 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 
 ### 🔗 URLs
 
+- **Producción**: https://urbanizaciones-valdemorillo.pages.dev
 - **Sandbox/Demo**: https://3000-i4dn5f0sazre04l9uxj55-cc2fbc16.sandbox.novita.ai
-- **Producción** (pendiente despliegue): urbanizaciones-valdemorillo.pages.dev
 
 ### 👤 Credenciales Demo
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
 | Cliente | cliente@demo.es | demo123 |
-| Admin (Samuel) | samuel@masurba.es | admin123 |
+| Admin (Samuel Castellano) | samuel@masurba.es | admin123 |
 
 ---
 
@@ -36,12 +36,14 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 - Datos configurables: año construcción, urbanización, tipo, m², última reforma
 - Estado de 6 instalaciones: electricidad, fontanería, calefacción, aislamiento, cubierta, fachada
 - Indicador de salud técnica (no alarmista)
+- **NUEVO: Subida de fotos/vídeos de la vivienda**
 
 ### Control de Mantenimiento
 - Checklist de 8 categorías: cubierta, electricidad, fontanería, caldera, fachada, aislamiento, piscina, jardín
 - Estados: Pendiente, Revisado, Necesita reparación, Reparado
 - Historial de acciones
 - Frecuencias de revisión recomendadas
+- **NUEVO: Subida de fotos/vídeos por categoría**
 
 ### Estimaciones Orientativas
 - 14 tipos de intervención
@@ -64,6 +66,8 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 - Ofrece contacto con Samuel (máximo 1 vez por conversación)
 - **Nunca revela que es IA**
 - Fallback a sistema de reglas si no hay API key
+- **NUEVO: Análisis de imágenes con GPT-4o Vision**
+- **NUEVO: Generación de imágenes con DALL-E 3** (visualización de reformas)
 
 ### Panel Admin (Samuel)
 - Dashboard con métricas globales
@@ -83,7 +87,8 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 | Backend | Hono (TypeScript) en Cloudflare Workers |
 | Base de datos | Cloudflare D1 (SQLite distribuido) |
 | Autenticación | JWT + hash SHA-256 |
-| IA | Deepseek API (deepseek-chat) |
+| IA Chat | Deepseek API (deepseek-chat) |
+| IA Imágenes | OpenAI (GPT-4o Vision + DALL-E 3) |
 | PWA | Service Worker + Web App Manifest |
 | Hosting | Cloudflare Pages |
 
@@ -101,11 +106,14 @@ webapp/
 │   │   ├── strategic.ts  # Valoración estratégica
 │   │   ├── chari.ts      # Asistente IA
 │   │   ├── contacts.ts   # Solicitudes contacto
-│   │   └── admin.ts      # Panel administrador
+│   │   ├── admin.ts      # Panel administrador
+│   │   ├── media.ts      # Gestión de fotos/vídeos
+│   │   └── images.ts     # Generación/análisis imágenes
 │   ├── lib/
 │   │   ├── auth.ts       # Utilidades JWT
 │   │   ├── chari.ts      # Lógica reglas (fallback)
 │   │   ├── deepseek.ts   # Cliente API Deepseek
+│   │   ├── openai-images.ts # Cliente OpenAI (imágenes)
 │   │   ├── estimates.ts  # Cálculos estimaciones
 │   │   └── strategic.ts  # Lógica estratégica
 │   ├── middleware/
@@ -119,7 +127,9 @@ webapp/
 │   └── sw.js             # Service Worker
 ├── migrations/
 │   ├── 0001_initial_schema.sql
-│   └── 0002_seed_data.sql
+│   ├── 0002_seed_data.sql
+│   ├── 0003_admin_features.sql
+│   └── 0003_media_storage.sql
 ├── wrangler.jsonc        # Config Cloudflare
 └── ecosystem.config.cjs  # PM2 config
 ```
@@ -131,9 +141,9 @@ webapp/
 | POST | /api/auth/login | Autenticación |
 | GET | /api/auth/verify | Verificar token |
 | GET | /api/dashboard | Panel cliente |
-| GET/PUT | /api/properties/:id | Datos vivienda |
+| GET/PUT | /api/properties | Datos vivienda |
 | GET/PUT | /api/maintenances | Mantenimientos |
-| POST | /api/estimates | Calcular estimación |
+| POST | /api/estimates/calculate | Calcular estimación |
 | POST | /api/strategic | Valoración estratégica |
 | GET | /api/chari/conversation | Obtener/crear conversación |
 | POST | /api/chari/message | Enviar mensaje a Chari |
@@ -141,32 +151,42 @@ webapp/
 | POST | /api/contacts | Solicitar contacto |
 | GET | /api/admin/clients | [Admin] Lista clientes |
 | GET | /api/admin/clients/:id | [Admin] Detalle cliente |
+| **NUEVO** | | |
+| GET | /api/media/all | Todos los medios del usuario |
+| GET | /api/media/property | Medios de vivienda |
+| POST | /api/media/property | Subir foto/vídeo de vivienda |
+| GET | /api/media/maintenance | Medios de mantenimiento |
+| POST | /api/media/maintenance | Subir foto/vídeo de mantenimiento |
+| DELETE | /api/media/property/:id | Eliminar medio de vivienda |
+| DELETE | /api/media/maintenance/:id | Eliminar medio de mantenimiento |
+| POST | /api/images/analyze | Analizar imagen con GPT-4o |
+| POST | /api/images/generate | Generar imagen con DALL-E 3 |
+| POST | /api/images/chari-analyze | Análisis de imagen para Chari |
 
 ---
 
-## 🔐 Configuración Deepseek (IA para Chari)
+## 🔐 Configuración APIs
 
-### Obtener API Key
-1. Registrarse en https://platform.deepseek.com/
-2. Crear una API key en la sección "API Keys"
-3. El modelo `deepseek-chat` es económico (~$0.14/M tokens input)
-
-### Desarrollo Local
-Editar `.dev.vars`:
-```
-DEEPSEEK_API_KEY=tu_api_key_real_aqui
-```
-
-### Producción (Cloudflare)
+### Deepseek (Chat IA)
 ```bash
+# Producción
 npx wrangler secret put DEEPSEEK_API_KEY --project-name urbanizaciones-valdemorillo
-```
 
-### Sin API Key
-Si no hay API key configurada, Chari usa un sistema de reglas que:
-- Detecta intenciones (saludo, precio, técnico, venta, etc.)
-- Responde con rangos predefinidos
-- Funciona offline
+# Desarrollo local (.dev.vars)
+DEEPSEEK_API_KEY=tu_api_key
+```
+- Coste: ~$0.14/M tokens input
+
+### OpenAI (Imágenes)
+```bash
+# Producción
+npx wrangler secret put OPENAI_API_KEY --project-name urbanizaciones-valdemorillo
+
+# Desarrollo local (.dev.vars)
+OPENAI_API_KEY=tu_api_key
+```
+- Análisis GPT-4o: ~$0.01/imagen
+- Generación DALL-E 3: ~$0.04/imagen
 
 ---
 
@@ -179,17 +199,14 @@ npm install
 # Compilar
 npm run build
 
+# Reset base de datos (si es necesario)
+npm run db:reset
+
 # Iniciar servidor (PM2)
 pm2 start ecosystem.config.cjs
 
-# O directamente con wrangler
-npm run dev:d1
-
 # Ver logs
 pm2 logs --nostream
-
-# Reset base de datos
-npm run db:reset
 ```
 
 ---
@@ -197,22 +214,11 @@ npm run db:reset
 ## 📦 Despliegue a Producción
 
 ```bash
-# 1. Configurar Cloudflare API
-# (desde panel Genspark → Deploy)
+# 1. Compilar
+npm run build
 
-# 2. Crear base de datos D1
-npx wrangler d1 create masurba-db
-
-# 3. Actualizar database_id en wrangler.jsonc
-
-# 4. Aplicar migraciones
-npm run db:migrate:prod
-
-# 5. Configurar secretos
-npx wrangler secret put DEEPSEEK_API_KEY --project-name urbanizaciones-valdemorillo
-
-# 6. Desplegar
-npm run deploy:prod
+# 2. Desplegar
+npx wrangler pages deploy dist --project-name urbanizaciones-valdemorillo
 ```
 
 ---
@@ -220,11 +226,14 @@ npm run deploy:prod
 ## 📈 Próximas Funcionalidades
 
 - [ ] Integración WhatsApp Business API
-- [ ] Subida de fotos a Cloudflare R2
+- [ ] Migración de almacenamiento a Cloudflare R2
 - [ ] Notificaciones push
 - [ ] Exportar informes en PDF
 - [ ] Calendario de mantenimientos
 - [ ] Múltiples propiedades por usuario
+- [x] ~~Subida de fotos a la vivienda~~ ✅
+- [x] ~~Análisis de imágenes con IA~~ ✅
+- [x] ~~Generación de visualizaciones con DALL-E~~ ✅
 
 ---
 
