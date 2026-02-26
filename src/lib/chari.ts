@@ -158,7 +158,7 @@ export function generateChariResponse(
       break;
       
     case 'schedule_visit':
-      response = `Por supuesto, ${context.userName}. Samuel estará encantado de revisar tu vivienda y darte una valoración personalizada. ` +
+      response = `Por supuesto, ${context.userName}. Samuel estará encantado de revisar tu vivienda y darte un análisis profesional. ` +
         `Puedes solicitar una visita desde el botón "Solicitar revisión con Samuel" en tu panel principal. ` +
         `Normalmente puede cuadrar una visita en menos de una semana.`;
       break;
@@ -170,7 +170,7 @@ export function generateChariResponse(
       
     case 'farewell':
       response = `¡Gracias a ti, ${context.userName}! Ha sido un placer ayudarte. ` +
-        `Recuerda que puedes volver cuando quieras, y si necesitas una valoración más precisa, Samuel está disponible para visitarte. ` +
+        `Recuerda que puedes volver cuando quieras, y si necesitas un análisis más detallado, Samuel está disponible para visitarte. ` +
         `¡Que vaya muy bien!`;
       if (!context.samuelOffered && context.messageCount > 2) {
         shouldOfferSamuel = true;

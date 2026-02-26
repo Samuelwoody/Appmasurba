@@ -10,8 +10,13 @@ contacts.use('*', authMiddleware);
 const REQUEST_TYPES = {
   diagnosis_360: {
     label: 'Diagnóstico 360º',
-    description: 'Valoración técnica completa de tu vivienda',
+    description: 'Análisis técnico completo de tu vivienda',
     icon: '🔍'
+  },
+  professional_study: {
+    label: 'Estudio profesional para venta',
+    description: 'Informe técnico documentado para respaldar tu precio de venta',
+    icon: '📋'
   },
   consultation: {
     label: 'Consulta con Samuel',

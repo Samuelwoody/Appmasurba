@@ -1,4 +1,4 @@
-// Lógica de valoración estratégica
+// Lógica de orientación estratégica
 // Orientación para decisión de venta/reforma
 
 export type TimeHorizon = 'immediate' | 'short_term' | 'medium_term' | 'long_term';
@@ -48,7 +48,7 @@ export function generateStrategicRecommendation(input: StrategicInput): Strategi
       considerations: [
         'Revisa periódicamente instalaciones críticas',
         'Considera mejoras de eficiencia energética para reducir costes',
-        'Documenta cualquier reforma para futura valoración'
+        'Documenta cualquier reforma para futuras gestiones'
       ],
       nextSteps: [
         'Completar el checklist de mantenimiento',
@@ -84,7 +84,7 @@ export function generateStrategicRecommendation(input: StrategicInput): Strategi
         'Precio ajustado a estado actual'
       ];
       nextSteps = [
-        'Solicitar valoración de mercado',
+        'Solicitar estudio de mercado',
         'Preparar documentación de la vivienda',
         'Considerar home staging básico'
       ];
@@ -136,13 +136,13 @@ export function generateStrategicRecommendation(input: StrategicInput): Strategi
         'No sobredimensionar la inversión'
       ];
       nextSteps = [
-        'Solicitar valoración actual y potencial',
+        'Solicitar estudio del estado actual y potencial',
         'Identificar puntos débiles visibles',
         'Presupuestar mejoras prioritarias'
       ];
     } else {
       recommendation = 'needs_assessment';
-      title = 'Requiere valoración técnica';
+      title = 'Requiere análisis técnico';
       description = 'Es necesario evaluar si compensa reformar antes de vender.';
       reasoning = [
         'Estado técnico bajo',
@@ -259,18 +259,18 @@ export function generateStrategicRecommendation(input: StrategicInput): Strategi
     recommendation: recommendation!,
     title: title!,
     description: description!,
-    reasoning: reasoning.length ? reasoning : ['Valoración basada en datos proporcionados'],
+    reasoning: reasoning.length ? reasoning : ['Análisis basado en datos proporcionados'],
     considerations: considerations.length ? considerations : ['Cada caso requiere análisis individualizado'],
-    nextSteps: nextSteps.length ? nextSteps : ['Solicitar valoración personalizada'],
+    nextSteps: nextSteps.length ? nextSteps : ['Solicitar estudio personalizado'],
     disclaimer: getStandardDisclaimer()
   };
 }
 
 function getStandardDisclaimer(): string {
-  return `Esta orientación es meramente informativa y no constituye una valoración oficial ni 
-asesoramiento inmobiliario profesional. La decisión final debe basarse en una valoración 
-técnica presencial y en el análisis del mercado local. Más Urba no realiza valoraciones 
-oficiales ni intermediación inmobiliaria.`;
+  return `Esta orientación es meramente informativa y no constituye un informe oficial ni 
+asesoramiento inmobiliario profesional. La decisión final debe basarse en un análisis 
+técnico presencial y en el estudio del mercado local. Más Urba ofrece estudios profesionales 
+para ayudarte a tomar la mejor decisión.`;
 }
 
 // Calcular score técnico basado en instalaciones y mantenimientos

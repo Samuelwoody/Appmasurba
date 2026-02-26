@@ -232,7 +232,7 @@ export function calculateEstimate(
     rangeMax,
     variables: intervention.variables,
     disclaimer: `Esta estimación es meramente orientativa y no constituye presupuesto. 
-El precio final dependerá de una valoración técnica presencial que analice las 
+El precio final dependerá de una visita técnica presencial que analice las 
 condiciones específicas de su vivienda. Los rangos mostrados corresponden a 
 precios de mercado en la zona de Valdemorillo para el año 2024-2025.`
   };

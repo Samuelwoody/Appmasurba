@@ -1933,7 +1933,7 @@ const App = {
         </div>
       </div>
       <p class="text-sm text-urba-500 mt-4 text-center">
-        Completa la información de las ${noData} áreas sin datos para obtener una valoración técnica más precisa
+        Completa la información de las ${noData} áreas sin datos para obtener un análisis técnico más preciso
       </p>
     `;
   },
@@ -2191,9 +2191,9 @@ const App = {
           <div class="bg-urba-50 px-6 py-4 border-b border-urba-100">
             <h2 class="text-xl font-semibold text-urba-900">
               <i class="fas fa-chess mr-2 text-urba-500"></i>
-              Valoración estratégica
+              Orientación estratégica
             </h2>
-            <p class="text-sm text-urba-500 mt-1">Orientación para decisiones sobre tu vivienda</p>
+            <p class="text-sm text-urba-500 mt-1">Análisis para tomar mejores decisiones sobre tu vivienda</p>
           </div>
           
           <form id="strategic-form" class="p-6 space-y-6">
@@ -2354,7 +2354,7 @@ const App = {
           <!-- Botón WhatsApp si Samuel fue ofrecido -->
           ${samuelOffered ? `
           <div class="px-4 py-3 bg-green-50 border-t border-green-100">
-            <button onclick="App.openWhatsApp('Hola Samuel, vengo de hablar con Chari y me gustaría una valoración personalizada.')" 
+            <button onclick="App.openWhatsApp('Hola Samuel, vengo de hablar con Chari y me gustaría que revisaras mi vivienda.')" 
                     class="w-full whatsapp-btn text-white py-3 rounded-xl font-medium flex items-center justify-center">
               <i class="fab fa-whatsapp mr-2 text-lg"></i>
               Contactar con Samuel por WhatsApp
@@ -4326,6 +4326,30 @@ const App = {
       this.showToast(error.response?.data?.error || 'Error al enviar solicitud', 'error');
     }
   },
+
+  async requestProfessionalStudy() {
+    try {
+      const response = await axios.post('/api/contacts', { 
+        request_type: 'professional_study',
+        notes: 'Solicitud de estudio profesional para venta de vivienda desde sección Estrategia'
+      });
+      if (response.data.success) {
+        const { whatsapp } = response.data.data;
+        
+        // Mostrar confirmación
+        this.showToast('✅ Solicitud de estudio enviada. Abriendo WhatsApp...', 'success');
+        
+        // Abrir WhatsApp
+        if (whatsapp && whatsapp.phone && whatsapp.message) {
+          setTimeout(() => {
+            window.open(`https://wa.me/${whatsapp.phone}?text=${encodeURIComponent(whatsapp.message)}`, '_blank');
+          }, 500);
+        }
+      }
+    } catch (error) {
+      this.showToast(error.response?.data?.error || 'Error al enviar solicitud', 'error');
+    }
+  },
   
   // =============================================
   // MANEJO DE IMÁGENES EN CHAT
@@ -4576,7 +4600,7 @@ const App = {
         <p class="mb-4">Ayudarte a mantener tu vivienda en buen estado, orientarte sobre precios de reformas y darte asesoramiento técnico. <strong>No hay ninguna obligación de contratar servicios.</strong></p>
         
         <h3 class="font-semibold text-lg mb-3">3. Precios orientativos</h3>
-        <p class="mb-4">Los precios mostrados son <strong>estimaciones orientativas</strong> basadas en el mercado local. El precio final depende de una valoración presencial y puede variar.</p>
+        <p class="mb-4">Los precios mostrados son <strong>estimaciones orientativas</strong> basadas en el mercado local. El precio final depende de una visita presencial y puede variar.</p>
         
         <h3 class="font-semibold text-lg mb-3">4. Asesoramiento de Chari</h3>
         <p class="mb-4">Chari es una asistente que proporciona orientación general. Para decisiones importantes, recomendamos siempre consultar con profesionales cualificados.</p>
@@ -4957,6 +4981,58 @@ const App = {
                     `).join('')}
                   </ul>
                 </div>
+                
+                ${formData.wants_to_sell === 'true' ? `
+                <!-- Sección especial para vendedores -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mt-6">
+                  <div class="flex items-start space-x-4">
+                    <div class="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-file-contract text-2xl text-amber-600"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-bold text-amber-900 text-lg mb-2">¿Sabías que el 73% de las viviendas se venden por debajo de su potencial?</h4>
+                      <p class="text-amber-800 text-sm mb-3">
+                        Muchos propietarios desconocen el verdadero estado técnico de su vivienda y no pueden argumentar su precio ante compradores cada vez más informados.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-4 space-y-3">
+                    <div class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                      <p class="text-sm text-gray-700"><strong>Un informe técnico profesional</strong> te da argumentos sólidos para defender tu precio</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                      <p class="text-sm text-gray-700"><strong>Genera confianza en el comprador</strong> al mostrar transparencia sobre el estado real</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                      <p class="text-sm text-gray-700"><strong>Evita sorpresas y regateos</strong> de última hora por "defectos ocultos"</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                      <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                      <p class="text-sm text-gray-700"><strong>Documento oficial</strong> que puedes presentar a inmobiliarias y compradores</p>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-6 p-4 bg-white rounded-lg border border-amber-200">
+                    <p class="text-sm text-gray-600 mb-3">
+                      <i class="fas fa-lightbulb text-amber-500 mr-2"></i>
+                      <strong>Consejo de experto:</strong> Los compradores de hoy en día están muy informados. 
+                      Contar con un informe técnico profesional no solo justifica tu precio, sino que acelera 
+                      el proceso de venta al eliminar incertidumbres.
+                    </p>
+                  </div>
+                  
+                  <button onclick="App.requestProfessionalStudy()" 
+                          class="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-semibold transition flex items-center justify-center shadow-lg">
+                    <i class="fas fa-clipboard-check mr-3 text-lg"></i>
+                    Solicitar estudio profesional
+                  </button>
+                  <p class="text-xs text-center text-amber-700 mt-2">Sin compromiso · Samuel te contactará en 24h</p>
+                </div>
+                ` : ''}
                 
                 <p class="text-xs text-urba-400">${rec.disclaimer}</p>
               </div>

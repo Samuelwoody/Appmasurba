@@ -290,7 +290,7 @@ async function generateChariComment(db: any, listingId: number, propertyData: an
     comment += `\n\n📍 ${propertyData.urbanization} es una urbanización bien valorada en Valdemorillo.`;
   }
 
-  comment += `\n\n💡 *Para una valoración profesional completa, contacta con Samuel de Más Urba.*`;
+  comment += `\n\n💡 *Para un estudio profesional completo, contacta con Samuel de Más Urba.*`;
 
   try {
     await db.prepare(`
