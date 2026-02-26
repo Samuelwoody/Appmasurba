@@ -36,3 +36,6 @@ Thumbs.db
 *.bak
 *.tar.gz
 *.zip
+
+# Backups directory (contains sensitive data)
+backups/
