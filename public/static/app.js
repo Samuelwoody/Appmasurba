@@ -4352,6 +4352,83 @@ const App = {
   },
   
   // =============================================
+  // POPUP DE CHARI (10 segundos después del resultado)
+  // =============================================
+  
+  chariPopupTimers: {},
+  
+  scheduleChariPopup(type, context = '') {
+    // Cancelar timer anterior si existe
+    this.cancelChariPopup(type);
+    
+    // Programar nuevo popup en 10 segundos
+    this.chariPopupTimers[type] = setTimeout(() => {
+      const popup = document.getElementById(`chari-popup-${type}`);
+      if (popup) {
+        popup.classList.remove('hidden');
+        popup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 10000); // 10 segundos
+  },
+  
+  cancelChariPopup(type) {
+    if (this.chariPopupTimers[type]) {
+      clearTimeout(this.chariPopupTimers[type]);
+      delete this.chariPopupTimers[type];
+    }
+    // También ocultar el popup si está visible
+    const popup = document.getElementById(`chari-popup-${type}`);
+    if (popup) {
+      popup.classList.add('hidden');
+    }
+  },
+  
+  startChariChatFromEstimate(interventionName) {
+    // Cancelar el popup
+    this.cancelChariPopup('estimate');
+    
+    // Navegar a Chari
+    this.navigate('chari');
+    
+    // Enviar mensaje inicial después de un pequeño delay para que cargue
+    setTimeout(async () => {
+      const message = `Hola Chari, acabo de calcular un presupuesto para "${interventionName}" y tengo algunas dudas. ¿Puedes ayudarme a entender mejor qué implica esta obra y qué opciones tengo?`;
+      
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = message;
+        // Simular envío del formulario
+        const form = document.getElementById('chat-form');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+    }, 1000);
+  },
+  
+  startChariChatFromStrategic() {
+    // Cancelar el popup
+    this.cancelChariPopup('strategic');
+    
+    // Navegar a Chari
+    this.navigate('chari');
+    
+    // Enviar mensaje inicial después de un pequeño delay
+    setTimeout(async () => {
+      const message = `Hola Chari, estoy pensando en vender mi vivienda y he visto la orientación estratégica. Me gustaría que me ayudaras a entender qué mejoras podrían aumentar el valor de mi casa y cómo prepararla para la venta.`;
+      
+      const input = document.getElementById('chat-input');
+      if (input) {
+        input.value = message;
+        const form = document.getElementById('chat-form');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+    }, 1000);
+  },
+  
+  // =============================================
   // MANEJO DE IMÁGENES EN CHAT
   // =============================================
   
@@ -4915,7 +4992,7 @@ const App = {
                     </p>
                   </div>
                   
-                  <button onclick="App.requestContact('diagnosis_360')" 
+                  <button onclick="App.requestContact('diagnosis_360'); App.cancelChariPopup('estimate');" 
                           class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
                     <i class="fas fa-user-check"></i>
                     <span>Solicitar revisión con Samuel</span>
@@ -4923,12 +5000,35 @@ const App = {
                   <p class="text-xs text-center text-gray-500 mt-2">
                     Sin compromiso · Te contactará en menos de 24h
                   </p>
+                  
+                  <!-- Contenedor para popup de Chari (aparece después de 10s) -->
+                  <div id="chari-popup-estimate" class="hidden mt-4 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-4 animate-fade-in">
+                    <div class="flex items-start space-x-3">
+                      <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <span class="text-xl">🤖</span>
+                      </div>
+                      <div class="flex-1">
+                        <p class="font-semibold text-purple-800">¿Tienes dudas sobre esta obra?</p>
+                        <p class="text-sm text-gray-600 mt-1">
+                          Soy Chari, y puedo ayudarte a entender mejor qué necesitas, resolver tus dudas técnicas y orientarte antes de decidir.
+                        </p>
+                        <button onclick="App.startChariChatFromEstimate('${result.interventionName}')" 
+                                class="mt-3 w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center justify-center space-x-2">
+                          <i class="fas fa-comments"></i>
+                          <span>Hablar con Chari</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
-                <p class="text-xs text-urba-400 mt-4">${result.disclaimer}</p>
+                <p class="text-xs text-urba-400 mt-4">\${result.disclaimer}</p>
               </div>
             </div>
-          `;
+          \`;
+          
+          // Programar popup de Chari después de 10 segundos
+          App.scheduleChariPopup('estimate', result.interventionName);
         }
       });
     }
@@ -5075,19 +5175,44 @@ const App = {
                     </p>
                   </div>
                   
-                  <button onclick="App.requestProfessionalStudy()" 
+                  <button onclick="App.requestProfessionalStudy(); App.cancelChariPopup('strategic');" 
                           class="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-4 rounded-xl font-semibold transition flex items-center justify-center shadow-lg">
                     <i class="fas fa-clipboard-check mr-3 text-lg"></i>
                     Solicitar estudio profesional
                   </button>
                   <p class="text-xs text-center text-amber-700 mt-2">Sin compromiso · Samuel te contactará en 24h</p>
+                  
+                  <!-- Contenedor para popup de Chari (aparece después de 10s) -->
+                  <div id="chari-popup-strategic" class="hidden mt-4 bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-4 animate-fade-in">
+                    <div class="flex items-start space-x-3">
+                      <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <span class="text-xl">🤖</span>
+                      </div>
+                      <div class="flex-1">
+                        <p class="font-semibold text-purple-800">¿Quieres hablar sobre la venta?</p>
+                        <p class="text-sm text-gray-600 mt-1">
+                          Soy Chari, y puedo orientarte sobre cómo preparar tu vivienda para la venta, qué mejoras aportan más valor y resolver todas tus dudas.
+                        </p>
+                        <button onclick="App.startChariChatFromStrategic()" 
+                                class="mt-3 w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center justify-center space-x-2">
+                          <i class="fas fa-comments"></i>
+                          <span>Hablar con Chari</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 ` : ''}
                 
-                <p class="text-xs text-urba-400">${rec.disclaimer}</p>
+                <p class="text-xs text-urba-400">\${rec.disclaimer}</p>
               </div>
             </div>
-          `;
+          \`;
+          
+          // Programar popup de Chari después de 10 segundos (solo si muestra opción de venta)
+          if (result.recommendation?.showSellAdvice) {
+            App.scheduleChariPopup('strategic');
+          }
         }
       });
     }
