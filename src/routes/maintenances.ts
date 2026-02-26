@@ -106,6 +106,61 @@ maintenances.get('/:id', async (c) => {
   }
 });
 
+// Crear o actualizar mantenimiento (upsert)
+maintenances.post('/', async (c) => {
+  const user = c.get('user');
+  
+  try {
+    const body = await c.req.json();
+    const { property_id, category, status, last_checked, notes } = body;
+    
+    if (!category) {
+      return c.json({ success: false, error: 'Categoría requerida' }, 400);
+    }
+    
+    // Verificar que la propiedad pertenece al usuario
+    const property = await c.env.DB.prepare(
+      'SELECT id FROM properties WHERE id = ? AND user_id = ?'
+    ).bind(property_id, user.sub).first<{ id: number }>();
+    
+    if (!property) {
+      return c.json({ success: false, error: 'Propiedad no encontrada' }, 404);
+    }
+    
+    // Verificar si ya existe un mantenimiento para esta categoría
+    const existing = await c.env.DB.prepare(
+      'SELECT id FROM maintenances WHERE property_id = ? AND category = ?'
+    ).bind(property_id, category).first<{ id: number }>();
+    
+    if (existing) {
+      // Actualizar existente
+      await c.env.DB.prepare(
+        `UPDATE maintenances SET 
+         status = ?, last_checked = ?, notes = ?,
+         updated_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+      ).bind(status || 'checked', last_checked || null, notes || null, existing.id).run();
+      
+      return c.json({ success: true, message: 'Mantenimiento actualizado', id: existing.id });
+    } else {
+      // Crear nuevo
+      const result = await c.env.DB.prepare(
+        `INSERT INTO maintenances (property_id, category, status, last_checked, notes)
+         VALUES (?, ?, ?, ?, ?)`
+      ).bind(property_id, category, status || 'checked', last_checked || null, notes || null).run();
+      
+      return c.json({ 
+        success: true, 
+        message: 'Mantenimiento creado',
+        id: result.meta.last_row_id 
+      });
+    }
+  } catch (error) {
+    console.error('Create/update maintenance error:', error);
+    return c.json({ success: false, error: 'Error guardando mantenimiento' }, 500);
+  }
+});
+
 // Actualizar mantenimiento
 maintenances.put('/:id', async (c) => {
   const user = c.get('user');
@@ -113,7 +168,7 @@ maintenances.put('/:id', async (c) => {
   
   try {
     const body = await c.req.json();
-    const { status, notes, next_recommended } = body;
+    const { status, notes, next_recommended, last_checked } = body;
     
     // Verificar que pertenece al usuario
     const existing = await c.env.DB.prepare(
@@ -126,11 +181,13 @@ maintenances.put('/:id', async (c) => {
       return c.json({ success: false, error: 'Mantenimiento no encontrado' }, 404);
     }
     
-    // Actualizar
+    // Actualizar - usar last_checked del body si se proporciona
     const newStatus = status || existing.old_status;
-    const lastChecked = newStatus === 'checked' || newStatus === 'repaired' 
-      ? new Date().toISOString() 
-      : null;
+    const finalLastChecked = last_checked || (
+      (newStatus === 'checked' || newStatus === 'repaired') 
+        ? new Date().toISOString().split('T')[0]
+        : null
+    );
     
     await c.env.DB.prepare(
       `UPDATE maintenances SET 
@@ -138,7 +195,7 @@ maintenances.put('/:id', async (c) => {
        last_checked = COALESCE(?, last_checked),
        updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`
-    ).bind(newStatus, notes || null, next_recommended || null, lastChecked, maintenanceId).run();
+    ).bind(newStatus, notes || null, next_recommended || null, finalLastChecked, maintenanceId).run();
     
     // Registrar en historial si cambió el estado
     if (status && status !== existing.old_status) {

@@ -2405,45 +2405,34 @@ const App = {
   
   async saveMaintenanceData(formData) {
     const data = Object.fromEntries(formData);
-    const existingId = data.id;
     
     try {
-      let response;
-      
-      if (existingId) {
-        // Actualizar existente
-        response = await axios.put(`/api/maintenances/${existingId}`, {
-          status: data.status,
-          last_checked: data.last_checked || null,
-          notes: data.notes || null
-        }, {
-          headers: { Authorization: `Bearer ${this.state.token}` }
-        });
-      } else {
-        // Crear nuevo
-        const propertyId = this.state.dashboard?.property?.id;
-        if (!propertyId) {
-          this.showToast('Primero debes configurar tu vivienda', 'error');
-          return;
-        }
-        
-        response = await axios.post('/api/maintenances', {
-          property_id: propertyId,
-          category: data.category,
-          status: data.status,
-          last_checked: data.last_checked || null,
-          notes: data.notes || null
-        }, {
-          headers: { Authorization: `Bearer ${this.state.token}` }
-        });
+      const propertyId = this.state.dashboard?.property?.id;
+      if (!propertyId) {
+        this.showToast('Primero debes configurar tu vivienda', 'error');
+        return;
       }
+      
+      // Siempre usar POST que hace upsert (crear o actualizar)
+      const response = await axios.post('/api/maintenances', {
+        property_id: propertyId,
+        category: data.category,
+        status: data.status,
+        last_checked: data.last_checked || null,
+        notes: data.notes || null
+      }, {
+        headers: { Authorization: `Bearer ${this.state.token}` }
+      });
       
       if (response.data.success) {
         // Recargar datos
         await this.loadDashboard();
+        await this.loadMaintenances();
         this.closeMaintenanceModal();
         this.showToast('Información guardada correctamente', 'success');
         this.render();
+      } else {
+        this.showToast(response.data.error || 'Error al guardar', 'error');
       }
     } catch (error) {
       console.error('Error saving maintenance:', error);
