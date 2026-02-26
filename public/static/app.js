@@ -2172,12 +2172,12 @@ const App = {
                 const hasData = level !== null;
                 
                 return `
-                  <div class="maintenance-card border border-urba-200 rounded-xl p-4 hover:shadow-lg transition relative overflow-hidden"
+                  <div class="maintenance-card border ${hasData ? 'border-urba-300 bg-white shadow-sm' : 'border-urba-200 bg-gray-50'} rounded-xl p-4 hover:shadow-lg transition relative overflow-hidden"
                        style="min-height: 160px;">
                     
                     <!-- Capa blanquecina para sin datos -->
                     ${!hasData ? `
-                      <div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-10 flex items-center justify-center cursor-pointer"
+                      <div class="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center cursor-pointer"
                            onclick="App.openMaintenanceModal('${catKey}', ${m.id || 'null'})">
                         <div class="text-center p-4">
                           <i class="fas fa-plus-circle text-3xl text-urba-400 mb-2"></i>
