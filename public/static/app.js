@@ -874,6 +874,214 @@ const App = {
           </div>
         </div>
 
+        <!-- SECCIÓN: CÓMO FUNCIONA -->
+        <div class="max-w-5xl mx-auto px-4 mt-16">
+          <div class="text-center mb-8">
+            <span class="inline-block px-4 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-3">
+              <i class="fas fa-play-circle mr-2"></i>EMPIEZA YA
+            </span>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Tan fácil como 1, 2, 3</h2>
+            <p class="text-gray-500 mt-2">En menos de 2 minutos tendrás acceso a todo</p>
+          </div>
+          
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                <span class="text-2xl font-bold text-white">1</span>
+              </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Crea tu cuenta</h3>
+              <p class="text-gray-600 text-sm">Solo necesitas email y contraseña. Gratis y sin compromiso.</p>
+            </div>
+            
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                <span class="text-2xl font-bold text-white">2</span>
+              </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">Registra tu vivienda</h3>
+              <p class="text-gray-600 text-sm">Añade los datos básicos de tu chalet para personalizar tu experiencia.</p>
+            </div>
+            
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                <span class="text-2xl font-bold text-white">3</span>
+              </div>
+              <h3 class="text-lg font-bold text-gray-800 mb-2">¡Listo!</h3>
+              <p class="text-gray-600 text-sm">Accede a todas las herramientas, comunidad y asistencia de Chari.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: CAPTURAS DE PANTALLA -->
+        <div class="max-w-5xl mx-auto px-4 mt-16">
+          <div class="text-center mb-8">
+            <span class="inline-block px-4 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-3">
+              <i class="fas fa-mobile-alt mr-2"></i>ASÍ SE VE
+            </span>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Un vistazo al interior</h2>
+            <p class="text-gray-500 mt-2">Diseñada para ser fácil y bonita en móvil y ordenador</p>
+          </div>
+          
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <!-- Preview 1: Dashboard -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/dashboard.png" alt="Panel principal" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Panel principal</p>
+            </div>
+            
+            <!-- Preview 2: Chari -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/chari.png" alt="Chat con Chari" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Habla con Chari</p>
+            </div>
+            
+            <!-- Preview 3: El Porche -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/porche.png" alt="El Porche" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Red social vecinal</p>
+            </div>
+            
+            <!-- Preview 4: Mantenimientos -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/mantenimientos.png" alt="Control de mantenimiento" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Control mantenimiento</p>
+            </div>
+          </div>
+          
+          <!-- Segunda fila de capturas -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+            <!-- Preview 5: Estimación -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/estimacion.png" alt="Estimaciones" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Calcula presupuestos</p>
+            </div>
+            
+            <!-- Preview 6: Vivienda -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/vivienda.png" alt="Datos de vivienda" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Datos de tu chalet</p>
+            </div>
+            
+            <!-- Preview 7: Mercadillo -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-2 hover:shadow-xl transition">
+              <img src="/static/screenshots/mercadillo.png" alt="Mercadillo" class="w-full rounded-xl" loading="lazy">
+              <p class="text-center text-sm font-medium text-gray-700 mt-2">Mercadillo vecinal</p>
+            </div>
+            
+            <!-- Preview 8: Más funciones -->
+            <div class="bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl shadow-lg p-4 hover:shadow-xl transition flex flex-col items-center justify-center text-white text-center aspect-[9/16]">
+              <i class="fas fa-plus-circle text-4xl mb-3 opacity-90"></i>
+              <p class="font-bold text-lg">¡Y mucho más!</p>
+              <p class="text-sm opacity-90 mt-2">InmoUrba, Estrategia, Recordatorios...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: URBANIZACIONES -->
+        <div class="max-w-5xl mx-auto px-4 mt-16">
+          <div class="text-center mb-8">
+            <span class="inline-block px-4 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm font-medium mb-3">
+              <i class="fas fa-map-marker-alt mr-2"></i>¿DÓNDE VIVES?
+            </span>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Para todas las urbanizaciones</h2>
+            <p class="text-gray-500 mt-2">Si vives en alguna de estas zonas, esta app es para ti</p>
+          </div>
+          
+          <div class="flex flex-wrap justify-center gap-3">
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-green-500 mr-2"></i>Cerro Alarcón
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-green-600 mr-2"></i>Cerro Alarcón Ampliación
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-blue-500 mr-2"></i>El Paraíso
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-purple-500 mr-2"></i>Puentelasierra
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-orange-500 mr-2"></i>Mirador del Romero
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-pink-500 mr-2"></i>La Esperanza
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-cyan-500 mr-2"></i>La Pizarrera
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-amber-500 mr-2"></i>Mojadillas
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-indigo-500 mr-2"></i>Montemorillo
+            </span>
+            <span class="px-4 py-2 bg-white rounded-full shadow-md border border-gray-100 text-gray-700 font-medium hover:shadow-lg transition">
+              <i class="fas fa-home text-teal-500 mr-2"></i>Los Pinos
+            </span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: FAQ -->
+        <div class="max-w-3xl mx-auto px-4 mt-16">
+          <div class="text-center mb-8">
+            <span class="inline-block px-4 py-1 bg-rose-100 text-rose-700 rounded-full text-sm font-medium mb-3">
+              <i class="fas fa-question-circle mr-2"></i>DUDAS
+            </span>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Preguntas frecuentes</h2>
+          </div>
+          
+          <div class="space-y-4">
+            <details class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group">
+              <summary class="px-6 py-4 cursor-pointer flex items-center justify-between font-semibold text-gray-800 hover:bg-gray-50">
+                <span><i class="fas fa-euro-sign text-green-500 mr-3"></i>¿Es realmente gratis?</span>
+                <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <div class="px-6 pb-4 text-gray-600">
+                <strong>Sí, 100% gratis.</strong> La app está patrocinada por Más Urba Multiservicios como servicio a la comunidad. No hay costes ocultos, suscripciones ni publicidad invasiva.
+              </div>
+            </details>
+            
+            <details class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group">
+              <summary class="px-6 py-4 cursor-pointer flex items-center justify-between font-semibold text-gray-800 hover:bg-gray-50">
+                <span><i class="fas fa-shield-alt text-blue-500 mr-3"></i>¿Mis datos están seguros?</span>
+                <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <div class="px-6 pb-4 text-gray-600">
+                <strong>Absolutamente.</strong> Solo tú accedes a tus datos. No vendemos ni compartimos información con terceros. Cumplimos con el RGPD y la normativa española de protección de datos.
+              </div>
+            </details>
+            
+            <details class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group">
+              <summary class="px-6 py-4 cursor-pointer flex items-center justify-between font-semibold text-gray-800 hover:bg-gray-50">
+                <span><i class="fas fa-robot text-purple-500 mr-3"></i>¿Chari es una IA de verdad?</span>
+                <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <div class="px-6 pb-4 text-gray-600">
+                <strong>Sí.</strong> Chari usa inteligencia artificial avanzada para responder tus preguntas, analizar fotos de desperfectos y generar visualizaciones de reformas. Está disponible 24/7.
+              </div>
+            </details>
+            
+            <details class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group">
+              <summary class="px-6 py-4 cursor-pointer flex items-center justify-between font-semibold text-gray-800 hover:bg-gray-50">
+                <span><i class="fas fa-hand-holding-heart text-rose-500 mr-3"></i>¿Tengo que contratar algo?</span>
+                <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <div class="px-6 pb-4 text-gray-600">
+                <strong>No, para nada.</strong> Puedes usar la app sin contratar ningún servicio. Si algún día necesitas ayuda profesional, puedes contactar con Samuel, pero nunca hay obligación.
+              </div>
+            </details>
+            
+            <details class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden group">
+              <summary class="px-6 py-4 cursor-pointer flex items-center justify-between font-semibold text-gray-800 hover:bg-gray-50">
+                <span><i class="fas fa-users text-amber-500 mr-3"></i>¿Puedo ver quién más usa la app?</span>
+                <i class="fas fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <div class="px-6 pb-4 text-gray-600">
+                <strong>Solo lo que cada vecino decida compartir.</strong> En El Porche, InmoUrba y el Mercadillo verás publicaciones de otros vecinos, pero tus datos privados (propiedad, mantenimientos) solo los ves tú.
+              </div>
+            </details>
+          </div>
+        </div>
+
         <!-- FORMULARIO LOGIN/REGISTRO -->
         <div class="max-w-md mx-auto px-4 mt-16 mb-12">
           <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
