@@ -16,6 +16,7 @@ import contacts from './routes/contacts';
 import admin from './routes/admin';
 import images from './routes/images';
 import media from './routes/media';
+import porche from './routes/porche';
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -45,6 +46,7 @@ app.route('/api/contacts', contacts);
 app.route('/api/admin', admin);
 app.route('/api/images', images);
 app.route('/api/media', media);
+app.route('/api/porche', porche);
 
 // Health check
 app.get('/api/health', (c) => {
@@ -182,6 +184,16 @@ function getMainHTML(): string {
         }
         
         .nav-mobile-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Hide scrollbar utility */
+        .hide-scrollbar {
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
         

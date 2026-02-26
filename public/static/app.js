@@ -236,6 +236,9 @@ const App = {
       case 'chari':
         content = this.renderLayout(this.renderChari());
         break;
+      case 'porche':
+        content = this.renderLayout(this.renderPorche());
+        break;
       case 'admin':
         content = this.renderLayout(this.renderAdmin());
         break;
@@ -431,6 +434,7 @@ const App = {
       { id: 'maintenance', icon: 'tools', label: 'Manten.' },
       { id: 'estimates', icon: 'calculator', label: 'Estim.' },
       { id: 'strategic', icon: 'chess', label: 'Estrategia' },
+      { id: 'porche', icon: 'users', label: 'El Porche' },
       { id: 'chari', icon: 'comments', label: 'Chari' }
     ];
     
@@ -2219,6 +2223,567 @@ const App = {
   },
   
   // =============================================
+  // EL PORCHE - Muro social vecinal
+  // =============================================
+  
+  porcheState: {
+    posts: [],
+    currentPost: null,
+    filter: 'all',
+    page: 1,
+    hasMore: true,
+    loading: false,
+    newPostImages: [],
+    showComments: {}
+  },
+  
+  porcheCategories: {
+    all: { label: 'Todos', icon: '📋', color: 'gray' },
+    general: { label: 'General', icon: '💬', color: 'gray' },
+    recommendation: { label: 'Recomendación', icon: '⭐', color: 'yellow' },
+    sale: { label: 'Venta/Compra', icon: '🏷️', color: 'green' },
+    alert: { label: 'Aviso', icon: '⚠️', color: 'red' },
+    event: { label: 'Evento', icon: '🎉', color: 'purple' }
+  },
+
+  renderPorche() {
+    return `
+      <div class="space-y-4 max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 text-white shadow-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-3xl">
+              🏡
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">El Porche</h2>
+              <p class="text-white/80 text-sm">Tu comunidad de vecinos</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Crear nuevo post -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+              ${this.state.user?.name?.charAt(0) || 'U'}
+            </div>
+            <div class="flex-1">
+              <textarea id="new-post-content" 
+                        placeholder="¿Qué quieres compartir con tus vecinos?"
+                        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm resize-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        rows="3"
+                        maxlength="2000"></textarea>
+              
+              <!-- Preview de imágenes -->
+              <div id="post-images-preview" class="flex flex-wrap gap-2 mt-2 ${this.porcheState.newPostImages.length === 0 ? 'hidden' : ''}">
+                ${this.porcheState.newPostImages.map((img, idx) => `
+                  <div class="relative">
+                    <img src="${img}" class="w-20 h-20 object-cover rounded-lg">
+                    <button onclick="App.removePostImage(${idx})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs">×</button>
+                  </div>
+                `).join('')}
+              </div>
+              
+              <div class="flex items-center justify-between mt-3">
+                <div class="flex items-center space-x-2">
+                  <!-- Selector de categoría -->
+                  <select id="new-post-category" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-amber-500">
+                    <option value="general">💬 General</option>
+                    <option value="recommendation">⭐ Recomendación</option>
+                    <option value="sale">🏷️ Venta/Compra</option>
+                    <option value="alert">⚠️ Aviso</option>
+                    <option value="event">🎉 Evento</option>
+                  </select>
+                  
+                  <!-- Botón añadir imagen -->
+                  <input type="file" id="post-image-input" accept="image/*" class="hidden" onchange="App.handlePostImageSelect(event)">
+                  <button onclick="document.getElementById('post-image-input').click()" 
+                          class="text-gray-500 hover:text-amber-500 transition p-2" title="Añadir imagen">
+                    <i class="fas fa-image"></i>
+                  </button>
+                </div>
+                
+                <button onclick="App.createPost()" 
+                        class="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-amber-600 hover:to-orange-600 transition">
+                  <i class="fas fa-paper-plane mr-1"></i> Publicar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+          ${Object.entries(this.porcheCategories).map(([key, cat]) => `
+            <button onclick="App.filterPorchePosts('${key}')" 
+                    class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition
+                           ${this.porcheState.filter === key 
+                             ? 'bg-amber-500 text-white' 
+                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              ${cat.icon} ${cat.label}
+            </button>
+          `).join('')}
+        </div>
+        
+        <!-- Feed de posts -->
+        <div id="porche-feed" class="space-y-4">
+          <div class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-amber-500"></div>
+          </div>
+        </div>
+        
+        <!-- Cargar más -->
+        <div id="load-more-container" class="hidden">
+          <button onclick="App.loadMorePosts()" 
+                  class="w-full py-3 text-amber-600 hover:text-amber-700 font-medium text-sm">
+            <i class="fas fa-chevron-down mr-2"></i>Cargar más publicaciones
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  renderPorchePost(post) {
+    const isOwner = post.user_id === this.state.user?.sub;
+    const showComments = this.porcheState.showComments[post.id];
+    const categoryInfo = this.porcheCategories[post.category] || this.porcheCategories.general;
+    
+    return `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" data-post-id="${post.id}">
+        <!-- Header del post -->
+        <div class="p-4 pb-2">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                ${post.author_name?.charAt(0) || 'U'}
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900">${post.author_name}</p>
+                <div class="flex items-center space-x-2 text-xs text-gray-500">
+                  <span>${post.author_urbanization || 'Vecino'}</span>
+                  <span>•</span>
+                  <span>${this.timeAgo(post.created_at)}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-1 text-xs rounded-full ${this.getCategoryStyle(post.category)}">
+                ${categoryInfo.icon} ${categoryInfo.label}
+              </span>
+              ${isOwner ? `
+                <button onclick="App.deletePost(${post.id})" class="text-gray-400 hover:text-red-500 transition p-1">
+                  <i class="fas fa-trash-alt text-sm"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contenido -->
+        <div class="px-4 pb-3">
+          <p class="text-gray-800 whitespace-pre-wrap">${this.escapeHtml(post.content)}</p>
+        </div>
+        
+        <!-- Imágenes -->
+        ${post.images && post.images.length > 0 ? `
+          <div class="px-4 pb-3">
+            <div class="grid ${post.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-2">
+              ${post.images.map(img => `
+                <img src="${img}" class="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition" 
+                     onclick="App.viewImage('${img}')">
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+        
+        <!-- Reacciones y stats -->
+        <div class="px-4 py-2 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
+          <div class="flex items-center space-x-4">
+            ${post.likes_count > 0 ? `<span>👍 ${post.likes_count}</span>` : ''}
+            ${post.hearts_count > 0 ? `<span>❤️ ${post.hearts_count}</span>` : ''}
+          </div>
+          <span onclick="App.toggleComments(${post.id})" class="cursor-pointer hover:text-amber-600">
+            ${post.comments_count || 0} comentario${post.comments_count !== 1 ? 's' : ''}
+          </span>
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="px-4 py-2 border-t border-gray-100 flex items-center justify-around">
+          <button onclick="App.reactToPost(${post.id}, 'like')" 
+                  class="flex items-center space-x-2 px-4 py-2 rounded-lg transition hover:bg-gray-100 ${post.user_liked ? 'text-blue-500' : 'text-gray-600'}">
+            <i class="fas fa-thumbs-up"></i>
+            <span class="text-sm">Me gusta</span>
+          </button>
+          <button onclick="App.reactToPost(${post.id}, 'heart')" 
+                  class="flex items-center space-x-2 px-4 py-2 rounded-lg transition hover:bg-gray-100 ${post.user_hearted ? 'text-red-500' : 'text-gray-600'}">
+            <i class="fas fa-heart"></i>
+            <span class="text-sm">Me encanta</span>
+          </button>
+          <button onclick="App.toggleComments(${post.id})" 
+                  class="flex items-center space-x-2 px-4 py-2 rounded-lg transition hover:bg-gray-100 text-gray-600">
+            <i class="fas fa-comment"></i>
+            <span class="text-sm">Comentar</span>
+          </button>
+        </div>
+        
+        <!-- Sección de comentarios -->
+        <div id="comments-section-${post.id}" class="${showComments ? '' : 'hidden'} border-t border-gray-100 bg-gray-50">
+          <div class="p-4 space-y-3" id="comments-list-${post.id}">
+            <!-- Los comentarios se cargarán dinámicamente -->
+          </div>
+          
+          <!-- Input de nuevo comentario -->
+          <div class="px-4 pb-4 flex items-center space-x-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              ${this.state.user?.name?.charAt(0) || 'U'}
+            </div>
+            <input type="text" 
+                   id="comment-input-${post.id}"
+                   placeholder="Escribe un comentario..."
+                   class="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                   onkeypress="if(event.key==='Enter') App.addComment(${post.id})">
+            <button onclick="App.addComment(${post.id})" 
+                    class="text-amber-500 hover:text-amber-600 transition p-2">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  getCategoryStyle(category) {
+    const styles = {
+      general: 'bg-gray-100 text-gray-700',
+      recommendation: 'bg-yellow-100 text-yellow-700',
+      sale: 'bg-green-100 text-green-700',
+      alert: 'bg-red-100 text-red-700',
+      event: 'bg-purple-100 text-purple-700'
+    };
+    return styles[category] || styles.general;
+  },
+
+  timeAgo(timestamp) {
+    if (!timestamp) return '';
+    const now = new Date();
+    const date = new Date(timestamp);
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'Ahora';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d`;
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  },
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  },
+
+  // Cargar posts del Porche
+  async loadPorchePosts(reset = false) {
+    if (this.porcheState.loading) return;
+    
+    if (reset) {
+      this.porcheState.page = 1;
+      this.porcheState.posts = [];
+      this.porcheState.hasMore = true;
+    }
+    
+    this.porcheState.loading = true;
+    
+    try {
+      const category = this.porcheState.filter !== 'all' ? `&category=${this.porcheState.filter}` : '';
+      const response = await axios.get(`/api/porche/posts?page=${this.porcheState.page}&limit=10${category}`);
+      
+      if (response.data.success) {
+        const { posts, pagination } = response.data.data;
+        
+        if (reset) {
+          this.porcheState.posts = posts;
+        } else {
+          this.porcheState.posts = [...this.porcheState.posts, ...posts];
+        }
+        
+        this.porcheState.hasMore = pagination.page < pagination.totalPages;
+        this.renderPorcheFeed();
+      }
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      this.showToast('Error cargando publicaciones', 'error');
+    } finally {
+      this.porcheState.loading = false;
+    }
+  },
+
+  renderPorcheFeed() {
+    const feed = document.getElementById('porche-feed');
+    const loadMore = document.getElementById('load-more-container');
+    
+    if (!feed) return;
+    
+    if (this.porcheState.posts.length === 0) {
+      feed.innerHTML = `
+        <div class="text-center py-12">
+          <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-comments text-2xl text-amber-500"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">No hay publicaciones</h3>
+          <p class="text-gray-500">¡Sé el primero en compartir algo con tus vecinos!</p>
+        </div>
+      `;
+      if (loadMore) loadMore.classList.add('hidden');
+      return;
+    }
+    
+    feed.innerHTML = this.porcheState.posts.map(post => this.renderPorchePost(post)).join('');
+    
+    if (loadMore) {
+      if (this.porcheState.hasMore) {
+        loadMore.classList.remove('hidden');
+      } else {
+        loadMore.classList.add('hidden');
+      }
+    }
+  },
+
+  filterPorchePosts(category) {
+    this.porcheState.filter = category;
+    this.loadPorchePosts(true);
+  },
+
+  loadMorePosts() {
+    this.porcheState.page++;
+    this.loadPorchePosts();
+  },
+
+  // Crear nuevo post
+  async createPost() {
+    const contentEl = document.getElementById('new-post-content');
+    const categoryEl = document.getElementById('new-post-category');
+    
+    if (!contentEl) return;
+    
+    const content = contentEl.value.trim();
+    const category = categoryEl?.value || 'general';
+    
+    if (!content) {
+      this.showToast('Escribe algo para publicar', 'error');
+      return;
+    }
+    
+    try {
+      const response = await axios.post('/api/porche/posts', {
+        content,
+        category,
+        images: this.porcheState.newPostImages
+      });
+      
+      if (response.data.success) {
+        this.showToast('¡Publicado!', 'success');
+        contentEl.value = '';
+        this.porcheState.newPostImages = [];
+        this.loadPorchePosts(true);
+      }
+    } catch (error) {
+      this.showToast(error.response?.data?.error || 'Error publicando', 'error');
+    }
+  },
+
+  // Manejar selección de imagen para post
+  handlePostImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      this.showToast('Por favor, selecciona una imagen', 'error');
+      return;
+    }
+    
+    if (this.porcheState.newPostImages.length >= 4) {
+      this.showToast('Máximo 4 imágenes por post', 'error');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.porcheState.newPostImages.push(e.target.result);
+      this.updatePostImagesPreview();
+    };
+    reader.readAsDataURL(file);
+    
+    event.target.value = '';
+  },
+
+  removePostImage(index) {
+    this.porcheState.newPostImages.splice(index, 1);
+    this.updatePostImagesPreview();
+  },
+
+  updatePostImagesPreview() {
+    const preview = document.getElementById('post-images-preview');
+    if (!preview) return;
+    
+    if (this.porcheState.newPostImages.length === 0) {
+      preview.classList.add('hidden');
+      preview.innerHTML = '';
+    } else {
+      preview.classList.remove('hidden');
+      preview.innerHTML = this.porcheState.newPostImages.map((img, idx) => `
+        <div class="relative">
+          <img src="${img}" class="w-20 h-20 object-cover rounded-lg">
+          <button onclick="App.removePostImage(${idx})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs">×</button>
+        </div>
+      `).join('');
+    }
+  },
+
+  // Reaccionar a un post
+  async reactToPost(postId, reactionType) {
+    try {
+      const response = await axios.post(`/api/porche/posts/${postId}/react`, {
+        reaction_type: reactionType
+      });
+      
+      if (response.data.success) {
+        // Actualizar el post en el estado
+        const postIndex = this.porcheState.posts.findIndex(p => p.id === postId);
+        if (postIndex !== -1) {
+          const post = this.porcheState.posts[postIndex];
+          post.likes_count = response.data.data.likes_count;
+          post.hearts_count = response.data.data.hearts_count;
+          
+          if (reactionType === 'like') {
+            post.user_liked = response.data.data.action === 'added' ? 'like' : null;
+          } else {
+            post.user_hearted = response.data.data.action === 'added' ? 'heart' : null;
+          }
+          
+          // Re-renderizar solo este post
+          const postEl = document.querySelector(`[data-post-id="${postId}"]`);
+          if (postEl) {
+            postEl.outerHTML = this.renderPorchePost(post);
+          }
+        }
+      }
+    } catch (error) {
+      this.showToast('Error al reaccionar', 'error');
+    }
+  },
+
+  // Toggle comentarios
+  async toggleComments(postId) {
+    const section = document.getElementById(`comments-section-${postId}`);
+    if (!section) return;
+    
+    const isHidden = section.classList.contains('hidden');
+    
+    if (isHidden) {
+      section.classList.remove('hidden');
+      this.porcheState.showComments[postId] = true;
+      await this.loadComments(postId);
+    } else {
+      section.classList.add('hidden');
+      this.porcheState.showComments[postId] = false;
+    }
+  },
+
+  // Cargar comentarios
+  async loadComments(postId) {
+    const listEl = document.getElementById(`comments-list-${postId}`);
+    if (!listEl) return;
+    
+    try {
+      const response = await axios.get(`/api/porche/posts/${postId}/comments`);
+      
+      if (response.data.success) {
+        const comments = response.data.data;
+        
+        if (comments.length === 0) {
+          listEl.innerHTML = '<p class="text-gray-500 text-sm text-center py-2">No hay comentarios aún</p>';
+        } else {
+          listEl.innerHTML = comments.map(c => `
+            <div class="flex items-start space-x-2">
+              <div class="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                ${c.author_name?.charAt(0) || 'U'}
+              </div>
+              <div class="flex-1 bg-white rounded-xl px-3 py-2">
+                <p class="text-sm font-semibold text-gray-800">${c.author_name}
+                  <span class="font-normal text-gray-400 text-xs ml-1">${c.author_urbanization || ''}</span>
+                </p>
+                <p class="text-sm text-gray-700">${this.escapeHtml(c.content)}</p>
+                <p class="text-xs text-gray-400 mt-1">${this.timeAgo(c.created_at)}</p>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (error) {
+      listEl.innerHTML = '<p class="text-red-500 text-sm text-center py-2">Error cargando comentarios</p>';
+    }
+  },
+
+  // Añadir comentario
+  async addComment(postId) {
+    const input = document.getElementById(`comment-input-${postId}`);
+    if (!input) return;
+    
+    const content = input.value.trim();
+    if (!content) return;
+    
+    try {
+      const response = await axios.post(`/api/porche/posts/${postId}/comments`, { content });
+      
+      if (response.data.success) {
+        input.value = '';
+        await this.loadComments(postId);
+        
+        // Actualizar contador en el post
+        const postIndex = this.porcheState.posts.findIndex(p => p.id === postId);
+        if (postIndex !== -1) {
+          this.porcheState.posts[postIndex].comments_count = (this.porcheState.posts[postIndex].comments_count || 0) + 1;
+        }
+      }
+    } catch (error) {
+      this.showToast(error.response?.data?.error || 'Error añadiendo comentario', 'error');
+    }
+  },
+
+  // Eliminar post
+  async deletePost(postId) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta publicación?')) return;
+    
+    try {
+      const response = await axios.delete(`/api/porche/posts/${postId}`);
+      
+      if (response.data.success) {
+        this.showToast('Publicación eliminada', 'success');
+        this.porcheState.posts = this.porcheState.posts.filter(p => p.id !== postId);
+        this.renderPorcheFeed();
+      }
+    } catch (error) {
+      this.showToast('Error eliminando publicación', 'error');
+    }
+  },
+
+  // Ver imagen en grande
+  viewImage(src) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+    modal.onclick = () => modal.remove();
+    modal.innerHTML = `
+      <img src="${src}" class="max-w-full max-h-full rounded-lg shadow-2xl">
+      <button class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300">
+        <i class="fas fa-times"></i>
+      </button>
+    `;
+    document.body.appendChild(modal);
+  },
+
+  // =============================================
   // ADMIN (SAMUEL) - Panel completo de administración
   // =============================================
   
@@ -3393,6 +3958,11 @@ const App = {
         // Cargar conversación solo una vez
         this.loadConversation();
       }
+    }
+    
+    // El Porche - cargar posts
+    if (this.state.currentView === 'porche') {
+      this.loadPorchePosts(true);
     }
     
     // Admin content - cargar según vista
