@@ -4875,6 +4875,56 @@ const App = {
                   </p>
                 </div>
                 
+                <!-- Sección explicativa y CTA -->
+                <div class="mt-6 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5">
+                  <div class="flex items-start space-x-3 mb-4">
+                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <i class="fas fa-lightbulb text-white"></i>
+                    </div>
+                    <div>
+                      <h4 class="font-semibold text-green-800 text-lg">¿Por qué estos precios?</h4>
+                      <p class="text-green-700 text-sm mt-1">Entendemos que quieras el mejor precio posible</p>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-3 mb-5">
+                    <div class="flex items-start space-x-2">
+                      <i class="fas fa-calculator text-green-600 mt-1"></i>
+                      <p class="text-sm text-gray-700">
+                        <strong>Cálculo automático e instantáneo:</strong> Este presupuesto se genera al momento usando precios medios del mercado.
+                      </p>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                      <i class="fas fa-shield-alt text-green-600 mt-1"></i>
+                      <p class="text-sm text-gray-700">
+                        <strong>Rango medio-alto:</strong> Usamos precios conservadores para evitar sorpresas. Así te aseguras de que el presupuesto real no sea mayor.
+                      </p>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                      <i class="fas fa-search-dollar text-green-600 mt-1"></i>
+                      <p class="text-sm text-gray-700">
+                        <strong>Samuel puede encontrar soluciones más económicas:</strong> Con una revisión presencial, es muy probable que encuentre alternativas ajustadas a tu situación real y presupuesto.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-white/70 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-gray-600 italic">
+                      <i class="fas fa-quote-left text-green-400 mr-2"></i>
+                      En la mayoría de casos, tras la visita de Samuel, el precio final es <strong>igual o inferior</strong> al mostrado aquí, siempre que las necesidades se ajusten a soluciones estándar del mercado.
+                    </p>
+                  </div>
+                  
+                  <button onclick="App.requestContact('diagnosis_360')" 
+                          class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
+                    <i class="fas fa-user-check"></i>
+                    <span>Solicitar revisión con Samuel</span>
+                  </button>
+                  <p class="text-xs text-center text-gray-500 mt-2">
+                    Sin compromiso · Te contactará en menos de 24h
+                  </p>
+                </div>
+                
                 <p class="text-xs text-urba-400 mt-4">${result.disclaimer}</p>
               </div>
             </div>
