@@ -383,7 +383,7 @@ const App = {
         <!-- Navegación -->
         <nav class="bg-gray-50 border-b border-gray-200 sticky top-0 z-40" data-tour="nav">
           <div class="max-w-7xl mx-auto px-2 sm:px-4">
-            <div class="flex overflow-x-auto py-2 nav-mobile-scroll gap-1">
+            <div class="flex overflow-x-auto overflow-y-visible py-2 nav-mobile-scroll gap-1">
               ${isAdmin ? this.renderAdminNav() : this.renderClientNav()}
             </div>
           </div>
@@ -471,7 +471,7 @@ const App = {
           <span class="ml-1 sm:ml-0">Comunidad</span>
           <i class="fas fa-chevron-down ml-1 text-xs"></i>
         </button>
-        <div id="comunidad-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 min-w-48">
+        <div id="comunidad-dropdown" class="hidden fixed mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-[60] min-w-48" style="top: auto; left: auto;">
           ${comunidadItems.map(item => `
             <button onclick="App.navigate('${item.id}'); App.closeComunidadMenu();" 
                     class="w-full text-left px-4 py-2 hover:bg-gray-50 transition ${this.state.currentView === item.id ? 'bg-amber-50 text-amber-700' : 'text-gray-700'}">
@@ -498,8 +498,15 @@ const App = {
   toggleComunidadMenu() {
     this.comunidadMenuOpen = !this.comunidadMenuOpen;
     const dropdown = document.getElementById('comunidad-dropdown');
-    if (dropdown) {
+    const button = document.querySelector('#comunidad-menu button');
+    if (dropdown && button) {
       dropdown.classList.toggle('hidden', !this.comunidadMenuOpen);
+      if (this.comunidadMenuOpen) {
+        // Posicionar el dropdown debajo del botón
+        const rect = button.getBoundingClientRect();
+        dropdown.style.top = `${rect.bottom + 4}px`;
+        dropdown.style.left = `${rect.left}px`;
+      }
     }
   },
 
@@ -2910,7 +2917,7 @@ const App = {
         <!-- Info -->
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
           <i class="fas fa-info-circle mr-2"></i>
-          Para publicar tu vivienda, ve a <strong>"Mi Vivienda"</strong> y pulsa el botón <strong>"Publicar Gratis"</strong>
+          Para publicar tu vivienda, ve a la pestaña <strong>"Vivienda"</strong> en tu panel y pulsa el botón <strong>"Publicar Gratis"</strong>
         </div>
         
         <!-- Feed de anuncios -->
