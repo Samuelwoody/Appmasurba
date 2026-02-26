@@ -517,6 +517,111 @@ const App = {
       dropdown.classList.add('hidden');
     }
   },
+
+  // ==========================================
+  // MODALES DE BIENVENIDA (primera visita)
+  // ==========================================
+  
+  showWelcomeModal(section) {
+    const storageKey = `welcome_shown_${section}`;
+    if (localStorage.getItem(storageKey)) return;
+    
+    const modals = {
+      porche: {
+        icon: '🏡',
+        title: '¡Bienvenido a El Porche!',
+        subtitle: 'Tu espacio de comunicación vecinal',
+        features: [
+          { icon: '💬', text: 'Comparte noticias, preguntas o comentarios con tus vecinos' },
+          { icon: '⭐', text: 'Recomienda proveedores y servicios que te hayan gustado' },
+          { icon: '⚠️', text: 'Avisa de incidencias o alertas importantes' },
+          { icon: '🎉', text: 'Organiza eventos y quedadas en tu urbanización' },
+          { icon: '📸', text: 'Sube hasta 4 fotos en cada publicación' },
+          { icon: '❤️', text: 'Reacciona con Like o Corazón a los posts' }
+        ],
+        tip: 'Chari, nuestra asistente IA, también participa compartiendo consejos útiles sobre mantenimiento y reformas.'
+      },
+      inmourba: {
+        icon: '🏠',
+        title: '¡Bienvenido a InmoUrba!',
+        subtitle: 'Inmobiliaria exclusiva para vecinos',
+        features: [
+          { icon: '🆓', text: 'Publica tu vivienda GRATIS desde la pestaña "Vivienda"' },
+          { icon: '📊', text: 'Tus datos, fotos y puntuación técnica se transfieren automáticamente' },
+          { icon: '🤖', text: 'Chari analiza cada vivienda y comenta su estado técnico' },
+          { icon: '💬', text: 'Los interesados pueden dejarte comentarios' },
+          { icon: '🔒', text: 'Solo vecinos de las urbanizaciones pueden ver y publicar' },
+          { icon: '📍', text: 'Venta o alquiler, tú decides' }
+        ],
+        tip: 'La puntuación técnica de tu vivienda ayuda a los compradores a tomar mejores decisiones.'
+      },
+      mercadillo: {
+        icon: '🏷️',
+        title: '¡Bienvenido al Mercadillo!',
+        subtitle: 'Compraventa entre vecinos',
+        features: [
+          { icon: '🛋️', text: 'Vende muebles, electrónica, cosas de jardín y más' },
+          { icon: '📸', text: 'Sube hasta 6 fotos de tu artículo' },
+          { icon: '💰', text: 'Pon precio fijo o negociable' },
+          { icon: '📍', text: 'Tu urbanización aparece automáticamente' },
+          { icon: '💬', text: 'Negocia con comentarios antes de quedar' },
+          { icon: '✅', text: 'Marca como reservado o vendido cuando cierres el trato' }
+        ],
+        tip: 'Al ser entre vecinos, las entregas son fáciles y seguras. ¡Sin intermediarios!'
+      }
+    };
+    
+    const m = modals[section];
+    if (!m) return;
+    
+    const modal = document.createElement('div');
+    modal.id = 'welcome-modal';
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-[70] p-4';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <!-- Header -->
+        <div class="gradient-bg text-white p-6 rounded-t-2xl text-center">
+          <div class="text-5xl mb-3">${m.icon}</div>
+          <h2 class="text-2xl font-bold">${m.title}</h2>
+          <p class="text-white/80 mt-1">${m.subtitle}</p>
+        </div>
+        
+        <!-- Features -->
+        <div class="p-6 space-y-3">
+          ${m.features.map(f => `
+            <div class="flex items-start space-x-3">
+              <span class="text-xl flex-shrink-0">${f.icon}</span>
+              <span class="text-gray-700 text-sm">${f.text}</span>
+            </div>
+          `).join('')}
+          
+          <!-- Tip -->
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-4">
+            <div class="flex items-start space-x-2">
+              <span class="text-amber-500">💡</span>
+              <p class="text-amber-800 text-sm">${m.tip}</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 border-t border-gray-100">
+          <button onclick="App.closeWelcomeModal('${section}')" 
+                  class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition">
+            ¡Entendido, vamos allá!
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+  },
+  
+  closeWelcomeModal(section) {
+    const storageKey = `welcome_shown_${section}`;
+    localStorage.setItem(storageKey, 'true');
+    document.getElementById('welcome-modal')?.remove();
+  },
   
   renderAdminNav() {
     const items = [
@@ -4934,16 +5039,19 @@ const App = {
     // El Porche - cargar posts
     if (this.state.currentView === 'porche') {
       this.loadPorchePosts(true);
+      this.showWelcomeModal('porche');
     }
     
     // InmoUrba - cargar anuncios
     if (this.state.currentView === 'inmourba') {
       this.loadInmoUrbaListings(true);
+      this.showWelcomeModal('inmourba');
     }
     
     // Mercadillo - cargar artículos
     if (this.state.currentView === 'mercadillo') {
       this.loadMercadilloItems(true);
+      this.showWelcomeModal('mercadillo');
     }
     
     // Admin content - cargar según vista
