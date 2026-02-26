@@ -58,20 +58,6 @@ contacts.post('/', async (c) => {
       return c.json({ success: false, error: 'Tipo de solicitud no válido' }, 400);
     }
     
-    // Verificar si ya tiene solicitud pendiente del mismo tipo
-    const existing = await c.env.DB.prepare(
-      `SELECT id FROM contact_requests 
-       WHERE user_id = ? AND request_type = ? AND status IN ('pending', 'contacted')
-       LIMIT 1`
-    ).bind(user.sub, request_type).first();
-    
-    if (existing) {
-      return c.json({ 
-        success: false, 
-        error: 'Ya tienes una solicitud pendiente de este tipo' 
-      }, 400);
-    }
-    
     // Obtener datos completos del usuario
     const userData = await c.env.DB.prepare(
       'SELECT name, email, phone FROM users WHERE id = ?'
@@ -82,7 +68,7 @@ contacts.post('/', async (c) => {
       'SELECT name, address, urbanization FROM properties WHERE user_id = ? LIMIT 1'
     ).bind(user.sub).first<{ name: string; address: string; urbanization: string }>();
     
-    // Crear la solicitud
+    // Crear la solicitud (sin verificar pendientes - pueden enviar todas las que quieran)
     const result = await c.env.DB.prepare(
       `INSERT INTO contact_requests (user_id, request_type, notes, status)
        VALUES (?, ?, ?, 'pending')`

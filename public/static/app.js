@@ -5270,7 +5270,8 @@ const App = {
                       <div class="flex items-center space-x-2">
                         <p class="font-semibold text-gray-900">${cr.user_name}</p>
                         <span class="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
-                          ${cr.request_type === 'diagnosis_360' ? '🔍 Diagnóstico' : 
+                          ${cr.request_type === 'diagnosis_360' ? '🔍 Diagnóstico 360°' : 
+                            cr.request_type === 'professional_study' ? '📋 Estudio profesional' :
                             cr.request_type === 'consultation' ? '💬 Consulta' : 
                             cr.request_type === 'post_work' ? '✅ Post-obra' : '📋 Otro'}
                         </span>
