@@ -5022,10 +5022,10 @@ const App = {
                   </div>
                 </div>
                 
-                <p class="text-xs text-urba-400 mt-4">\${result.disclaimer}</p>
+                <p class="text-xs text-urba-400 mt-4">${result.disclaimer}</p>
               </div>
             </div>
-          \`;
+          `;
           
           // Programar popup de Chari después de 10 segundos
           App.scheduleChariPopup('estimate', result.interventionName);
@@ -5204,10 +5204,10 @@ const App = {
                 </div>
                 ` : ''}
                 
-                <p class="text-xs text-urba-400">\${rec.disclaimer}</p>
+                <p class="text-xs text-urba-400">${rec.disclaimer}</p>
               </div>
             </div>
-          \`;
+          `;
           
           // Programar popup de Chari después de 10 segundos (solo si muestra opción de venta)
           if (result.recommendation?.showSellAdvice) {
