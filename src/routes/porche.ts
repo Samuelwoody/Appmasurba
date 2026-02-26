@@ -10,7 +10,6 @@ porche.use('*', authMiddleware);
 const CATEGORIES = {
   general: { label: 'General', icon: '💬', color: 'gray' },
   recommendation: { label: 'Recomendación', icon: '⭐', color: 'yellow' },
-  sale: { label: 'Venta/Compra', icon: '🏷️', color: 'green' },
   alert: { label: 'Aviso', icon: '⚠️', color: 'red' },
   event: { label: 'Evento', icon: '🎉', color: 'purple' }
 };

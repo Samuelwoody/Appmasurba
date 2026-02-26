@@ -17,6 +17,8 @@ import admin from './routes/admin';
 import images from './routes/images';
 import media from './routes/media';
 import porche from './routes/porche';
+import inmourba from './routes/inmourba';
+import mercadillo from './routes/mercadillo';
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -47,6 +49,8 @@ app.route('/api/admin', admin);
 app.route('/api/images', images);
 app.route('/api/media', media);
 app.route('/api/porche', porche);
+app.route('/api/inmourba', inmourba);
+app.route('/api/mercadillo', mercadillo);
 
 // Health check
 app.get('/api/health', (c) => {

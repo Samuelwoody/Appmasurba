@@ -239,6 +239,12 @@ const App = {
       case 'porche':
         content = this.renderLayout(this.renderPorche());
         break;
+      case 'inmourba':
+        content = this.renderLayout(this.renderInmoUrba());
+        break;
+      case 'mercadillo':
+        content = this.renderLayout(this.renderMercadillo());
+        break;
       case 'admin':
         content = this.renderLayout(this.renderAdmin());
         break;
@@ -428,26 +434,81 @@ const App = {
   },
   
   renderClientNav() {
-    const items = [
+    const mainItems = [
       { id: 'dashboard', icon: 'tachometer-alt', label: 'Panel' },
       { id: 'property', icon: 'home', label: 'Vivienda' },
       { id: 'maintenance', icon: 'tools', label: 'Manten.' },
       { id: 'estimates', icon: 'calculator', label: 'Estim.' },
-      { id: 'strategic', icon: 'chess', label: 'Estrategia' },
-      { id: 'porche', icon: 'users', label: 'El Porche' },
-      { id: 'chari', icon: 'comments', label: 'Chari' }
+      { id: 'strategic', icon: 'chess', label: 'Estrategia' }
     ];
+
+    const comunidadItems = [
+      { id: 'porche', label: '🏡 El Porche', desc: 'Muro vecinal' },
+      { id: 'inmourba', label: '🏠 InmoUrba', desc: 'Inmobiliaria' },
+      { id: 'mercadillo', label: '🏷️ Mercadillo', desc: 'Compraventa' }
+    ];
+
+    const isComunidadActive = ['porche', 'inmourba', 'mercadillo'].includes(this.state.currentView);
     
-    return items.map(item => `
-      <button onclick="App.navigate('${item.id}')" 
+    return `
+      ${mainItems.map(item => `
+        <button onclick="App.navigate('${item.id}')" 
+                class="flex items-center px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap flex-shrink-0
+                       ${this.state.currentView === item.id 
+                         ? 'gradient-bg text-white' 
+                         : 'text-gray-600 hover:bg-gray-100'}">
+          <i class="fas fa-${item.icon} sm:mr-2"></i>
+          <span class="ml-1 sm:ml-0">${item.label}</span>
+        </button>
+      `).join('')}
+      
+      <!-- Menú Comunidad -->
+      <div class="relative flex-shrink-0" id="comunidad-menu">
+        <button onclick="App.toggleComunidadMenu()" 
+                class="flex items-center px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap
+                       ${isComunidadActive ? 'gradient-bg text-white' : 'text-gray-600 hover:bg-gray-100'}">
+          <i class="fas fa-users sm:mr-2"></i>
+          <span class="ml-1 sm:ml-0">Comunidad</span>
+          <i class="fas fa-chevron-down ml-1 text-xs"></i>
+        </button>
+        <div id="comunidad-dropdown" class="hidden absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 min-w-48">
+          ${comunidadItems.map(item => `
+            <button onclick="App.navigate('${item.id}'); App.closeComunidadMenu();" 
+                    class="w-full text-left px-4 py-2 hover:bg-gray-50 transition ${this.state.currentView === item.id ? 'bg-amber-50 text-amber-700' : 'text-gray-700'}">
+              <span class="font-medium">${item.label}</span>
+              <span class="block text-xs text-gray-400">${item.desc}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+      
+      <button onclick="App.navigate('chari')" 
               class="flex items-center px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap flex-shrink-0
-                     ${this.state.currentView === item.id 
+                     ${this.state.currentView === 'chari' 
                        ? 'gradient-bg text-white' 
                        : 'text-gray-600 hover:bg-gray-100'}">
-        <i class="fas fa-${item.icon} sm:mr-2"></i>
-        <span class="ml-1 sm:ml-0">${item.label}</span>
+        <i class="fas fa-comments sm:mr-2"></i>
+        <span class="ml-1 sm:ml-0">Chari</span>
       </button>
-    `).join('');
+    `;
+  },
+
+  comunidadMenuOpen: false,
+  
+  toggleComunidadMenu() {
+    this.comunidadMenuOpen = !this.comunidadMenuOpen;
+    const dropdown = document.getElementById('comunidad-dropdown');
+    if (dropdown) {
+      dropdown.classList.toggle('hidden', !this.comunidadMenuOpen);
+    }
+  },
+
+  closeComunidadMenu() {
+    this.comunidadMenuOpen = false;
+    const dropdown = document.getElementById('comunidad-dropdown');
+    if (dropdown) {
+      dropdown.classList.add('hidden');
+    }
   },
   
   renderAdminNav() {
@@ -1366,6 +1427,26 @@ const App = {
         <!-- Galería de fotos/vídeos de la vivienda -->
         ${this.renderPropertyGallery()}
         
+        <!-- Botón Publicar en InmoUrba -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg">
+          <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center space-x-4">
+              <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
+                🏠
+              </div>
+              <div>
+                <h3 class="text-lg font-bold">¿Quieres vender o alquilar tu vivienda?</h3>
+                <p class="text-white/80 text-sm">Publica gratis en InmoUrba y llega a todos los vecinos</p>
+              </div>
+            </div>
+            <button onclick="App.showPublishInmoUrbaModal()" 
+                    class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center">
+              <i class="fas fa-bullhorn mr-2"></i>
+              Publicar Gratis
+            </button>
+          </div>
+        </div>
+        
         <!-- Instalaciones -->
         ${this.renderInstallations()}
       </div>
@@ -2241,7 +2322,6 @@ const App = {
     all: { label: 'Todos', icon: '📋', color: 'gray' },
     general: { label: 'General', icon: '💬', color: 'gray' },
     recommendation: { label: 'Recomendación', icon: '⭐', color: 'yellow' },
-    sale: { label: 'Venta/Compra', icon: '🏷️', color: 'green' },
     alert: { label: 'Aviso', icon: '⚠️', color: 'red' },
     event: { label: 'Evento', icon: '🎉', color: 'purple' }
   },
@@ -2291,7 +2371,6 @@ const App = {
                   <select id="new-post-category" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-amber-500">
                     <option value="general">💬 General</option>
                     <option value="recommendation">⭐ Recomendación</option>
-                    <option value="sale">🏷️ Venta/Compra</option>
                     <option value="alert">⚠️ Aviso</option>
                     <option value="event">🎉 Evento</option>
                   </select>
@@ -2457,7 +2536,6 @@ const App = {
     const styles = {
       general: 'bg-gray-100 text-gray-700',
       recommendation: 'bg-yellow-100 text-yellow-700',
-      sale: 'bg-green-100 text-green-700',
       alert: 'bg-red-100 text-red-700',
       event: 'bg-purple-100 text-purple-700'
     };
@@ -2781,6 +2859,892 @@ const App = {
       </button>
     `;
     document.body.appendChild(modal);
+  },
+
+  // =============================================
+  // INMOURBA - Anuncios inmobiliarios
+  // =============================================
+  
+  inmoUrbaState: {
+    listings: [],
+    currentListing: null,
+    filter: 'all',
+    page: 1,
+    hasMore: true,
+    loading: false,
+    myListing: null
+  },
+
+  renderInmoUrba() {
+    return `
+      <div class="space-y-4 max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+          <div class="flex items-center space-x-3">
+            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-3xl">
+              🏠
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold">InmoUrba</h2>
+              <p class="text-white/80 text-sm">Inmobiliaria de las urbanizaciones</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="flex gap-2">
+          <button onclick="App.filterInmoUrba('all')" 
+                  class="px-4 py-2 rounded-lg font-medium transition ${this.inmoUrbaState.filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+            Todos
+          </button>
+          <button onclick="App.filterInmoUrba('sale')" 
+                  class="px-4 py-2 rounded-lg font-medium transition ${this.inmoUrbaState.filter === 'sale' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+            🏷️ En venta
+          </button>
+          <button onclick="App.filterInmoUrba('rent')" 
+                  class="px-4 py-2 rounded-lg font-medium transition ${this.inmoUrbaState.filter === 'rent' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+            🔑 En alquiler
+          </button>
+        </div>
+        
+        <!-- Info -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          Para publicar tu vivienda, ve a <strong>"Mi Vivienda"</strong> y pulsa el botón <strong>"Publicar Gratis"</strong>
+        </div>
+        
+        <!-- Feed de anuncios -->
+        <div id="inmourba-feed" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="col-span-full flex justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+        
+        <!-- Cargar más -->
+        <div id="inmourba-load-more" class="hidden">
+          <button onclick="App.loadMoreInmoUrba()" 
+                  class="w-full py-3 text-blue-600 hover:text-blue-700 font-medium text-sm">
+            <i class="fas fa-chevron-down mr-2"></i>Cargar más anuncios
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  renderInmoUrbaListing(listing) {
+    const statusBadge = {
+      active: { label: 'Activo', class: 'bg-green-100 text-green-700' },
+      reserved: { label: 'Reservado', class: 'bg-yellow-100 text-yellow-700' },
+      sold: { label: 'Vendido', class: 'bg-gray-100 text-gray-700' },
+      rented: { label: 'Alquilado', class: 'bg-gray-100 text-gray-700' }
+    }[listing.status] || { label: listing.status, class: 'bg-gray-100 text-gray-700' };
+
+    const typeBadge = listing.listing_type === 'rent' 
+      ? { label: '🔑 Alquiler', class: 'bg-purple-100 text-purple-700' }
+      : { label: '🏷️ Venta', class: 'bg-blue-100 text-blue-700' };
+
+    const priceText = listing.price 
+      ? `${listing.price.toLocaleString('es-ES')}€${listing.listing_type === 'rent' ? '/mes' : ''}` 
+      : 'A consultar';
+
+    const firstImage = listing.images?.[0] || null;
+    const pd = listing.property_data || {};
+
+    return `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition cursor-pointer"
+           onclick="App.viewInmoUrbaListing(${listing.id})">
+        <!-- Imagen -->
+        <div class="relative h-48 bg-gray-100">
+          ${firstImage 
+            ? `<img src="${firstImage}" class="w-full h-full object-cover">`
+            : `<div class="w-full h-full flex items-center justify-center text-gray-400"><i class="fas fa-home text-4xl"></i></div>`
+          }
+          <div class="absolute top-2 left-2 flex gap-1">
+            <span class="px-2 py-1 text-xs font-medium rounded-full ${typeBadge.class}">${typeBadge.label}</span>
+            ${listing.status !== 'active' ? `<span class="px-2 py-1 text-xs font-medium rounded-full ${statusBadge.class}">${statusBadge.label}</span>` : ''}
+          </div>
+          ${listing.verified_by_samuel ? `
+            <div class="absolute top-2 right-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+              ✓ Verificado
+            </div>
+          ` : ''}
+          <div class="absolute bottom-2 right-2 px-3 py-1 bg-white/90 backdrop-blur rounded-lg font-bold text-gray-900">
+            ${priceText}
+          </div>
+        </div>
+        
+        <!-- Info -->
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-900 truncate">${listing.title || 'Vivienda en venta'}</h3>
+          <p class="text-sm text-gray-500 mt-1">
+            <i class="fas fa-map-marker-alt mr-1"></i>${pd.urbanization || 'Valdemorillo'}
+          </p>
+          <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+            ${pd.square_meters ? `<span><i class="fas fa-ruler-combined mr-1"></i>${pd.square_meters}m²</span>` : ''}
+            ${pd.year_built ? `<span><i class="fas fa-calendar mr-1"></i>${pd.year_built}</span>` : ''}
+            ${listing.technical_score ? `<span class="text-blue-600"><i class="fas fa-star mr-1"></i>${listing.technical_score}/100</span>` : ''}
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+            <span class="text-sm text-gray-500">${listing.owner_name}</span>
+            <span class="text-xs text-gray-400">${listing.comments_count || 0} comentarios</span>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  async loadInmoUrbaListings(reset = false) {
+    if (this.inmoUrbaState.loading) return;
+    
+    if (reset) {
+      this.inmoUrbaState.page = 1;
+      this.inmoUrbaState.listings = [];
+      this.inmoUrbaState.hasMore = true;
+    }
+    
+    this.inmoUrbaState.loading = true;
+    
+    try {
+      const type = this.inmoUrbaState.filter !== 'all' ? `&type=${this.inmoUrbaState.filter}` : '';
+      const response = await axios.get(`/api/inmourba/listings?page=${this.inmoUrbaState.page}&limit=10${type}`);
+      
+      if (response.data.success) {
+        const { listings, pagination } = response.data.data;
+        
+        if (reset) {
+          this.inmoUrbaState.listings = listings;
+        } else {
+          this.inmoUrbaState.listings = [...this.inmoUrbaState.listings, ...listings];
+        }
+        
+        this.inmoUrbaState.hasMore = pagination.page < pagination.totalPages;
+        this.renderInmoUrbaFeed();
+      }
+    } catch (error) {
+      console.error('Error loading listings:', error);
+      this.showToast('Error cargando anuncios', 'error');
+    } finally {
+      this.inmoUrbaState.loading = false;
+    }
+  },
+
+  renderInmoUrbaFeed() {
+    const feed = document.getElementById('inmourba-feed');
+    const loadMore = document.getElementById('inmourba-load-more');
+    
+    if (!feed) return;
+    
+    if (this.inmoUrbaState.listings.length === 0) {
+      feed.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-home text-2xl text-blue-500"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">No hay anuncios</h3>
+          <p class="text-gray-500">Aún no hay viviendas publicadas</p>
+        </div>
+      `;
+      if (loadMore) loadMore.classList.add('hidden');
+      return;
+    }
+    
+    feed.innerHTML = this.inmoUrbaState.listings.map(l => this.renderInmoUrbaListing(l)).join('');
+    
+    if (loadMore) {
+      loadMore.classList.toggle('hidden', !this.inmoUrbaState.hasMore);
+    }
+  },
+
+  filterInmoUrba(filter) {
+    this.inmoUrbaState.filter = filter;
+    this.loadInmoUrbaListings(true);
+  },
+
+  loadMoreInmoUrba() {
+    this.inmoUrbaState.page++;
+    this.loadInmoUrbaListings();
+  },
+
+  async viewInmoUrbaListing(id) {
+    try {
+      const response = await axios.get(`/api/inmourba/listings/${id}`);
+      if (response.data.success) {
+        this.showInmoUrbaDetailModal(response.data.data);
+      }
+    } catch (error) {
+      this.showToast('Error cargando anuncio', 'error');
+    }
+  },
+
+  showInmoUrbaDetailModal(listing) {
+    const pd = listing.property_data || {};
+    const priceText = listing.price 
+      ? `${listing.price.toLocaleString('es-ES')}€${listing.listing_type === 'rent' ? '/mes' : ''}` 
+      : 'A consultar';
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+    modal.id = 'inmourba-detail-modal';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <!-- Galería -->
+        <div class="relative h-64 bg-gray-100">
+          ${listing.images?.length > 0 
+            ? `<img src="${listing.images[0]}" class="w-full h-full object-cover">`
+            : `<div class="w-full h-full flex items-center justify-center text-gray-400"><i class="fas fa-home text-6xl"></i></div>`
+          }
+          <button onclick="document.getElementById('inmourba-detail-modal').remove()" 
+                  class="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-600 hover:bg-white transition">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="absolute bottom-4 left-4 px-4 py-2 bg-white/90 backdrop-blur rounded-lg">
+            <span class="text-2xl font-bold text-gray-900">${priceText}</span>
+          </div>
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">${listing.title}</h2>
+            <p class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i>${pd.address || pd.urbanization || 'Valdemorillo'}</p>
+          </div>
+          
+          <!-- Características -->
+          <div class="grid grid-cols-3 gap-4 py-4 border-y border-gray-100">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-gray-900">${pd.square_meters || '-'}</p>
+              <p class="text-sm text-gray-500">m²</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-gray-900">${pd.year_built || '-'}</p>
+              <p class="text-sm text-gray-500">Año</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-blue-600">${listing.technical_score || '-'}</p>
+              <p class="text-sm text-gray-500">Puntuación</p>
+            </div>
+          </div>
+          
+          ${listing.description ? `<p class="text-gray-700">${listing.description}</p>` : ''}
+          
+          <!-- Contacto -->
+          <div class="bg-gray-50 rounded-xl p-4">
+            <h4 class="font-semibold text-gray-900 mb-2">Contactar con el propietario</h4>
+            <p class="text-gray-700"><i class="fas fa-user mr-2"></i>${listing.owner_name}</p>
+            ${listing.owner_phone ? `
+              <a href="https://wa.me/${listing.owner_phone.replace(/\D/g, '')}?text=Hola, me interesa tu vivienda en InmoUrba" 
+                 target="_blank"
+                 class="inline-flex items-center mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                <i class="fab fa-whatsapp mr-2"></i>WhatsApp
+              </a>
+            ` : ''}
+          </div>
+          
+          <!-- Comentarios -->
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Comentarios (${listing.comments?.length || 0})</h4>
+            <div class="space-y-3 max-h-48 overflow-y-auto" id="inmourba-comments-${listing.id}">
+              ${(listing.comments || []).map(c => `
+                <div class="flex items-start space-x-2 ${c.is_chari ? 'bg-blue-50 p-3 rounded-xl' : ''}">
+                  <div class="w-8 h-8 ${c.is_chari ? 'bg-gradient-to-br from-blue-400 to-indigo-500' : 'bg-gray-300'} rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    ${c.is_chari ? '🤖' : c.author_name?.charAt(0) || 'U'}
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm font-semibold ${c.is_chari ? 'text-blue-700' : 'text-gray-800'}">
+                      ${c.author_name}${c.is_chari ? ' <span class="font-normal text-xs">(Asistente IA)</span>' : ''}
+                    </p>
+                    <p class="text-sm text-gray-700 whitespace-pre-wrap">${c.content}</p>
+                  </div>
+                </div>
+              `).join('') || '<p class="text-gray-500 text-sm">No hay comentarios aún</p>'}
+            </div>
+            
+            <div class="flex items-center space-x-2 mt-3">
+              <input type="text" id="inmourba-comment-input-${listing.id}" 
+                     placeholder="Escribe un comentario..."
+                     class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                     onkeypress="if(event.key==='Enter') App.addInmoUrbaComment(${listing.id})">
+              <button onclick="App.addInmoUrbaComment(${listing.id})" 
+                      class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition">
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  },
+
+  async addInmoUrbaComment(listingId) {
+    const input = document.getElementById(`inmourba-comment-input-${listingId}`);
+    if (!input || !input.value.trim()) return;
+    
+    try {
+      const response = await axios.post(`/api/inmourba/listings/${listingId}/comments`, {
+        content: input.value.trim()
+      });
+      
+      if (response.data.success) {
+        input.value = '';
+        this.viewInmoUrbaListing(listingId); // Recargar
+      }
+    } catch (error) {
+      this.showToast('Error añadiendo comentario', 'error');
+    }
+  },
+
+  // Modal para publicar en InmoUrba
+  showPublishInmoUrbaModal() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+    modal.id = 'publish-inmourba-modal';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-md w-full p-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">
+          <i class="fas fa-bullhorn mr-2 text-blue-500"></i>
+          Publicar en InmoUrba
+        </h3>
+        
+        <p class="text-gray-600 mb-4">Tu vivienda se publicará con todos los datos e imágenes que tienes guardados.</p>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de anuncio</label>
+            <div class="flex gap-2">
+              <button onclick="this.classList.add('ring-2', 'ring-blue-500'); this.nextElementSibling.classList.remove('ring-2', 'ring-blue-500'); document.getElementById('listing-type').value='sale'" 
+                      class="flex-1 px-4 py-3 border rounded-lg text-center hover:bg-gray-50 ring-2 ring-blue-500">
+                🏷️ Venta
+              </button>
+              <button onclick="this.classList.add('ring-2', 'ring-blue-500'); this.previousElementSibling.classList.remove('ring-2', 'ring-blue-500'); document.getElementById('listing-type').value='rent'" 
+                      class="flex-1 px-4 py-3 border rounded-lg text-center hover:bg-gray-50">
+                🔑 Alquiler
+              </button>
+            </div>
+            <input type="hidden" id="listing-type" value="sale">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Precio (opcional)</label>
+            <div class="flex items-center space-x-2">
+              <input type="number" id="listing-price" placeholder="Ej: 350000" 
+                     class="flex-1 border border-gray-200 rounded-lg px-3 py-2">
+              <span class="text-gray-500">€</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Déjalo vacío para mostrar "A consultar"</p>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción adicional</label>
+            <textarea id="listing-description" rows="3" 
+                      placeholder="Información adicional que quieras destacar..."
+                      class="w-full border border-gray-200 rounded-lg px-3 py-2"></textarea>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+          <button onclick="document.getElementById('publish-inmourba-modal').remove()" 
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+            Cancelar
+          </button>
+          <button onclick="App.publishToInmoUrba()" 
+                  class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+            <i class="fas fa-check mr-2"></i>Publicar
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  },
+
+  async publishToInmoUrba() {
+    const listingType = document.getElementById('listing-type')?.value || 'sale';
+    const price = document.getElementById('listing-price')?.value;
+    const description = document.getElementById('listing-description')?.value;
+    
+    try {
+      const response = await axios.post('/api/inmourba/publish', {
+        listing_type: listingType,
+        price: price ? parseInt(price) : null,
+        price_type: price ? 'fixed' : 'to_consult',
+        description
+      });
+      
+      if (response.data.success) {
+        document.getElementById('publish-inmourba-modal')?.remove();
+        this.showToast('🎉 ¡Tu vivienda ya está en InmoUrba!', 'success');
+      }
+    } catch (error) {
+      this.showToast(error.response?.data?.error || 'Error publicando', 'error');
+    }
+  },
+
+  // =============================================
+  // MERCADILLO - Compraventa entre vecinos
+  // =============================================
+  
+  mercadilloState: {
+    items: [],
+    currentItem: null,
+    filter: 'all',
+    page: 1,
+    hasMore: true,
+    loading: false,
+    newItemImages: []
+  },
+
+  mercadilloCategories: {
+    all: { label: 'Todos', icon: '📋' },
+    muebles: { label: 'Muebles', icon: '🪑' },
+    electronica: { label: 'Electrónica', icon: '📱' },
+    jardin: { label: 'Jardín', icon: '🌳' },
+    hogar: { label: 'Hogar', icon: '🏠' },
+    motor: { label: 'Motor', icon: '🚗' },
+    deportes: { label: 'Deportes', icon: '⚽' },
+    otros: { label: 'Otros', icon: '📦' }
+  },
+
+  mercadilloConditions: {
+    new: { label: 'Nuevo', color: 'green' },
+    like_new: { label: 'Como nuevo', color: 'blue' },
+    good: { label: 'Buen estado', color: 'yellow' },
+    fair: { label: 'Aceptable', color: 'gray' }
+  },
+
+  renderMercadillo() {
+    return `
+      <div class="space-y-4 max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center text-3xl">
+                🏷️
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold">Mercadillo</h2>
+                <p class="text-white/80 text-sm">Compra y vende entre vecinos</p>
+              </div>
+            </div>
+            <button onclick="App.showNewMercadilloItemModal()" 
+                    class="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition">
+              <i class="fas fa-plus mr-2"></i>Vender algo
+            </button>
+          </div>
+        </div>
+        
+        <!-- Filtros por categoría -->
+        <div class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+          ${Object.entries(this.mercadilloCategories).map(([key, cat]) => `
+            <button onclick="App.filterMercadillo('${key}')" 
+                    class="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition
+                           ${this.mercadilloState.filter === key 
+                             ? 'bg-green-500 text-white' 
+                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+              ${cat.icon} ${cat.label}
+            </button>
+          `).join('')}
+        </div>
+        
+        <!-- Grid de artículos -->
+        <div id="mercadillo-feed" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="col-span-full flex justify-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
+          </div>
+        </div>
+        
+        <!-- Cargar más -->
+        <div id="mercadillo-load-more" class="hidden">
+          <button onclick="App.loadMoreMercadillo()" 
+                  class="w-full py-3 text-green-600 hover:text-green-700 font-medium text-sm">
+            <i class="fas fa-chevron-down mr-2"></i>Cargar más
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  renderMercadilloItem(item) {
+    const cat = this.mercadilloCategories[item.category] || this.mercadilloCategories.otros;
+    const cond = this.mercadilloConditions[item.condition] || this.mercadilloConditions.good;
+    const condColors = { green: 'bg-green-100 text-green-700', blue: 'bg-blue-100 text-blue-700', yellow: 'bg-yellow-100 text-yellow-700', gray: 'bg-gray-100 text-gray-700' };
+    const firstImage = item.images?.[0] || null;
+
+    return `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition cursor-pointer"
+           onclick="App.viewMercadilloItem(${item.id})">
+        <div class="relative aspect-square bg-gray-100">
+          ${firstImage 
+            ? `<img src="${firstImage}" class="w-full h-full object-cover">`
+            : `<div class="w-full h-full flex items-center justify-center text-gray-400 text-3xl">${cat.icon}</div>`
+          }
+          ${item.status === 'reserved' ? `
+            <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <span class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full font-bold">RESERVADO</span>
+            </div>
+          ` : ''}
+          <div class="absolute top-2 left-2">
+            <span class="px-2 py-1 text-xs font-medium rounded-full ${condColors[cond.color]}">${cond.label}</span>
+          </div>
+        </div>
+        <div class="p-3">
+          <h3 class="font-semibold text-gray-900 truncate">${item.title}</h3>
+          <p class="text-lg font-bold text-green-600">${item.price}€ ${item.price_negotiable ? '<span class="text-xs font-normal text-gray-400">negociable</span>' : ''}</p>
+          <p class="text-xs text-gray-500 mt-1">
+            <i class="fas fa-map-marker-alt mr-1"></i>${item.seller_urbanization || item.urbanization || 'Valdemorillo'}
+          </p>
+        </div>
+      </div>
+    `;
+  },
+
+  async loadMercadilloItems(reset = false) {
+    if (this.mercadilloState.loading) return;
+    
+    if (reset) {
+      this.mercadilloState.page = 1;
+      this.mercadilloState.items = [];
+      this.mercadilloState.hasMore = true;
+    }
+    
+    this.mercadilloState.loading = true;
+    
+    try {
+      const category = this.mercadilloState.filter !== 'all' ? `&category=${this.mercadilloState.filter}` : '';
+      const response = await axios.get(`/api/mercadillo/items?page=${this.mercadilloState.page}&limit=12${category}`);
+      
+      if (response.data.success) {
+        const { items, pagination } = response.data.data;
+        
+        if (reset) {
+          this.mercadilloState.items = items;
+        } else {
+          this.mercadilloState.items = [...this.mercadilloState.items, ...items];
+        }
+        
+        this.mercadilloState.hasMore = pagination.page < pagination.totalPages;
+        this.renderMercadilloFeed();
+      }
+    } catch (error) {
+      console.error('Error loading items:', error);
+      this.showToast('Error cargando artículos', 'error');
+    } finally {
+      this.mercadilloState.loading = false;
+    }
+  },
+
+  renderMercadilloFeed() {
+    const feed = document.getElementById('mercadillo-feed');
+    const loadMore = document.getElementById('mercadillo-load-more');
+    
+    if (!feed) return;
+    
+    if (this.mercadilloState.items.length === 0) {
+      feed.innerHTML = `
+        <div class="col-span-full text-center py-12">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-tag text-2xl text-green-500"></i>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">No hay artículos</h3>
+          <p class="text-gray-500">¡Sé el primero en publicar algo!</p>
+        </div>
+      `;
+      if (loadMore) loadMore.classList.add('hidden');
+      return;
+    }
+    
+    feed.innerHTML = this.mercadilloState.items.map(item => this.renderMercadilloItem(item)).join('');
+    
+    if (loadMore) {
+      loadMore.classList.toggle('hidden', !this.mercadilloState.hasMore);
+    }
+  },
+
+  filterMercadillo(category) {
+    this.mercadilloState.filter = category;
+    this.loadMercadilloItems(true);
+  },
+
+  loadMoreMercadillo() {
+    this.mercadilloState.page++;
+    this.loadMercadilloItems();
+  },
+
+  async viewMercadilloItem(id) {
+    try {
+      const response = await axios.get(`/api/mercadillo/items/${id}`);
+      if (response.data.success) {
+        this.showMercadilloDetailModal(response.data.data);
+      }
+    } catch (error) {
+      this.showToast('Error cargando artículo', 'error');
+    }
+  },
+
+  showMercadilloDetailModal(item) {
+    const cat = this.mercadilloCategories[item.category] || this.mercadilloCategories.otros;
+    const cond = this.mercadilloConditions[item.condition] || this.mercadilloConditions.good;
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+    modal.id = 'mercadillo-detail-modal';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <!-- Imagen -->
+        <div class="relative aspect-square bg-gray-100">
+          ${item.images?.length > 0 
+            ? `<img src="${item.images[0]}" class="w-full h-full object-cover">`
+            : `<div class="w-full h-full flex items-center justify-center text-gray-400 text-6xl">${cat.icon}</div>`
+          }
+          <button onclick="document.getElementById('mercadillo-detail-modal').remove()" 
+                  class="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-gray-600 hover:bg-white transition">
+            <i class="fas fa-times"></i>
+          </button>
+          ${item.status === 'reserved' ? `
+            <div class="absolute bottom-4 left-4 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-bold">
+              RESERVADO
+            </div>
+          ` : ''}
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900">${item.title}</h2>
+              <p class="text-2xl font-bold text-green-600 mt-1">${item.price}€ ${item.price_negotiable ? '<span class="text-sm font-normal text-gray-500">negociable</span>' : ''}</p>
+            </div>
+            <span class="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-700">${cond.label}</span>
+          </div>
+          
+          ${item.description ? `<p class="text-gray-700">${item.description}</p>` : ''}
+          
+          <div class="flex items-center gap-4 text-sm text-gray-500">
+            <span>${cat.icon} ${cat.label}</span>
+            <span><i class="fas fa-map-marker-alt mr-1"></i>${item.seller_urbanization || item.urbanization || 'Valdemorillo'}</span>
+          </div>
+          
+          <!-- Contacto vendedor -->
+          <div class="bg-gray-50 rounded-xl p-4">
+            <h4 class="font-semibold text-gray-900 mb-2">Vendedor</h4>
+            <p class="text-gray-700"><i class="fas fa-user mr-2"></i>${item.seller_name}</p>
+            ${item.seller_phone ? `
+              <a href="https://wa.me/${item.seller_phone.replace(/\D/g, '')}?text=Hola, me interesa tu artículo "${item.title}" del Mercadillo" 
+                 target="_blank"
+                 class="inline-flex items-center mt-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                <i class="fab fa-whatsapp mr-2"></i>Contactar por WhatsApp
+              </a>
+            ` : ''}
+          </div>
+          
+          <!-- Comentarios -->
+          <div>
+            <h4 class="font-semibold text-gray-900 mb-3">Preguntas (${item.comments?.length || 0})</h4>
+            <div class="space-y-3 max-h-48 overflow-y-auto">
+              ${(item.comments || []).map(c => `
+                <div class="flex items-start space-x-2">
+                  <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    ${c.author_name?.charAt(0) || 'U'}
+                  </div>
+                  <div class="flex-1 bg-gray-50 rounded-xl px-3 py-2">
+                    <p class="text-sm font-semibold text-gray-800">${c.author_name}</p>
+                    <p class="text-sm text-gray-700">${c.content}</p>
+                  </div>
+                </div>
+              `).join('') || '<p class="text-gray-500 text-sm">No hay preguntas aún</p>'}
+            </div>
+            
+            <div class="flex items-center space-x-2 mt-3">
+              <input type="text" id="mercadillo-comment-input-${item.id}" 
+                     placeholder="Haz una pregunta..."
+                     class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                     onkeypress="if(event.key==='Enter') App.addMercadilloComment(${item.id})">
+              <button onclick="App.addMercadilloComment(${item.id})" 
+                      class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  },
+
+  async addMercadilloComment(itemId) {
+    const input = document.getElementById(`mercadillo-comment-input-${itemId}`);
+    if (!input || !input.value.trim()) return;
+    
+    try {
+      const response = await axios.post(`/api/mercadillo/items/${itemId}/comments`, {
+        content: input.value.trim()
+      });
+      
+      if (response.data.success) {
+        input.value = '';
+        this.viewMercadilloItem(itemId);
+      }
+    } catch (error) {
+      this.showToast('Error añadiendo comentario', 'error');
+    }
+  },
+
+  // Modal para publicar artículo
+  showNewMercadilloItemModal() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+    modal.id = 'new-mercadillo-modal';
+    modal.innerHTML = `
+      <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">
+          <i class="fas fa-tag mr-2 text-green-500"></i>
+          Publicar artículo
+        </h3>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Título *</label>
+            <input type="text" id="item-title" placeholder="¿Qué vendes?" 
+                   class="w-full border border-gray-200 rounded-lg px-3 py-2" maxlength="100">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Precio *</label>
+            <div class="flex items-center space-x-2">
+              <input type="number" id="item-price" placeholder="0" min="0"
+                     class="flex-1 border border-gray-200 rounded-lg px-3 py-2">
+              <span class="text-gray-500">€</span>
+            </div>
+            <label class="flex items-center mt-2">
+              <input type="checkbox" id="item-negotiable" checked class="mr-2">
+              <span class="text-sm text-gray-600">Precio negociable</span>
+            </label>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+            <select id="item-category" class="w-full border border-gray-200 rounded-lg px-3 py-2">
+              ${Object.entries(this.mercadilloCategories).filter(([k]) => k !== 'all').map(([key, cat]) => 
+                `<option value="${key}">${cat.icon} ${cat.label}</option>`
+              ).join('')}
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select id="item-condition" class="w-full border border-gray-200 rounded-lg px-3 py-2">
+              ${Object.entries(this.mercadilloConditions).map(([key, cond]) => 
+                `<option value="${key}">${cond.label}</option>`
+              ).join('')}
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <textarea id="item-description" rows="3" placeholder="Describe el artículo..."
+                      class="w-full border border-gray-200 rounded-lg px-3 py-2"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fotos (máx. 6)</label>
+            <input type="file" id="item-images" accept="image/*" multiple class="hidden" onchange="App.handleMercadilloImages(event)">
+            <button onclick="document.getElementById('item-images').click()" 
+                    class="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-500 hover:border-green-400 hover:text-green-500 transition">
+              <i class="fas fa-camera text-2xl mb-2"></i>
+              <p>Añadir fotos</p>
+            </button>
+            <div id="item-images-preview" class="flex flex-wrap gap-2 mt-2"></div>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+          <button onclick="document.getElementById('new-mercadillo-modal').remove(); App.mercadilloState.newItemImages = [];" 
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+            Cancelar
+          </button>
+          <button onclick="App.createMercadilloItem()" 
+                  class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+            <i class="fas fa-check mr-2"></i>Publicar
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+  },
+
+  handleMercadilloImages(event) {
+    const files = Array.from(event.target.files);
+    const preview = document.getElementById('item-images-preview');
+    
+    files.slice(0, 6 - this.mercadilloState.newItemImages.length).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.mercadilloState.newItemImages.push(e.target.result);
+        this.updateMercadilloImagesPreview();
+      };
+      reader.readAsDataURL(file);
+    });
+  },
+
+  updateMercadilloImagesPreview() {
+    const preview = document.getElementById('item-images-preview');
+    if (!preview) return;
+    
+    preview.innerHTML = this.mercadilloState.newItemImages.map((img, idx) => `
+      <div class="relative">
+        <img src="${img}" class="w-16 h-16 object-cover rounded-lg">
+        <button onclick="App.removeMercadilloImage(${idx})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs">×</button>
+      </div>
+    `).join('');
+  },
+
+  removeMercadilloImage(idx) {
+    this.mercadilloState.newItemImages.splice(idx, 1);
+    this.updateMercadilloImagesPreview();
+  },
+
+  async createMercadilloItem() {
+    const title = document.getElementById('item-title')?.value?.trim();
+    const price = document.getElementById('item-price')?.value;
+    const negotiable = document.getElementById('item-negotiable')?.checked;
+    const category = document.getElementById('item-category')?.value;
+    const condition = document.getElementById('item-condition')?.value;
+    const description = document.getElementById('item-description')?.value?.trim();
+    
+    if (!title) {
+      this.showToast('El título es obligatorio', 'error');
+      return;
+    }
+    
+    if (!price || price < 0) {
+      this.showToast('El precio es obligatorio', 'error');
+      return;
+    }
+    
+    try {
+      const response = await axios.post('/api/mercadillo/items', {
+        title,
+        price: parseFloat(price),
+        price_negotiable: negotiable,
+        category,
+        condition,
+        description,
+        images: this.mercadilloState.newItemImages
+      });
+      
+      if (response.data.success) {
+        document.getElementById('new-mercadillo-modal')?.remove();
+        this.mercadilloState.newItemImages = [];
+        this.showToast('🎉 ¡Artículo publicado!', 'success');
+        this.loadMercadilloItems(true);
+      }
+    } catch (error) {
+      this.showToast(error.response?.data?.error || 'Error publicando', 'error');
+    }
   },
 
   // =============================================
@@ -3963,6 +4927,16 @@ const App = {
     // El Porche - cargar posts
     if (this.state.currentView === 'porche') {
       this.loadPorchePosts(true);
+    }
+    
+    // InmoUrba - cargar anuncios
+    if (this.state.currentView === 'inmourba') {
+      this.loadInmoUrbaListings(true);
+    }
+    
+    // Mercadillo - cargar artículos
+    if (this.state.currentView === 'mercadillo') {
+      this.loadMercadilloItems(true);
     }
     
     // Admin content - cargar según vista

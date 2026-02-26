@@ -108,6 +108,38 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 - **Visualizador de imágenes** a pantalla completa
 - **Información del autor:** nombre y urbanización
 
+### InmoUrba - Inmobiliaria Vecinal 🏠 (NUEVO)
+- **Anuncios inmobiliarios automáticos** de viviendas de vecinos
+- **Publicación desde "Mi Vivienda"** con botón "Publicar Gratis"
+- Datos transferidos automáticamente:
+  - Nombre, dirección, urbanización
+  - Tipo de vivienda y metros cuadrados
+  - Año de construcción y última reforma
+  - Estado de las 6 instalaciones
+  - Puntuación técnica calculada
+  - Fotos de vivienda y mantenimientos
+- **Tipos de anuncio:** Venta o Alquiler
+- **Precio:** Fijo, negociable o "A consultar"
+- **Comentario automático de Chari 🤖** con análisis técnico
+- **Sistema de comentarios** para interesados
+- **Estados del anuncio:** Activo, Reservado, Vendido/Alquilado, Pausado
+
+### Mercadillo - Compraventa entre Vecinos 🏷️ (NUEVO)
+- **Marketplace para objetos de segunda mano**
+- **6 categorías:** Muebles, Electrónica, Jardín, Hogar, Motor, Otros
+- **Estados de artículo:** Nuevo, Como nuevo, Buen estado, Usado
+- **Precio negociable** opcionalmente
+- **Subida de hasta 6 fotos** por artículo
+- **Sistema de reserva** entre vecinos
+- **Comentarios** para negociar
+- **Filtros por categoría y estado**
+- **Información del vendedor:** nombre, teléfono, urbanización
+
+### Menú Comunidad 🏘️ (NUEVO)
+- **Navegación agrupada** con dropdown
+- Acceso a: El Porche, InmoUrba, Mercadillo
+- Indicador visual cuando estás en sección de comunidad
+
 ---
 
 ## 🏗️ Arquitectura Técnica
@@ -141,7 +173,9 @@ webapp/
 │   │   ├── admin.ts      # Panel administrador
 │   │   ├── media.ts      # Gestión de fotos/vídeos
 │   │   ├── images.ts     # Generación/análisis imágenes
-│   │   └── porche.ts     # El Porche (muro social)
+│   │   ├── porche.ts     # El Porche (muro social)
+│   │   ├── inmourba.ts   # InmoUrba (inmobiliaria)
+│   │   └── mercadillo.ts # Mercadillo (compraventa)
 │   ├── lib/
 │   │   ├── auth.ts       # Utilidades JWT
 │   │   ├── chari.ts      # Lógica reglas (fallback)
@@ -162,7 +196,9 @@ webapp/
 │   ├── 0001_initial_schema.sql
 │   ├── 0002_seed_data.sql
 │   ├── 0003_admin_features.sql
-│   └── 0003_media_storage.sql
+│   ├── 0003_media_storage.sql
+│   ├── 0005_el_porche.sql
+│   └── 0006_inmourba_mercadillo.sql
 ├── wrangler.jsonc        # Config Cloudflare
 └── ecosystem.config.cjs  # PM2 config
 ```
@@ -210,6 +246,25 @@ webapp/
 | POST | /api/porche/posts/:id/comments | Añadir comentario |
 | DELETE | /api/porche/comments/:id | Eliminar comentario |
 | GET | /api/porche/categories | Categorías disponibles |
+| **INMOURBA** | | |
+| GET | /api/inmourba/listings | Listar anuncios inmobiliarios |
+| GET | /api/inmourba/listings/:id | Detalle de anuncio con comentarios |
+| POST | /api/inmourba/publish | Publicar vivienda desde Mi Vivienda |
+| PUT | /api/inmourba/listings/:id/status | Cambiar estado (activo/reservado/vendido) |
+| GET | /api/inmourba/my-listing | Mi anuncio activo |
+| POST | /api/inmourba/listings/:id/comments | Añadir comentario |
+| GET | /api/inmourba/listings/:id/comments | Obtener comentarios |
+| **MERCADILLO** | | |
+| GET | /api/mercadillo/items | Listar artículos |
+| GET | /api/mercadillo/items/:id | Detalle de artículo |
+| POST | /api/mercadillo/items | Publicar artículo |
+| PUT | /api/mercadillo/items/:id | Editar artículo |
+| PUT | /api/mercadillo/items/:id/status | Cambiar estado |
+| DELETE | /api/mercadillo/items/:id | Eliminar artículo |
+| GET | /api/mercadillo/my-items | Mis artículos |
+| POST | /api/mercadillo/items/:id/comments | Añadir comentario |
+| GET | /api/mercadillo/items/:id/comments | Obtener comentarios |
+| GET | /api/mercadillo/categories | Categorías disponibles |
 
 ---
 
