@@ -348,8 +348,8 @@ const App = {
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-2 sm:space-x-3">
                 <div class="relative">
-                  <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <span class="text-white font-bold text-lg sm:text-xl">UV</span>
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-400 via-green-300 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-white font-bold text-lg sm:text-xl drop-shadow">UV</span>
                   </div>
                   ${isAdmin ? `
                   <span id="notification-badge" 
@@ -655,8 +655,8 @@ const App = {
         <!-- Hero Section -->
         <div class="gradient-bg py-12 px-4">
           <div class="max-w-2xl mx-auto text-center text-white">
-            <div class="w-24 h-24 mx-auto mb-6 bg-white/20 backdrop-blur rounded-2xl shadow-lg flex items-center justify-center">
-              <span class="text-4xl font-bold text-white">UV</span>
+            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-pink-400 via-green-300 to-cyan-400 rounded-2xl shadow-lg flex items-center justify-center">
+              <span class="text-4xl font-bold text-white drop-shadow">UV</span>
             </div>
             <h1 class="text-3xl md:text-4xl font-bold leading-tight">
               Urbanizaciones de Valdemorillo
