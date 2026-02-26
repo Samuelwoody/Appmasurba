@@ -651,224 +651,381 @@ const App = {
   // =============================================
   renderLogin() {
     return `
-      <div class="min-h-screen bg-white">
+      <div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+        
         <!-- Hero Section -->
-        <div class="gradient-bg py-12 px-4">
-          <div class="max-w-2xl mx-auto text-center text-white">
-            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-pink-400 via-green-300 to-cyan-400 rounded-2xl shadow-lg flex items-center justify-center">
-              <span class="text-4xl font-bold text-white drop-shadow">UV</span>
+        <div class="gradient-bg py-16 px-4">
+          <div class="max-w-4xl mx-auto text-center text-white">
+            <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-pink-400 via-green-300 to-cyan-400 rounded-2xl shadow-lg flex items-center justify-center">
+              <span class="text-3xl font-bold text-white drop-shadow">UV</span>
             </div>
-            <h1 class="text-3xl md:text-4xl font-bold leading-tight">
+            <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-4">
               Urbanizaciones de Valdemorillo
             </h1>
-            <p class="mt-4 text-lg text-white/90">
-              La app <span class="font-semibold">100% GRATUITA</span> de los vecinos, para los vecinos
+            <p class="text-xl text-white/90 max-w-2xl mx-auto">
+              La app <span class="font-semibold">100% GRATUITA</span> que conecta a los vecinos y te ayuda con todo lo relacionado con tu chalet
             </p>
           </div>
         </div>
         
-        <!-- Value Proposition -->
-        <div class="max-w-4xl mx-auto px-4 -mt-6">
-          <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
-            
-            <!-- Beneficios principales -->
-            <div class="grid md:grid-cols-2 gap-4 mb-8">
-              <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-xl">
-                <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-comments text-white"></i>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-gray-800">Chari, tu asesora 24/7</h3>
-                  <p class="text-sm text-gray-600">Pregunta lo que quieras sobre tu casa: reformas, mantenimiento, valoraciones, trámites...</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-xl">
-                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-euro-sign text-white"></i>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-gray-800">Presupuestos orientativos al instante</h3>
-                  <p class="text-sm text-gray-600">Sabe cuánto cuesta antes de llamar a nadie. Sin sorpresas ni compromisos.</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3 p-3 bg-purple-50 rounded-xl">
-                <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-clipboard-check text-white"></i>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-gray-800">Control de mantenimientos</h3>
-                  <p class="text-sm text-gray-600">Nunca más olvides revisar la caldera, el tejado o la piscina. Te avisamos.</p>
-                </div>
-              </div>
-              
-              <div class="flex items-start space-x-3 p-3 bg-amber-50 rounded-xl">
-                <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="fas fa-chart-line text-white"></i>
-                </div>
-                <div>
-                  <h3 class="font-semibold text-gray-800">Estrategia de valor</h3>
-                  <p class="text-sm text-gray-600">¿Reformar o vender? ¿Qué mejoras aportan más valor? Decide con datos.</p>
-                </div>
-              </div>
+        <!-- Stats Bar -->
+        <div class="max-w-5xl mx-auto px-4 -mt-6">
+          <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p class="text-2xl md:text-3xl font-bold gradient-text">100%</p>
+              <p class="text-xs md:text-sm text-gray-500">Gratis</p>
             </div>
-            
-            <!-- Frase gancho -->
-            <div class="text-center mb-8 py-4 border-y border-gray-100">
-              <p class="text-xl md:text-2xl font-medium text-gray-800">
-                "Como tener un arquitecto, un aparejador y un asesor inmobiliario<br class="hidden md:block"> 
-                <span class="gradient-text font-bold">en tu bolsillo, gratis</span>"
+            <div>
+              <p class="text-2xl md:text-3xl font-bold gradient-text">24/7</p>
+              <p class="text-xs md:text-sm text-gray-500">Disponible</p>
+            </div>
+            <div>
+              <p class="text-2xl md:text-3xl font-bold gradient-text">IA</p>
+              <p class="text-xs md:text-sm text-gray-500">Asistente</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: COMUNIDAD -->
+        <div class="max-w-5xl mx-auto px-4 mt-12">
+          <div class="text-center mb-8">
+            <span class="inline-block px-4 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium mb-3">
+              <i class="fas fa-users mr-2"></i>COMUNIDAD
+            </span>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Conecta con tus vecinos</h2>
+            <p class="text-gray-500 mt-2">Tres espacios para compartir, comprar y vender entre nosotros</p>
+          </div>
+          
+          <div class="grid md:grid-cols-3 gap-6">
+            <!-- El Porche -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+              <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center mb-4">
+                <i class="fas fa-home text-white text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">El Porche</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                La red social de tu urbanización. Comparte recomendaciones, avisos y organiza eventos con tus vecinos.
               </p>
-            </div>
-            
-            <!-- Tabs Login/Registro -->
-            <div class="max-w-sm mx-auto">
-              <div class="flex mb-6 bg-gray-100 rounded-xl p-1">
-                <button id="tab-login" onclick="App.switchAuthTab('login')" 
-                        class="flex-1 py-2 px-4 rounded-lg font-semibold transition bg-white text-gray-800 shadow-sm">
-                  Entrar
-                </button>
-                <button id="tab-register" onclick="App.switchAuthTab('register')" 
-                        class="flex-1 py-2 px-4 rounded-lg font-semibold transition text-gray-500">
-                  Crear cuenta
-                </button>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">Recomendaciones</span>
+                <span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs">Avisos</span>
+                <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs">Eventos</span>
               </div>
-              
-              <!-- Formulario de Login -->
-              <form id="login-form" class="space-y-4">
-                <div>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <i class="fas fa-envelope"></i>
-                    </span>
-                    <input type="email" id="login-email" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                           placeholder="tu@email.com">
-                  </div>
-                </div>
-                
-                <div>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <i class="fas fa-lock"></i>
-                    </span>
-                    <input type="password" id="login-password" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                           placeholder="••••••••">
-                  </div>
-                </div>
-                
-                <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                  <i class="fas fa-exclamation-circle mr-2"></i>
-                  <span></span>
-                </div>
-                
-                <button type="submit" 
-                        class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
-                  <span id="login-btn-text">Entrar</span>
-                  <div id="login-btn-loading" class="hidden spinner ml-2"></div>
-                </button>
-              </form>
-              
-              <!-- Formulario de Registro -->
-              <form id="register-form" class="space-y-4 hidden">
-                <div>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <i class="fas fa-user"></i>
-                    </span>
-                    <input type="text" id="register-name" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                           placeholder="Tu nombre">
-                  </div>
-                </div>
-                
-                <div>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <i class="fas fa-envelope"></i>
-                    </span>
-                    <input type="email" id="register-email" required
-                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                           placeholder="tu@email.com">
-                  </div>
-                </div>
-                
-                <div>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <i class="fas fa-phone"></i>
-                    </span>
-                    <input type="tel" id="register-phone"
-                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                           placeholder="Teléfono (opcional)">
-                  </div>
-                </div>
-                
-                <div>
-                  <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      <i class="fas fa-lock"></i>
-                    </span>
-                    <input type="password" id="register-password" required minlength="6"
-                           class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
-                           placeholder="Contraseña (mín. 6 caracteres)">
-                  </div>
-                </div>
-                
-                <div id="register-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                  <i class="fas fa-exclamation-circle mr-2"></i>
-                  <span></span>
-                </div>
-                
-                <div id="register-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded-lg">
-                  <i class="fas fa-check-circle mr-2"></i>
-                  <span></span>
-                </div>
-                
-                <button type="submit" 
-                        class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
-                  <span id="register-btn-text">Crear mi cuenta gratis</span>
-                  <div id="register-btn-loading" class="hidden spinner ml-2"></div>
-                </button>
-                
-                <p class="text-xs text-gray-500 text-center">
-                  Al registrarte aceptas nuestra <a href="#" onclick="App.showLegalModal('privacy'); return false;" class="text-green-600 hover:underline">Política de Privacidad</a> 
-                  y <a href="#" onclick="App.showLegalModal('terms'); return false;" class="text-green-600 hover:underline">Términos de Uso</a>.
-                </p>
-              </form>
             </div>
             
-            <!-- Mensaje de confianza y privacidad -->
-            <div class="mt-6 p-4 bg-green-50 rounded-xl border border-green-100">
-              <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i class="fas fa-user-shield text-white text-sm"></i>
+            <!-- InmoUrba -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+              <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
+                <i class="fas fa-key text-white text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">InmoUrba</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Inmobiliaria exclusiva entre vecinos. Vende o alquila tu casa sin comisiones y con total confianza.
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">Sin comisiones</span>
+                <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">Entre vecinos</span>
+              </div>
+            </div>
+            
+            <!-- Mercadillo -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition">
+              <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                <i class="fas fa-shopping-bag text-white text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">Mercadillo</h3>
+              <p class="text-gray-600 text-sm mb-4">
+                Compra y vende artículos de segunda mano cerca de casa. Muebles, electrónica, jardín y más.
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Segunda mano</span>
+                <span class="px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs">Cerca de ti</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: TU VIVIENDA -->
+        <div class="max-w-5xl mx-auto px-4 mt-16">
+          <div class="text-center mb-8">
+            <span class="inline-block px-4 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium mb-3">
+              <i class="fas fa-house-user mr-2"></i>TU VIVIENDA
+            </span>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Todo bajo control</h2>
+            <p class="text-gray-500 mt-2">Gestiona, planifica y toma decisiones inteligentes sobre tu chalet</p>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Control de mantenimientos -->
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100">
+              <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-clipboard-check text-white text-xl"></i>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-green-800">Tu privacidad es lo primero</p>
-                  <p class="text-xs text-green-700 mt-1">
-                    <strong>Solo tú</strong> tienes acceso a tus datos personales. Nosotros únicamente vemos información 
-                    técnica de las viviendas (año, m², estado) para poder asesorarte mejor. 
-                    <strong>Nunca compartimos ni vendemos tus datos.</strong>
+                  <h3 class="text-lg font-bold text-gray-800 mb-1">Control de Mantenimientos</h3>
+                  <p class="text-gray-600 text-sm">
+                    Registra el estado de tejado, piscina, caldera, instalaciones... y recibe recordatorios cuando toque revisarlos.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Presupuestos -->
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+              <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-calculator text-white text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-gray-800 mb-1">Presupuestos al Instante</h3>
+                  <p class="text-gray-600 text-sm">
+                    Calcula cuánto cuesta una reforma, cambio de ventanas, impermeabilización... en segundos y sin compromiso.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Estrategia -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+              <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-chess text-white text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-gray-800 mb-1">Orientación Estratégica</h3>
+                  <p class="text-gray-600 text-sm">
+                    ¿Piensas vender? Te orientamos sobre qué mejoras aportan más valor y cómo preparar tu vivienda.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Contacto profesional -->
+            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+              <div class="flex items-start space-x-4">
+                <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-hard-hat text-white text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-gray-800 mb-1">Revisión Profesional</h3>
+                  <p class="text-gray-600 text-sm">
+                    Cuando necesites una opinión experta, solicita visita con Samuel. Sin compromiso y con respuesta en 24h.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- Trust badges -->
-          <div class="mt-6 text-center">
-            <div class="flex items-center justify-center space-x-6 text-gray-400 text-sm">
+        </div>
+
+        <!-- SECCIÓN: CHARI -->
+        <div class="max-w-5xl mx-auto px-4 mt-16">
+          <div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-3xl p-8 md:p-12 text-white overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
+            
+            <div class="relative z-10">
+              <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="flex-shrink-0">
+                  <div class="w-24 h-24 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+                    <span class="text-5xl">🤖</span>
+                  </div>
+                </div>
+                <div class="text-center md:text-left">
+                  <h2 class="text-3xl md:text-4xl font-bold mb-3">Conoce a Chari</h2>
+                  <p class="text-lg text-white/90 mb-4">
+                    Tu asistente personal con inteligencia artificial, disponible 24/7
+                  </p>
+                </div>
+              </div>
+              
+              <div class="grid md:grid-cols-3 gap-4 mt-8">
+                <div class="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div class="flex items-center space-x-3 mb-2">
+                    <i class="fas fa-comments text-2xl"></i>
+                    <h4 class="font-semibold">Pregunta lo que sea</h4>
+                  </div>
+                  <p class="text-sm text-white/80">
+                    Reformas, mantenimiento, normativa, trámites... Chari te asesora sobre cualquier tema de tu vivienda.
+                  </p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div class="flex items-center space-x-3 mb-2">
+                    <i class="fas fa-camera text-2xl"></i>
+                    <h4 class="font-semibold">Analiza tus fotos</h4>
+                  </div>
+                  <p class="text-sm text-white/80">
+                    Envía una foto de una humedad, grieta o desperfecto y Chari te dice qué puede ser y cómo solucionarlo.
+                  </p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur rounded-xl p-4">
+                  <div class="flex items-center space-x-3 mb-2">
+                    <i class="fas fa-magic text-2xl"></i>
+                    <h4 class="font-semibold">Visualiza reformas</h4>
+                  </div>
+                  <p class="text-sm text-white/80">
+                    ¿Cómo quedaría tu baño reformado? Chari puede generar imágenes para que veas el resultado antes de decidir.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FORMULARIO LOGIN/REGISTRO -->
+        <div class="max-w-md mx-auto px-4 mt-16 mb-12">
+          <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
+            <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">
+              <i class="fas fa-door-open mr-2 text-green-500"></i>
+              Accede a tu cuenta
+            </h3>
+            
+            <!-- Tabs Login/Registro -->
+            <div class="flex mb-6 bg-gray-100 rounded-xl p-1">
+              <button id="tab-login" onclick="App.switchAuthTab('login')" 
+                      class="flex-1 py-2 px-4 rounded-lg font-semibold transition bg-white text-gray-800 shadow-sm">
+                Entrar
+              </button>
+              <button id="tab-register" onclick="App.switchAuthTab('register')" 
+                      class="flex-1 py-2 px-4 rounded-lg font-semibold transition text-gray-500">
+                Crear cuenta
+              </button>
+            </div>
+            
+            <!-- Formulario de Login -->
+            <form id="login-form" class="space-y-4">
+              <div>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                  <input type="email" id="login-email" required
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                         placeholder="tu@email.com">
+                </div>
+              </div>
+              
+              <div>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" id="login-password" required
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                         placeholder="••••••••">
+                </div>
+              </div>
+              
+              <div id="login-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span></span>
+              </div>
+              
+              <button type="submit" 
+                      class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
+                <span id="login-btn-text">Entrar</span>
+                <div id="login-btn-loading" class="hidden spinner ml-2"></div>
+              </button>
+            </form>
+            
+            <!-- Formulario de Registro -->
+            <form id="register-form" class="space-y-4 hidden">
+              <div>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-user"></i>
+                  </span>
+                  <input type="text" id="register-name" required
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                         placeholder="Tu nombre">
+                </div>
+              </div>
+              
+              <div>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                  <input type="email" id="register-email" required
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                         placeholder="tu@email.com">
+                </div>
+              </div>
+              
+              <div>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-phone"></i>
+                  </span>
+                  <input type="tel" id="register-phone"
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                         placeholder="Teléfono (opcional)">
+                </div>
+              </div>
+              
+              <div>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" id="register-password" required minlength="6"
+                         class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-400 focus:border-transparent transition"
+                         placeholder="Contraseña (mín. 6 caracteres)">
+                </div>
+              </div>
+              
+              <div id="register-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <span></span>
+              </div>
+              
+              <div id="register-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span></span>
+              </div>
+              
+              <button type="submit" 
+                      class="w-full gradient-bg text-white py-3 rounded-xl font-semibold hover:opacity-90 transition flex items-center justify-center text-lg">
+                <span id="register-btn-text">Crear mi cuenta gratis</span>
+                <div id="register-btn-loading" class="hidden spinner ml-2"></div>
+              </button>
+              
+              <p class="text-xs text-gray-500 text-center">
+                Al registrarte aceptas nuestra <a href="#" onclick="App.showLegalModal('privacy'); return false;" class="text-green-600 hover:underline">Política de Privacidad</a>.
+              </p>
+            </form>
+            
+            <!-- Privacidad -->
+            <div class="mt-6 p-4 bg-green-50 rounded-xl border border-green-100">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i class="fas fa-shield-alt text-white text-sm"></i>
+                </div>
+                <p class="text-xs text-green-700">
+                  <strong>Tu privacidad importa:</strong> Solo tú accedes a tus datos personales. Nunca compartimos ni vendemos información.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="bg-gray-50 border-t border-gray-200 py-8 mt-8">
+          <div class="max-w-5xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-6 text-gray-400 text-sm mb-4">
               <span><i class="fas fa-shield-alt mr-1"></i> 100% Seguro</span>
-              <span><i class="fas fa-lock mr-1"></i> RGPD Compliant</span>
+              <span><i class="fas fa-lock mr-1"></i> RGPD</span>
               <span><i class="fas fa-heart mr-1"></i> Hecho en Valdemorillo</span>
             </div>
-            <p class="text-gray-400 text-xs mt-3">
-              Sponsored by <span class="font-medium">Más Urba Multiservicios</span> · Solo para vecinos de las urbanizaciones de Valdemorillo
+            <p class="text-gray-500 text-sm">
+              Sponsored by <span class="font-medium">Más Urba Multiservicios</span>
             </p>
-            <div class="mt-2 text-xs text-gray-400 space-x-3">
+            <p class="text-gray-400 text-xs mt-2">
+              Solo para vecinos de las urbanizaciones de Valdemorillo
+            </p>
+            <div class="mt-4 text-xs text-gray-400 space-x-3">
               <a href="#" onclick="App.showLegalModal('privacy'); return false;" class="hover:text-gray-600">Privacidad</a>
               <span>·</span>
               <a href="#" onclick="App.showLegalModal('terms'); return false;" class="hover:text-gray-600">Términos</a>
@@ -876,7 +1033,7 @@ const App = {
               <a href="#" onclick="App.showLegalModal('cookies'); return false;" class="hover:text-gray-600">Cookies</a>
             </div>
           </div>
-        </div>
+        </footer>
       </div>
     `;
   },
