@@ -92,6 +92,22 @@ PWA (Progressive Web App) diseñada para propietarios de chalets en las urbaniza
 - **Botón "Atendido"** para marcar como completada
 - **Recordatorio automático** creado en sistema para seguimiento
 
+### El Porche - Muro Social Vecinal 🏡 (NUEVO)
+- **Muro tipo Facebook** para comunicación entre vecinos
+- **5 categorías de posts:**
+  - 💬 General - Conversaciones generales
+  - ⭐ Recomendación - Compartir proveedores/servicios
+  - 🏷️ Venta/Compra - Compraventa entre vecinos
+  - ⚠️ Aviso - Alertas e incidencias
+  - 🎉 Evento - Organizar quedadas/actividades
+- **Subida de hasta 4 imágenes** por publicación
+- **Sistema de reacciones:** Like (👍) y Corazón (❤️)
+- **Comentarios** en cada publicación
+- **Filtrado por categoría**
+- **Paginación infinita** con "Cargar más"
+- **Visualizador de imágenes** a pantalla completa
+- **Información del autor:** nombre y urbanización
+
 ---
 
 ## 🏗️ Arquitectura Técnica
@@ -124,7 +140,8 @@ webapp/
 │   │   ├── contacts.ts   # Solicitudes contacto
 │   │   ├── admin.ts      # Panel administrador
 │   │   ├── media.ts      # Gestión de fotos/vídeos
-│   │   └── images.ts     # Generación/análisis imágenes
+│   │   ├── images.ts     # Generación/análisis imágenes
+│   │   └── porche.ts     # El Porche (muro social)
 │   ├── lib/
 │   │   ├── auth.ts       # Utilidades JWT
 │   │   ├── chari.ts      # Lógica reglas (fallback)
@@ -182,6 +199,17 @@ webapp/
 | POST | /api/images/analyze | Analizar imagen con GPT-4o |
 | POST | /api/images/generate | Generar imagen con DALL-E 3 |
 | POST | /api/images/chari-analyze | Análisis de imagen para Chari |
+| **EL PORCHE** | | |
+| GET | /api/porche/posts | Obtener feed de posts |
+| GET | /api/porche/posts/:id | Obtener post con comentarios |
+| POST | /api/porche/posts | Crear nuevo post |
+| PUT | /api/porche/posts/:id | Editar post |
+| DELETE | /api/porche/posts/:id | Eliminar post |
+| POST | /api/porche/posts/:id/react | Toggle like/heart |
+| GET | /api/porche/posts/:id/comments | Obtener comentarios |
+| POST | /api/porche/posts/:id/comments | Añadir comentario |
+| DELETE | /api/porche/comments/:id | Eliminar comentario |
+| GET | /api/porche/categories | Categorías disponibles |
 
 ---
 
