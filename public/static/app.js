@@ -348,7 +348,9 @@ const App = {
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-2 sm:space-x-3">
                 <div class="relative">
-                  <img src="/static/logo.png" alt="Más Urba" class="w-10 h-10 sm:w-12 sm:h-12">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <span class="text-white font-bold text-lg sm:text-xl">UV</span>
+                  </div>
                   ${isAdmin ? `
                   <span id="notification-badge" 
                         class="${this.pendingNotifications > 0 ? '' : 'hidden'} absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
@@ -358,7 +360,7 @@ const App = {
                 </div>
                 <div>
                   <h1 class="text-sm sm:text-lg font-semibold leading-tight text-gray-800">Urbanizaciones Valdemorillo</h1>
-                  <p class="text-gray-500 text-xs hidden sm:block">Control y Estrategia de Chalets</p>
+                  <p class="text-gray-500 text-xs hidden sm:block">Tu comunidad de vecinos</p>
                 </div>
               </div>
               <div class="flex items-center space-x-2 sm:space-x-3">
@@ -397,9 +399,9 @@ const App = {
         <!-- Footer -->
         <footer class="bg-gray-50 border-t border-gray-200 text-gray-500 py-4 sm:py-6 mt-8 sm:mt-12">
           <div class="max-w-7xl mx-auto px-4 text-center text-xs sm:text-sm">
-            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 opacity-80">
-            <p class="text-gray-600">© ${new Date().getFullYear()} Más Urba Multiservicios</p>
-            <p class="text-gray-400 mt-1 hidden sm:block">Urbanizaciones de Valdemorillo, Madrid</p>
+            <p class="text-gray-600 font-medium">Urbanizaciones de Valdemorillo</p>
+            <p class="text-gray-400 mt-1">Tu comunidad de vecinos</p>
+            <p class="text-gray-400 mt-2 text-xs">Sponsored by <span class="font-medium">Más Urba Multiservicios</span></p>
           </div>
         </footer>
         
@@ -653,12 +655,14 @@ const App = {
         <!-- Hero Section -->
         <div class="gradient-bg py-12 px-4">
           <div class="max-w-2xl mx-auto text-center text-white">
-            <img src="/static/logo.png" alt="Más Urba Multiservicios" class="w-24 h-24 mx-auto mb-6 rounded-2xl shadow-lg">
+            <div class="w-24 h-24 mx-auto mb-6 bg-white/20 backdrop-blur rounded-2xl shadow-lg flex items-center justify-center">
+              <span class="text-4xl font-bold text-white">UV</span>
+            </div>
             <h1 class="text-3xl md:text-4xl font-bold leading-tight">
-              Tu chalet en Valdemorillo<br>bajo control total
+              Urbanizaciones de Valdemorillo
             </h1>
             <p class="mt-4 text-lg text-white/90">
-              La app <span class="font-semibold">100% GRATUITA</span> exclusiva para propietarios de chalets en las urbanizaciones de Valdemorillo
+              La app <span class="font-semibold">100% GRATUITA</span> de los vecinos, para los vecinos
             </p>
           </div>
         </div>
@@ -862,7 +866,7 @@ const App = {
               <span><i class="fas fa-heart mr-1"></i> Hecho en Valdemorillo</span>
             </div>
             <p class="text-gray-400 text-xs mt-3">
-              Por <span class="font-medium">Más Urba Multiservicios</span> · Solo para vecinos de las urbanizaciones de Valdemorillo
+              Sponsored by <span class="font-medium">Más Urba Multiservicios</span> · Solo para vecinos de las urbanizaciones de Valdemorillo
             </p>
             <div class="mt-2 text-xs text-gray-400 space-x-3">
               <a href="#" onclick="App.showLegalModal('privacy'); return false;" class="hover:text-gray-600">Privacidad</a>
